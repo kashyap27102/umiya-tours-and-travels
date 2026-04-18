@@ -23,7 +23,7 @@ type ContactFormValues = {
   message: string;
 };
 
-const initialValues: ContactFormValues = {
+const defaultInitialValues: ContactFormValues = {
   name: "",
   email: "",
   phone: "",
@@ -31,7 +31,22 @@ const initialValues: ContactFormValues = {
   message: "",
 };
 
-export default function ContactForm() {
+interface ContactFormProps {
+  initialServiceInterested?: ContactFormValues["serviceInterested"];
+  initialMessage?: string;
+}
+
+export default function ContactForm({
+  initialServiceInterested,
+  initialMessage,
+}: ContactFormProps) {
+  const initialValues: ContactFormValues = {
+    ...defaultInitialValues,
+    serviceInterested:
+      initialServiceInterested ?? defaultInitialValues.serviceInterested,
+    message: initialMessage ?? defaultInitialValues.message,
+  };
+
   const [values, setValues] = useState(initialValues);
 
   const {

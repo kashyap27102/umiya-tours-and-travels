@@ -3,6 +3,8 @@ import Breadcrumb from "@/components/Breadcrumb";
 import ContactForm from "@/components/forms/ContactForm";
 import { Badge, Card, CardBody, CardTitle } from "@/components/ui";
 import { CONTACT } from "@/lib/constants";
+import { getPackageBySlug } from "@/lib/packages-data";
+import { SERVICE_INTEREST_OPTIONS } from "@/lib/form-constants";
 
 export const metadata = createMetadata({
   title: "Contact Us | Umiya Tours & Travels",
@@ -18,7 +20,62 @@ export const metadata = createMetadata({
   ],
 });
 
-export default function ContactPage() {
+type SearchParams = {
+  service?: string;
+  package?: string;
+};
+
+const normalizeService = (
+  rawService?: string,
+): (typeof SERVICE_INTEREST_OPTIONS)[number] | undefined => {
+  if (!rawService) {
+    return undefined;
+  }
+
+  const normalized = rawService.toLowerCase();
+
+  if (normalized === "package") {
+    return "Pre-Designed Packages";
+  }
+
+  if (normalized === "custom-packages") {
+    return "Customized Travel Packages";
+  }
+
+  if (normalized === "cab") {
+    return "Cab Booking";
+  }
+
+  if (normalized === "vehicle") {
+    return "Vehicle Booking";
+  }
+
+  const directMatch = SERVICE_INTEREST_OPTIONS.find(
+    (option) => option.toLowerCase() === normalized,
+  );
+
+  return directMatch;
+};
+
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const query = await searchParams;
+  const selectedService = normalizeService(query.service);
+  const selectedPackage = query.package
+    ? getPackageBySlug(query.package)
+    : undefined;
+
+  const initialMessage = selectedPackage
+    ? `I am interested in the package "${selectedPackage.name}". Please share details for itinerary, pricing, and booking process.`
+    : undefined;
+
+  const initialServiceInterested = selectedPackage
+    ? "Pre-Designed Packages"
+    : selectedService;
+
   return (
     <main className="travel-shell flex flex-col gap-10 py-10 md:py-14">
       <Breadcrumb crumbs={[{ label: "Contact" }]} />
@@ -40,9 +97,16 @@ export default function ContactPage() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <ContactForm />
+        <ContactForm
+          initialServiceInterested={initialServiceInterested}
+          initialMessage={initialMessage}
+        />
 
-        <Card variant="brand" padding="lg" className="h-fit space-y-5">
+        <Card
+          variant="elevated"
+          padding="lg"
+          className="h-fit space-y-5 bg-brand-blue-900 text-brand-mist-200"
+        >
           <div>
             <CardTitle className="text-brand-cream-100">
               Reach Us Directly

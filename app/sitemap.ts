@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
-import { CORE_ROUTES, PACKAGE_SLUGS } from "@/lib/constants";
+import { CORE_ROUTES } from "@/lib/constants";
 import { appConfig } from "@/lib/config";
+import { getPackageSlugs } from "@/lib/packages-data";
 
 const SITE_URL = appConfig.siteUrl;
 
@@ -14,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === "/" ? 1 : 0.8,
   }));
 
-  const packagePages: MetadataRoute.Sitemap = PACKAGE_SLUGS.map((slug) => ({
+  const packagePages: MetadataRoute.Sitemap = getPackageSlugs().map((slug) => ({
     url: `${SITE_URL}/packages/${slug}`,
     lastModified: now,
     changeFrequency: "weekly",
