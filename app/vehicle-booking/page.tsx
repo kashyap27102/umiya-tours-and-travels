@@ -20,8 +20,6 @@ export const metadata = createMetadata({
 export default function VehicleBookingPage() {
   return (
     <main className="travel-shell flex flex-col gap-10 py-10 md:py-14">
-      <Breadcrumb crumbs={[{ label: "Vehicle Booking" }]} />
-
       <section className="brand-hero relative overflow-hidden rounded-3xl px-6 py-10 md:px-10 md:py-12">
         <div className="brand-hero-glow pointer-events-none absolute inset-0" />
         <div className="relative max-w-3xl">

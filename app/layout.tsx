@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display } from "next/font/google";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
 import {
   createMetadata,
   localBusinessJsonLd,
   organizationJsonLd,
   toJsonLd,
 } from "@/lib/metadata";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import type { Metadata } from "next";
+import { Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
 
 const displayFont = Playfair_Display({
@@ -18,7 +18,7 @@ const displayFont = Playfair_Display({
   display: "swap",
 });
 
-const bodyFont = DM_Sans({
+const bodyFont = Poppins({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "700"],

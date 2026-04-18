@@ -51,14 +51,9 @@ const STATS = [
 export default function AboutPage() {
   return (
     <main className="travel-shell flex flex-col gap-14 py-10 md:py-14">
-      <Breadcrumb crumbs={[{ label: "About Us" }]} />
-
       {/* Story */}
       <section className="grid gap-10 md:grid-cols-2 items-center">
         <div>
-          <Badge variant="brand" className="mb-4">
-            Our Story
-          </Badge>
           <h1 className="text-4xl font-bold text-brand-ink-900 md:text-5xl">
             Driven by Passion for Travel
           </h1>

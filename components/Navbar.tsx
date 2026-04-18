@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui";
 import BrandLogo from "@/components/BrandLogo";
+import { Button } from "@/components/ui";
+import Link from "next/link";
+import * as React from "react";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -15,23 +15,9 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [open, setOpen] = React.useState(false);
-  const [scrolled, setScrolled] = React.useState(false);
-
-  React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   return (
-    <header
-      className={
-        "sticky top-0 z-50 w-full transition-all " +
-        (scrolled
-          ? "bg-white/92 shadow-[0_2px_12px_rgb(var(--brand-blue-rgb)/0.10)] backdrop-blur"
-          : "bg-transparent")
-      }
-    >
+    <header className={"z-50 w-full transition-all "}>
       <div className="travel-shell flex h-16 items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="shrink-0" aria-label="Umiya Tours home">

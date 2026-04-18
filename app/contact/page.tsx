@@ -77,12 +77,10 @@ export default async function ContactPage({
     : selectedService;
 
   return (
-    <main className="travel-shell flex flex-col gap-10 py-10 md:py-14">
-      <Breadcrumb crumbs={[{ label: "Contact" }]} />
-
-      <section className="brand-hero relative overflow-hidden rounded-3xl px-6 py-10 md:px-10 md:py-12">
+    <main className="flex flex-col gap-10 py-10 md:py-14">
+      <section className="brand-hero relative overflow-hidden px-6 py-10 md:px-10 md:py-12">
         <div className="brand-hero-glow pointer-events-none absolute inset-0" />
-        <div className="relative max-w-3xl">
+        <div className="relative max-w-3xl travel-shell ">
           <Badge variant="solid" size="md" className="mb-4">
             Plan Your Next Trip
           </Badge>
@@ -96,7 +94,7 @@ export default async function ContactPage({
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <section className="travel-shell grid gap-6 lg:grid-cols-[2fr_1fr]">
         <ContactForm
           initialServiceInterested={initialServiceInterested}
           initialMessage={initialMessage}
@@ -105,7 +103,7 @@ export default async function ContactPage({
         <Card
           variant="elevated"
           padding="lg"
-          className="h-fit space-y-5 bg-brand-blue-900 text-brand-mist-200"
+          className="h-fit space-y-5 bg-brand-blue-900 "
         >
           <div>
             <CardTitle className="text-brand-cream-100">
@@ -116,9 +114,9 @@ export default async function ContactPage({
             </CardBody>
           </div>
 
-          <div className="space-y-3 text-sm text-brand-mist-200">
+          <div className="space-y-3 text-sm ">
             <p>
-              <span className="font-semibold text-brand-cream-100">Phone:</span>{" "}
+              <span className="font-semibold ">Phone:</span>{" "}
               <a
                 href={`tel:${CONTACT.phone}`}
                 className="hover:text-brand-lime-400 transition-colors"
@@ -128,7 +126,7 @@ export default async function ContactPage({
             </p>
 
             <p>
-              <span className="font-semibold text-brand-cream-100">Email:</span>{" "}
+              <span className="font-semibold ">Email:</span>{" "}
               <a
                 href={`mailto:${CONTACT.email}`}
                 className="wrap-break-word hover:text-brand-lime-400 transition-colors"
@@ -138,16 +136,11 @@ export default async function ContactPage({
             </p>
 
             <p>
-              <span className="font-semibold text-brand-cream-100">
-                Address:
-              </span>{" "}
-              {CONTACT.address}
+              <span className="font-semibold ">Address:</span> {CONTACT.address}
             </p>
 
             <p>
-              <span className="font-semibold text-brand-cream-100">
-                WhatsApp:
-              </span>{" "}
+              <span className="font-semibold ">WhatsApp:</span>{" "}
               <a
                 href={`https://wa.me/${CONTACT.whatsappNumber}`}
                 target="_blank"

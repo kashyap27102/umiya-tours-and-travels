@@ -387,6 +387,46 @@ const packageSeeds: PackageSeed[] = [
       "Lakeside palaces, cultural evenings, and romantic sunset cruises.",
     highlights: ["City Palace", "Saheliyon Ki Bari", "Lake Pichola Cruise"],
   },
+  {
+    slug: "gujarat-heritage-exploration-4n-5d",
+    name: "Gujarat Heritage Exploration",
+    destination: "Gujarat",
+    category: "Pilgrimage",
+    durationDays: 5,
+    durationNights: 4,
+    pricePerPerson: 12999,
+    popularityScore: 88,
+    image:
+      "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=1400&q=80",
+    summary:
+      "Discover Gujarat's iconic Rann of Kutch, the Somnath temple, and vibrant cultural heritage.",
+    highlights: [
+      "Rann of Kutch",
+      "Somnath Temple",
+      "Gir National Park",
+      "Dwarka Dham",
+    ],
+  },
+  {
+    slug: "maldives-overwater-retreat-5n-6d",
+    name: "Maldives Overwater Retreat",
+    destination: "Maldives",
+    category: "International",
+    durationDays: 6,
+    durationNights: 5,
+    pricePerPerson: 74999,
+    popularityScore: 96,
+    image:
+      "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1400&q=80",
+    summary:
+      "Crystal-clear lagoons, overwater bungalows, and world-class snorkelling in paradise.",
+    highlights: [
+      "Overwater Villa",
+      "Snorkelling & Diving",
+      "Sunset Dolphin Cruise",
+      "Spa on Water",
+    ],
+  },
 ];
 
 export const travelPackages: TravelPackage[] = packageSeeds.map((item) => {

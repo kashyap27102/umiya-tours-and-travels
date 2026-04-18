@@ -1,10 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createMetadata } from "@/lib/metadata";
 import HeroBanner from "@/components/HeroBanner";
-import ServiceCard from "@/components/ServiceCard";
 import TestimonialCard from "@/components/TestimonialCard";
 import WhyChooseUs from "@/components/WhyChooseUs";
+import TrendingPackages from "@/components/TrendingPackages";
 import { Button } from "@/components/ui";
+import { travelPackages } from "@/lib/packages-data";
 
 export const metadata = createMetadata({
   title: "Umiya Tours & Travels | Your Journey, Our Passion",
@@ -22,52 +24,71 @@ export const metadata = createMetadata({
 
 const SERVICES = [
   {
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-      </svg>
-    ),
     title: "Custom Packages",
-    description:
-      "Fully tailored itineraries for families, couples, and groups. We plan every detail so you just show up and enjoy.",
+    image:
+      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80",
     ctaLabel: "Plan My Trip",
     ctaHref: "/services#custom-packages",
   },
   {
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
-      </svg>
-    ),
     title: "Cab Booking",
-    description:
-      "One-way, round trip, and airport or railway transfers. Book a Sedan, SUV, or Innova Crysta in minutes.",
+    image:
+      "https://images.unsplash.com/photo-1485291571150-772bcfc10da5?auto=format&fit=crop&w=1200&q=80",
     ctaLabel: "Book a Cab",
     ctaHref: "/cab-booking",
   },
   {
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z" />
-      </svg>
-    ),
     title: "Group Vehicles",
-    description:
-      "Tempo Traveller, Mini Bus, or full Bus for corporate tours, pilgrimages, weddings, and large groups.",
+    image:
+      "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80",
     ctaLabel: "Hire a Vehicle",
     ctaHref: "/vehicle-booking",
   },
   {
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
-      </svg>
-    ),
     title: "Pre-Designed Tours",
-    description:
-      "Ready-to-book packages across beaches, hill stations, heritage sites, pilgrimages, and international destinations.",
+    image:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
     ctaLabel: "View Packages",
     ctaHref: "/packages",
+  },
+];
+
+const DOMESTIC_SLUGS = [
+  "kashmir-paradise-5n-6d",
+  "shimla-kufri-leisure-3n-4d",
+  "gujarat-heritage-exploration-4n-5d",
+];
+
+const INTERNATIONAL_SLUGS = [
+  "dubai-city-luxury-4n-5d",
+  "maldives-overwater-retreat-5n-6d",
+  "bali-romantic-hideaway-5n-6d",
+];
+
+const DESTINATION_MOMENTS = [
+  {
+    src: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1200&q=80",
+    alt: "Friends enjoying a road trip",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=1200&q=80",
+    alt: "Beautiful mountain sunrise",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80",
+    alt: "Adventure at a scenic cliff viewpoint",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1200&q=80",
+    alt: "Airplane wing view over landscape",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80",
+    alt: "Travel landscape with forest and mountains",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+    alt: "Clear tropical sea and beach",
   },
 ];
 
@@ -96,31 +117,65 @@ const TESTIMONIALS = [
 ];
 
 export default function Home() {
-  return (
-    <main className="flex flex-col gap-16 py-8 md:py-12">
-      {/* Hero */}
-      <div className="travel-shell">
-        <HeroBanner
-          heading="Discover Journeys That Feel Personal, Smooth & Memorable"
-          subheading="From curated holidays to dependable cabs and group vehicles — we help you and your family travel with comfort and confidence."
-          primaryCta={{ label: "Explore Packages", href: "/packages" }}
-          secondaryCta={{ label: "Book Now", href: "/cab-booking" }}
-        />
-      </div>
+  const domesticPackages = DOMESTIC_SLUGS.map(
+    (slug) => travelPackages.find((p) => p.slug === slug)!,
+  ).filter(Boolean);
+  const internationalPackages = INTERNATIONAL_SLUGS.map(
+    (slug) => travelPackages.find((p) => p.slug === slug)!,
+  ).filter(Boolean);
 
-      {/* Services */}
+  return (
+    <main className="flex flex-col gap-16 ">
+      {/* Hero */}
+      <HeroBanner
+        heading="See Your Next Journey Before You Even Pack"
+        subheading="Image-rich destinations, smooth transport, and curated plans built for unforgettable travel days."
+        primaryCta={{ label: "Explore Packages", href: "/packages" }}
+        imageSrc="https://images.unsplash.com/photo-1502920917128-1aa500764ce7?auto=format&fit=crop&w=1800&q=80"
+        imageAlt="Scenic tropical destination with turquoise water"
+      />
+
+      {/* Trending packages */}
+      <TrendingPackages
+        domestic={domesticPackages}
+        international={internationalPackages}
+      />
+
+      {/* Visual service cards */}
       <section className="travel-shell">
-        <div className="mb-8 max-w-lg">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-blue-700 mb-2">
-            What We Offer
+        <div className="mb-8 max-w-xl">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-brand-blue-700">
+            Services
           </p>
           <h2 className="text-3xl font-bold text-brand-ink-900 md:text-4xl">
-            All Your Travel Needs, One Roof
+            Pick Your Travel Style
           </h2>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {SERVICES.map((s) => (
-            <ServiceCard key={s.title} {...s} />
+          {SERVICES.map((service) => (
+            <Link
+              key={service.title}
+              href={service.ctaHref}
+              className="group relative overflow-hidden rounded-3xl border border-brand-blue-900/10 bg-white shadow-[0_12px_32px_rgb(var(--brand-blue-rgb)/0.12)] motion-fade-up"
+            >
+              <Image
+                src={service.image}
+                alt={service.title}
+                width={1000}
+                height={900}
+                className="h-64 w-full object-cover transition duration-500 group-hover:scale-105"
+                sizes="(max-width: 1024px) 50vw, 25vw"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-brand-blue-900/75 via-brand-blue-900/20 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-4">
+                <h3 className="text-xl font-semibold text-brand-cream-100">
+                  {service.title}
+                </h3>
+                <p className="mt-1 text-sm text-brand-mist-200">
+                  {service.ctaLabel}
+                </p>
+              </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -133,11 +188,11 @@ export default function Home() {
       {/* Testimonials */}
       <section className="travel-shell">
         <div className="mb-8 max-w-lg">
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-blue-700 mb-2">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-brand-blue-700">
             Traveller Stories
           </p>
           <h2 className="text-3xl font-bold text-brand-ink-900 md:text-4xl">
-            Loved by Families Across Gujarat
+            Happy Faces, Real Journeys
           </h2>
         </div>
         <div className="grid gap-5 sm:grid-cols-3">
@@ -149,13 +204,21 @@ export default function Home() {
 
       {/* CTA banner */}
       <section className="travel-shell">
-        <div className="brand-hero rounded-3xl px-8 py-14 text-center md:px-16">
+        <div className="brand-hero relative overflow-hidden rounded-3xl px-8 py-14 text-center md:px-16">
+          <Image
+            src="https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1800&q=80"
+            alt="Travel collage background"
+            fill
+            sizes="(max-width: 768px) 100vw, 1200px"
+            className="object-cover opacity-20"
+          />
           <div className="brand-hero-glow pointer-events-none absolute inset-0" />
           <h2 className="relative text-3xl font-bold text-brand-cream-100 md:text-4xl">
-            Ready to Plan Your Next Adventure?
+            Ready to Turn These Visuals Into Your Real Trip?
           </h2>
           <p className="relative mt-3 text-brand-mist-200 text-base md:text-lg">
-            Talk to our travel experts — no booking fees, no fuss.
+            Share your dream destination. We will craft the route, stay, and
+            transport.
           </p>
           <div className="relative mt-8 flex flex-wrap justify-center gap-4">
             <Button asChild variant="primary" size="lg">

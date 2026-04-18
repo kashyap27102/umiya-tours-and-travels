@@ -35,7 +35,7 @@ export default function BrandLogo({
       priority={priority}
       aria-hidden={decorative}
       className={cn(
-        "h-auto w-auto object-contain",
+        "object-contain",
         isWhite && "drop-shadow-[0_0_8px_rgb(255_255_255/0.32)]",
         className,
       )}

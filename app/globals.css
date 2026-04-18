@@ -7,7 +7,7 @@
   --brand-green-700: #2f7f3b;
   --brand-green-500: #4ea64f;
   --brand-lime-400: #9fc44a;
-  --brand-cream-100: #f4f7ea;
+  --brand-cream-100: #fdfef8;
   --brand-mist-200: #e7efda;
   --brand-ink-900: #1a2640;
   --brand-muted-600: #556686;
@@ -47,23 +47,29 @@ body {
   color: var(--foreground);
   font-family: var(--font-body), "DM Sans", sans-serif;
   line-height: 1.6;
-  background-image:
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20% -10% auto -10%;
+  height: 70vh;
+  z-index: -1;
+  pointer-events: none;
+  background:
     radial-gradient(
-      circle at 12% 20%,
-      rgb(var(--brand-blue-rgb) / 12%) 0%,
-      transparent 28%
+      circle at 20% 30%,
+      rgb(var(--brand-blue-rgb) / 20%) 0%,
+      transparent 42%
     ),
     radial-gradient(
-      circle at 92% 78%,
+      circle at 78% 20%,
       rgb(var(--brand-lime-rgb) / 18%) 0%,
-      transparent 32%
-    ),
-    linear-gradient(
-      180deg,
-      var(--brand-cream-100) 0%,
-      var(--brand-mist-200) 52%,
-      var(--brand-cream-100) 100%
+      transparent 40%
     );
+  filter: blur(28px);
+  animation: drift-aurora 18s ease-in-out infinite alternate;
 }
 
 h1,
@@ -105,6 +111,67 @@ a {
     rgb(var(--brand-lime-rgb) / 30%) 0%,
     transparent 52%
   );
+}
+
+.motion-float-slow {
+  animation: float-slow 7s ease-in-out infinite;
+}
+
+.motion-float-medium {
+  animation: float-medium 5.4s ease-in-out infinite;
+}
+
+.motion-fade-up {
+  animation: fade-up 700ms ease-out both;
+}
+
+@keyframes drift-aurora {
+  0% {
+    transform: translate3d(-2%, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(2%, -2%, 0) scale(1.05);
+  }
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes float-medium {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  .motion-float-slow,
+  .motion-float-medium,
+  .motion-fade-up {
+    animation: none !important;
+  }
 }
 
 .card-brand {
