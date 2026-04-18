@@ -1,10 +1,8 @@
-import Link from "next/link";
-import { createMetadata } from "@/lib/metadata";
-import Breadcrumb from "@/components/Breadcrumb";
-import { Card, CardTitle, CardBody } from "@/components/ui";
-import { Badge } from "@/components/ui";
-import { Button } from "@/components/ui";
 import BrandLogo from "@/components/BrandLogo";
+import { Badge, Button, Card, CardBody, CardTitle } from "@/components/ui";
+import { createMetadata } from "@/lib/metadata";
+import Image from "next/image";
+import Link from "next/link";
 
 export const metadata = createMetadata({
   title: "Our Services | Umiya Tours & Travels",
@@ -86,144 +84,226 @@ const PACKAGE_CATEGORIES = [
   },
 ];
 
+const TRUST_POINTS = [
+  "Tailored planning for every budget",
+  "Reliable local and outstation transport",
+  "Support for families, groups, and corporates",
+];
+
+type ServiceShowcaseProps = {
+  id: string;
+  indexLabel: string;
+  title: string;
+  description: string;
+  imageSrc: string;
+  imageAlt: string;
+  ctaHref: string;
+  ctaLabel: string;
+  reverse?: boolean;
+  children: React.ReactNode;
+};
+
+function ServiceShowcase({
+  id,
+  title,
+  description,
+  imageSrc,
+  imageAlt,
+  ctaHref,
+  ctaLabel,
+  reverse = false,
+  children,
+}: ServiceShowcaseProps) {
+  return (
+    <section id={id} className="scroll-mt-20">
+      <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
+        <div className={reverse ? "lg:order-2" : undefined}>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-brand-ink-900 md:text-3xl">
+              {title}
+            </h2>
+            <p className="mt-3 max-w-xl text-brand-muted-600 md:text-base">
+              {description}
+            </p>
+          </div>
+
+          <div className="space-y-4">{children}</div>
+
+          <div className="mt-6">
+            <Button asChild variant="solid" size="md">
+              <Link href={ctaHref}>{ctaLabel}</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className={reverse ? "lg:order-1" : undefined}>
+          <div className="relative overflow-hidden rounded-[2rem] border border-brand-blue-900/10 bg-white shadow-[0_16px_40px_rgb(var(--brand-blue-rgb)/0.14)]">
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-blue-900/35 via-transparent to-transparent" />
+            <Image
+              src={imageSrc}
+              alt={imageAlt}
+              width={1200}
+              height={900}
+              className="h-[320px] w-full object-cover md:h-[420px]"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+            <div className="absolute bottom-0 left-0 right-0 flex flex-wrap gap-2 p-4 md:p-6">
+              <Badge variant="solid" size="sm">
+                Trusted Planning
+              </Badge>
+              <Badge variant="solid" size="sm">
+                Comfortable Travel
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function ServicesPage() {
   return (
     <main className="travel-shell flex flex-col gap-16 py-10 md:py-14">
-      <Breadcrumb crumbs={[{ label: "Services" }]} />
+      {/* <section className="brand-hero relative overflow-hidden rounded-[2rem] px-6 py-8 md:px-10 md:py-12">
+        <div className="brand-hero-glow pointer-events-none absolute inset-0" />
 
-      {/* Hero intro */}
-      <section className="max-w-2xl">
-        <Badge variant="brand" className="mb-4" size="md">
-          What We Do
-        </Badge>
-        <h1 className="text-4xl font-bold text-brand-ink-900 md:text-5xl">
-          Complete Travel Solutions Under One Roof
-        </h1>
-        <p className="mt-5 text-brand-muted-600 leading-relaxed text-base md:text-lg">
-          From booking a quick cab to planning a full international holiday,
-          Umiya Tours & Travels is your all-in-one travel partner in Gujarat.
-        </p>
-      </section>
+        <div className="relative grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="max-w-2xl">
+            <Badge variant="solid" className="mb-4" size="lg">
+              What We Do
+            </Badge>
+            <h1 className="text-4xl font-bold text-brand-cream-100 md:text-5xl lg:text-6xl">
+              Complete Travel Solutions with Beautiful Journeys Built In
+            </h1>
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-brand-mist-200 md:text-lg">
+              From a quick airport ride to a custom honeymoon itinerary, Umiya
+              Tours & Travels brings planning, transport, comfort, and local
+              expertise together in one polished experience.
+            </p>
 
-      {/* 1. Custom Packages */}
-      <section id="custom-packages" className="scroll-mt-20">
-        <div className="mb-6">
-          <Badge variant="accent" className="mb-3">
-            Service 01
-          </Badge>
-          <h2 className="text-2xl font-bold text-brand-ink-900 md:text-3xl">
-            Customized Travel Packages
-          </h2>
-          <p className="mt-2 text-brand-muted-600 max-w-xl">
-            We design personalised itineraries around your interests, budget,
-            and timeline. Hotel, transport, sightseeing — all bundled.
-          </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              {TRUST_POINTS.map((point) => (
+                <Badge key={point} variant="solid" size="sm">
+                  {point}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="relative overflow-hidden rounded-[1.5rem] border border-white/12 bg-white/8 backdrop-blur">
+              <Image
+                src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
+                alt="Scenic beach destination"
+                width={1200}
+                height={900}
+                className="h-48 w-full object-cover md:h-56"
+                priority
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+              <div className="relative overflow-hidden rounded-[1.25rem] border border-white/12 bg-white/8 backdrop-blur">
+                <Image
+                  src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=900&q=80"
+                  alt="Comfortable cab ride"
+                  width={900}
+                  height={900}
+                  className="h-36 w-full object-cover"
+                />
+              </div>
+              <div className="relative overflow-hidden rounded-[1.25rem] border border-white/12 bg-white/8 backdrop-blur">
+                <Image
+                  src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=900&q=80"
+                  alt="Road trip landscape"
+                  width={900}
+                  height={900}
+                  className="h-36 w-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
         </div>
+      </section> */}
+
+      <ServiceShowcase
+        id="custom-packages"
+        indexLabel="Service 01"
+        title="Customized Travel Packages"
+        description="We design personalised itineraries around your interests, budget, and timeline. Hotels, transport, sightseeing, and day plans come together in one well-paced trip."
+        imageSrc="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80"
+        imageAlt="Mountain travel destination with scenic landscape"
+        ctaHref="/contact?service=custom-packages"
+        ctaLabel="Plan My Trip"
+      >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PACKAGE_CATEGORIES.map((cat) => (
             <Card
               key={cat.label}
               variant="default"
               padding="md"
-              className="flex items-start gap-4"
+              className="flex flex-col items-start gap-4"
             >
               <span className="text-3xl" role="img" aria-label={cat.label}>
                 {cat.emoji}
               </span>
               <div>
                 <CardTitle className="text-base">{cat.label}</CardTitle>
-                <CardBody className="text-xs mt-1">{cat.examples}</CardBody>
+                <CardBody className="mt-1 text-xs">{cat.examples}</CardBody>
               </div>
             </Card>
           ))}
         </div>
-        <div className="mt-6">
-          <Button asChild variant="solid" size="md">
-            <Link href="/contact?service=custom-packages">Plan My Trip</Link>
-          </Button>
-        </div>
-      </section>
+      </ServiceShowcase>
 
-      {/* 2. Cab Booking */}
-      <section id="cab-booking" className="scroll-mt-20">
-        <div className="mb-6">
-          <Badge variant="accent" className="mb-3">
-            Service 02
-          </Badge>
-          <h2 className="text-2xl font-bold text-brand-ink-900 md:text-3xl">
-            Cab Booking
-          </h2>
-          <p className="mt-2 text-brand-muted-600 max-w-xl">
-            Reliable, on-time rides across Gujarat. Choose from Sedan, SUV,
-            Innova Crysta, or Luxury vehicles.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <ServiceShowcase
+        id="cab-booking"
+        indexLabel="Service 02"
+        title="Cab Booking"
+        description="Reliable, on-time rides across Gujarat for airport transfers, railway pickups, local travel, and outstation plans. Choose the vehicle that matches your comfort and group size."
+        imageSrc="https://images.unsplash.com/photo-1485291571150-772bcfc10da5?auto=format&fit=crop&w=1200&q=80"
+        imageAlt="Premium travel car driving on scenic road"
+        ctaHref="/cab-booking"
+        ctaLabel="Book a Cab"
+        reverse
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
           {CAB_TYPES.map((t) => (
             <Card key={t.label} variant="tinted" padding="md">
-              <CardTitle className="text-base mb-1">{t.label}</CardTitle>
+              <CardTitle className="mb-1 text-base">{t.label}</CardTitle>
               <CardBody className="text-xs">{t.desc}</CardBody>
             </Card>
           ))}
         </div>
-        <div className="mt-6">
-          <Button asChild variant="primary" size="md">
-            <Link href="/cab-booking">Book a Cab</Link>
-          </Button>
-        </div>
-      </section>
+      </ServiceShowcase>
 
-      {/* 3. Group Vehicles */}
-      <section id="vehicle-booking" className="scroll-mt-20">
-        <div className="mb-6">
-          <Badge variant="accent" className="mb-3">
-            Service 03
-          </Badge>
-          <h2 className="text-2xl font-bold text-brand-ink-900 md:text-3xl">
-            Travel Vehicle Booking (Group Transport)
-          </h2>
-          <p className="mt-2 text-brand-muted-600 max-w-xl">
-            Perfect for large groups heading to tours, weddings, pilgrimage
-            yatras, or corporate events.
-          </p>
+      <ServiceShowcase
+        id="vehicle-booking"
+        indexLabel="Service 03"
+        title="Travel Vehicle Booking (Group Transport)"
+        description="Perfect for school trips, weddings, tours, yatras, and corporate outings. We help you choose the right vehicle capacity and route setup for a smooth group journey."
+        imageSrc="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80"
+        imageAlt="Large travel bus on highway"
+        ctaHref="/vehicle-booking"
+        ctaLabel="Hire a Vehicle"
+      >
+        <div className="grid gap-4 md:grid-cols-3">
+          {VEHICLES.map((v) => (
+            <Card
+              key={v.type}
+              variant="elevated"
+              padding="md"
+              className="flex h-full flex-col"
+            >
+              <Badge variant="brand" size="sm" className="mb-4 w-fit">
+                {v.capacity}
+              </Badge>
+              <CardTitle className="mb-2 text-lg">{v.type}</CardTitle>
+              <CardBody className="flex-1">{v.best}</CardBody>
+            </Card>
+          ))}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="bg-brand-blue-700 text-brand-cream-100">
-                <th className="text-left px-5 py-3 rounded-tl-xl font-semibold">
-                  Vehicle
-                </th>
-                <th className="text-left px-5 py-3 font-semibold">Capacity</th>
-                <th className="text-left px-5 py-3 rounded-tr-xl font-semibold">
-                  Best For
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {VEHICLES.map((v, i) => (
-                <tr
-                  key={v.type}
-                  className={i % 2 === 0 ? "bg-white" : "bg-brand-mist-200"}
-                >
-                  <td className="px-5 py-3 font-medium text-brand-ink-900">
-                    {v.type}
-                  </td>
-                  <td className="px-5 py-3 text-brand-muted-600">
-                    {v.capacity}
-                  </td>
-                  <td className="px-5 py-3 text-brand-muted-600">{v.best}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="mt-6">
-          <Button asChild variant="solid" size="md">
-            <Link href="/vehicle-booking">Hire a Vehicle</Link>
-          </Button>
-        </div>
-      </section>
+      </ServiceShowcase>
 
       {/* CTA */}
       <section className="brand-hero relative overflow-hidden rounded-3xl px-8 py-14 text-center">
