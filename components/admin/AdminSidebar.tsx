@@ -11,11 +11,11 @@ const ADMIN_NAV_ITEMS = [
     label: "Dashboard",
     description: "Overview and quick actions",
   },
-  {
-    href: "/admin/all-packages",
-    label: "All Packages",
-    description: "View all published packages",
-  },
+  //   {
+  //     href: "/admin/all-packages",
+  //     label: "All Packages",
+  //     description: "View all published packages",
+  //   },
   {
     href: "/admin/create-client-package",
     label: "Create Client Package",
