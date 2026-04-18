@@ -54,10 +54,7 @@ export default function RootLayout({
       className={`${displayFont.variable} ${bodyFont.variable} h-full`}
     >
       <body className="min-h-full flex flex-col antialiased">
-        <Navbar />
-        <div className="flex flex-1 flex-col">{children}</div>
-        <Footer />
-        <FloatingWhatsApp />
+        {children}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
