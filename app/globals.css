@@ -1,26 +1,139 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand-blue-900: #0f2f63;
+  --brand-blue-700: #1f4f93;
+  --brand-blue-500: #2f6db5;
+  --brand-green-700: #2f7f3b;
+  --brand-green-500: #4ea64f;
+  --brand-lime-400: #9fc44a;
+  --brand-cream-100: #f4f7ea;
+  --brand-mist-200: #e7efda;
+  --brand-ink-900: #1a2640;
+  --brand-muted-600: #556686;
+  --brand-blue-rgb: 31 79 147;
+  --brand-lime-rgb: 159 196 74;
+  --background: var(--brand-cream-100);
+  --foreground: var(--brand-ink-900);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand-blue-900: var(--brand-blue-900);
+  --color-brand-blue-700: var(--brand-blue-700);
+  --color-brand-blue-500: var(--brand-blue-500);
+  --color-brand-green-700: var(--brand-green-700);
+  --color-brand-green-500: var(--brand-green-500);
+  --color-brand-lime-400: var(--brand-lime-400);
+  --color-brand-cream-100: var(--brand-cream-100);
+  --color-brand-mist-200: var(--brand-mist-200);
+  --color-brand-ink-900: var(--brand-ink-900);
+  --color-brand-muted-600: var(--brand-muted-600);
+  --color-surface-base: var(--background);
+  --color-surface-card: #ffffff;
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
+  margin: 0;
+  min-height: 100%;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), "DM Sans", sans-serif;
+  line-height: 1.6;
+  background-image:
+    radial-gradient(
+      circle at 12% 20%,
+      rgb(var(--brand-blue-rgb) / 12%) 0%,
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 92% 78%,
+      rgb(var(--brand-lime-rgb) / 18%) 0%,
+      transparent 32%
+    ),
+    linear-gradient(
+      180deg,
+      var(--brand-cream-100) 0%,
+      var(--brand-mist-200) 52%,
+      var(--brand-cream-100) 100%
+    );
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display), "Playfair Display", serif;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: rgb(232 132 74 / 30%);
+}
+
+.travel-shell {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.brand-hero {
+  background: linear-gradient(
+    135deg,
+    var(--brand-blue-900) 0%,
+    var(--brand-blue-700) 56%,
+    var(--brand-green-700) 100%
+  );
+  color: var(--brand-cream-100);
+}
+
+.brand-hero-glow {
+  background: radial-gradient(
+    circle at 40% 50%,
+    rgb(var(--brand-lime-rgb) / 30%) 0%,
+    transparent 52%
+  );
+}
+
+.card-brand {
+  border: 1px solid rgb(var(--brand-blue-rgb) / 16%);
+  background: rgb(255 255 255 / 76%);
+  box-shadow: 0 10px 24px rgb(var(--brand-blue-rgb) / 10%);
+}
+
+.btn-brand-primary {
+  background: var(--brand-lime-400);
+  color: var(--brand-blue-900);
+}
+
+.btn-brand-primary:hover {
+  background: var(--brand-green-500);
+  color: var(--brand-cream-100);
+}
+
+.btn-brand-secondary {
+  border: 1px solid rgb(255 255 255 / 38%);
+  color: var(--brand-cream-100);
+}
+
+.btn-brand-secondary:hover {
+  background: rgb(255 255 255 / 12%);
+}
+
+@media (min-width: 768px) {
+  .travel-shell {
+    padding-inline: 2rem;
+  }
 }
