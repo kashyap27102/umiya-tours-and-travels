@@ -8,6 +8,7 @@ import {
   Input,
   Textarea,
 } from "@/components/ui";
+import { exportCustomPackagePdf } from "@/lib/pdf/custom-package-pdf";
 import type {
   CustomPackageValues,
   ItineraryDay,
@@ -194,6 +195,19 @@ export default function CustomPackageForm({
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit" variant="primary" size="lg">
             Create Package
+          </Button>
+          <Button
+            type="button"
+            variant="solid"
+            size="lg"
+            onClick={async () => {
+              await exportCustomPackagePdf({
+                ...values,
+                createdAt: new Date().toLocaleString(),
+              });
+            }}
+          >
+            Export PDF
           </Button>
           <Button
             type="button"

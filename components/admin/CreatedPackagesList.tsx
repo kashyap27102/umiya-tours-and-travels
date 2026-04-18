@@ -1,3 +1,5 @@
+"use client";
+
 import { Card } from "@/components/ui";
 import type { CreatedPackage } from "@/hooks/useCustomPackageForm";
 
