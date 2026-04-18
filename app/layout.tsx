@@ -8,10 +8,10 @@ import {
   toJsonLd,
 } from "@/lib/metadata";
 import type { Metadata } from "next";
-import { Playfair_Display, Poppins } from "next/font/google";
+import { Google_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 
-const displayFont = Playfair_Display({
+const displayFont = Google_Sans({
   variable: "--font-display",
   subsets: ["latin"],
   weight: ["600", "700"],

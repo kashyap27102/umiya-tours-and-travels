@@ -14,7 +14,6 @@ import { appConfig } from "@/lib/config";
 import {
   GROUP_VEHICLE_TYPES,
   TRAVEL_PURPOSES,
-  type GROUP_VEHICLE_TYPES as GroupVehicleType,
   type TRAVEL_PURPOSES as TravelPurpose,
 } from "@/lib/form-constants";
 import { useFormSubmit } from "@/hooks/useFormSubmit";
@@ -32,13 +31,13 @@ const vehicleDescriptions: Partial<
 };
 
 type VehicleBookingFormValues = {
-  vehicleType: GroupVehicleType[number];
+  vehicleType: (typeof GROUP_VEHICLE_TYPES)[number];
   departureLocation: string;
   destinationRoute: string;
   travelStartDate: string;
   travelEndDate: string;
   passengers: number;
-  purpose: TravelPurpose[number];
+  purpose: (typeof TravelPurpose)[number];
   contactName: string;
   contactPhone: string;
   contactEmail: string;

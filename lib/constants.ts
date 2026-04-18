@@ -3,7 +3,7 @@ export const SITE_NAME = "Umiya Tours & Travels";
 export const DEFAULT_OG_IMAGE = "/og/travel-agency-cover.jpg";
 
 export const BRAND_LOGO = {
-  color: "/logo.png",
+  color: "/colored-logo.svg",
   white: "/white-logo.svg",
 } as const;
 
