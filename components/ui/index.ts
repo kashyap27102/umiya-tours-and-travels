@@ -6,4 +6,6 @@ export { Input, Textarea } from "./Input";
 export type { InputProps, TextareaProps } from "./Input";
 export { Badge, badgeVariants } from "./Badge";
 export type { BadgeProps } from "./Badge";
+export { default as ImageCarousel } from "./ImageCarousel";
+export type { CarouselItem } from "./ImageCarousel";
 export { cn } from "./cn";

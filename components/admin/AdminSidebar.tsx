@@ -68,7 +68,7 @@ export default function AdminSidebar() {
                       : "bg-brand-cream-100/45 group-hover:bg-brand-cream-100/70",
                   )}
                 />
-                <p className="text-sm font-semibold">{item.label}</p>
+                <h3 className="text-sm font-semibold">{item.label}</h3>
               </div>
               <p
                 className={cn(
