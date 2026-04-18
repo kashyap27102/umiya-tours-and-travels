@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/constants";
+import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/constants";
+import { appConfig } from "@/lib/config";
+
+const SITE_URL = appConfig.siteUrl;
 
 type MetadataInput = {
   title: string;

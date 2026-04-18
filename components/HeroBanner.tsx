@@ -39,7 +39,7 @@ export default function HeroBanner({
 
       {/* Glow accents */}
       <div className="brand-hero-glow absolute inset-y-0 right-0 w-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="absolute bottom-0 left-0 h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
       <div className="relative z-10 travel-shell py-16 md:py-24 lg:py-32">
         <div className="max-w-2xl">

@@ -1,5 +1,8 @@
 import type { MetadataRoute } from "next";
-import { CORE_ROUTES, PACKAGE_SLUGS, SITE_URL } from "@/lib/constants";
+import { CORE_ROUTES, PACKAGE_SLUGS } from "@/lib/constants";
+import { appConfig } from "@/lib/config";
+
+const SITE_URL = appConfig.siteUrl;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

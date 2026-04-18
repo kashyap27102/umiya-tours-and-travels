@@ -1,14 +1,10 @@
 export const SITE_NAME = "Umiya Tours & Travels";
 
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://umiyatoursandtravels.com";
-
 export const DEFAULT_OG_IMAGE = "/og/travel-agency-cover.jpg";
 
 export const BRAND_LOGO = {
-  color: "/public/logo.png",
-  white: "/public/white-logo.svg",
+  color: "/logo.png",
+  white: "/white-logo.svg",
 } as const;
 
 export const CONTACT = {

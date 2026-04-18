@@ -84,12 +84,6 @@ const PACKAGE_CATEGORIES = [
   },
 ];
 
-const TRUST_POINTS = [
-  "Tailored planning for every budget",
-  "Reliable local and outstation transport",
-  "Support for families, groups, and corporates",
-];
-
 type ServiceShowcaseProps = {
   id: string;
   indexLabel: string;
@@ -137,14 +131,14 @@ function ServiceShowcase({
         </div>
 
         <div className={reverse ? "lg:order-1" : undefined}>
-          <div className="relative overflow-hidden rounded-[2rem] border border-brand-blue-900/10 bg-white shadow-[0_16px_40px_rgb(var(--brand-blue-rgb)/0.14)]">
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-blue-900/35 via-transparent to-transparent" />
+          <div className="relative overflow-hidden rounded-4xl border border-brand-blue-900/10 bg-white shadow-[0_16px_40px_rgb(var(--brand-blue-rgb)/0.14)]">
+            <div className="absolute inset-0 bg-linear-to-t from-brand-blue-900/35 via-transparent to-transparent" />
             <Image
               src={imageSrc}
               alt={imageAlt}
               width={1200}
               height={900}
-              className="h-[320px] w-full object-cover md:h-[420px]"
+              className="h-80 w-full object-cover md:h-105"
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
             <div className="absolute bottom-0 left-0 right-0 flex flex-wrap gap-2 p-4 md:p-6">
