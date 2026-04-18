@@ -6,6 +6,11 @@ export const SITE_URL =
 
 export const DEFAULT_OG_IMAGE = "/og/travel-agency-cover.jpg";
 
+export const BRAND_LOGO = {
+  color: "/public/logo.png",
+  white: "/public/white-logo.svg",
+} as const;
+
 export const CONTACT = {
   phone: "+91 99741 48390",
   whatsappNumber: "919974148390",

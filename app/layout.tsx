@@ -6,6 +6,9 @@ import {
   organizationJsonLd,
   toJsonLd,
 } from "@/lib/metadata";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import "./globals.css";
 
 const displayFont = Playfair_Display({
@@ -51,7 +54,10 @@ export default function RootLayout({
       className={`${displayFont.variable} ${bodyFont.variable} h-full`}
     >
       <body className="min-h-full flex flex-col antialiased">
-        {children}
+        <Navbar />
+        <div className="flex flex-1 flex-col">{children}</div>
+        <Footer />
+        <FloatingWhatsApp />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
