@@ -9,7 +9,7 @@ export const BRAND_LOGO = {
 
 export const CONTACT = {
   phone: "+91 76006 17936",
-  whatsappNumber: "+91 7600617936",
+  whatsappNumber: "7600617936",
   email: "umiyatoursandtravels1999@gmail.com",
   address: "204, Keshav Aaradhyam, Kudasan, Gandhinagar, Gujarat 382419",
 };

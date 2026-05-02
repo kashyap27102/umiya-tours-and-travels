@@ -4,7 +4,7 @@ import { CONTACT } from "@/lib/constants";
 
 export default function FloatingWhatsApp() {
   const message = encodeURIComponent(
-    "Hi, I'd like to inquire about your travel services.",
+    "Hi, I'd like to inquire about your travel services. Could you please provide more information?",
   );
   const url = `https://wa.me/${CONTACT.whatsappNumber}?text=${message}`;
 

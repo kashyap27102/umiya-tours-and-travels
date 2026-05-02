@@ -11,15 +11,20 @@ const ADMIN_NAV_ITEMS = [
     label: "Dashboard",
     description: "Overview and quick actions",
   },
-  //   {
-  //     href: "/admin/all-packages",
-  //     label: "All Packages",
-  //     description: "View all published packages",
-  //   },
+  {
+    href: "/admin/package-management",
+    label: "Package Management",
+    description: "View all published packages",
+  },
   {
     href: "/admin/create-client-package",
     label: "Create Client Package",
     description: "Build a custom package form",
+  },
+  {
+    href: "/admin/settings",
+    label: "Settings",
+    description: "Manage admin settings",
   },
 ] as const;
 

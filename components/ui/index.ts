@@ -9,3 +9,4 @@ export type { BadgeProps } from "./Badge";
 export { default as ImageCarousel } from "./ImageCarousel";
 export type { CarouselItem } from "./ImageCarousel";
 export { cn } from "./cn";
+export { default as Modal } from "./Modal";
