@@ -30,7 +30,7 @@ export type TravelPackage = {
 
 type PackageSeed = Omit<
   TravelPackage,
-  "inclusions" | "exclusions" | "itinerary" | "durationLabel"
+  "inclusions" | "exclusions" | "itinerary" | "durationLabel" | "status"
 > & {
   durationNights: number;
 };
