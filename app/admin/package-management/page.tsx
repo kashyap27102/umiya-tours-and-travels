@@ -18,9 +18,9 @@ export default function AdminPackageManagementPage() {
               Browse, search, and filter all published travel packages.
             </p>
           </div>
-          <Link href="/admin/create-client-package">
+          <Link href="/admin/package-management/create">
             <Button variant="primary" size="md">
-              + Create Package
+              Create Package
             </Button>
           </Link>
         </div>

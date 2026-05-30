@@ -2,13 +2,15 @@
 
 import { useMemo, useState } from "react";
 import PackageCard from "@/components/PackageCard";
-import { Badge } from "@/components/ui";
+import { Badge, cn } from "@/components/ui";
 import {
   PACKAGE_CATEGORIES,
   PACKAGE_DURATION_BUCKETS,
   PACKAGE_SORT_OPTIONS,
+  PACKAGE_STATUS_OPTIONS,
   type PackageDurationBucket,
   type PackageSortOption,
+  type PackageStatus,
 } from "@/lib/packages-constants";
 import type { TravelPackage } from "@/lib/packages-data";
 
@@ -60,6 +62,9 @@ export default function PackagesCatalog({
     "all" | PackageDurationBucket
   >("all");
   const [sortBy, setSortBy] = useState<PackageSortOption>("popular");
+  const [selectedStatus, setSelectedStatus] = useState<"all" | PackageStatus>(
+    "all",
+  );
 
   const filteredPackages = useMemo(() => {
     const searchTerm = query.trim().toLowerCase();
@@ -74,8 +79,12 @@ export default function PackagesCatalog({
       const matchesCategory =
         selectedCategory === "all" || item.category === selectedCategory;
       const durationOk = matchesDuration(item.durationDays, selectedDuration);
+      const statusOk =
+        !compactCards ||
+        selectedStatus === "all" ||
+        item.status === selectedStatus;
 
-      return matchesSearch && matchesCategory && durationOk;
+      return matchesSearch && matchesCategory && durationOk && statusOk;
     });
 
     const sorted = [...filtered];
@@ -96,13 +105,26 @@ export default function PackagesCatalog({
     });
 
     return sorted;
-  }, [packages, query, selectedCategory, selectedDuration, sortBy]);
+  }, [
+    packages,
+    query,
+    selectedCategory,
+    selectedDuration,
+    selectedStatus,
+    sortBy,
+    compactCards,
+  ]);
 
   return (
     <section className="space-y-7">
       {header}
 
-      <div className="grid gap-4 rounded-3xl border border-brand-blue-900/10 bg-white/85 p-5 shadow-[0_8px_28px_rgb(var(--brand-blue-rgb)/0.08)] md:grid-cols-2 lg:grid-cols-4">
+      <div
+        className={cn(
+          "grid gap-4 rounded-3xl border border-brand-blue-900/10 bg-white/85 p-5 shadow-[0_8px_28px_rgb(var(--brand-blue-rgb)/0.08)] md:grid-cols-2",
+          compactCards ? "lg:grid-cols-5" : "lg:grid-cols-4",
+        )}
+      >
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
             Search Destination
@@ -180,6 +202,28 @@ export default function PackagesCatalog({
             ))}
           </select>
         </label>
+
+        {compactCards && (
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
+              Status
+            </span>
+            <select
+              value={selectedStatus}
+              onChange={(event) =>
+                setSelectedStatus(event.target.value as "all" | PackageStatus)
+              }
+              className="min-h-11 rounded-xl border border-brand-blue-900/20 bg-white px-3.5 text-sm text-brand-ink-900 outline-none transition-all focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-500/20"
+            >
+              <option value="all">All Status</option>
+              {PACKAGE_STATUS_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -199,6 +243,14 @@ export default function PackagesCatalog({
           {selectedDuration !== "all" && (
             <Badge variant="brand" size="sm">
               {selectedDuration} Days
+            </Badge>
+          )}
+          {selectedStatus !== "all" && (
+            <Badge
+              variant={selectedStatus === "active" ? "success" : "outline"}
+              size="sm"
+            >
+              {selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)}
             </Badge>
           )}
         </div>

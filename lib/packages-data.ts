@@ -1,6 +1,7 @@
 import {
   PACKAGE_CATEGORIES,
   type PackageCategory,
+  type PackageStatus,
 } from "@/lib/packages-constants";
 
 type PackageItineraryItem = {
@@ -14,6 +15,7 @@ export type TravelPackage = {
   name: string;
   destination: string;
   category: PackageCategory;
+  status: PackageStatus;
   durationDays: number;
   durationLabel: string;
   pricePerPerson: number;
@@ -437,6 +439,7 @@ export const travelPackages: TravelPackage[] = packageSeeds.map((item) => {
   return {
     ...item,
     category: safeCategory,
+    status: "active" as PackageStatus,
     durationLabel: `${item.durationNights} Nights / ${item.durationDays} Days`,
     inclusions: defaultInclusions,
     exclusions: defaultExclusions,

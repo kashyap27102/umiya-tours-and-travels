@@ -30,10 +30,18 @@ export default function PackageCard({
           className="h-56 w-full object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
-        <div className="absolute left-4 top-4">
+        <div className="absolute left-4 top-4 flex items-center gap-2">
           <Badge variant="solid" size="sm">
             {item.category}
           </Badge>
+          {compact && (
+            <Badge
+              variant={item.status === "active" ? "success" : "outline"}
+              size="sm"
+            >
+              {item.status === "active" ? "Active" : "Inactive"}
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -78,6 +86,16 @@ export default function PackageCard({
             <Button asChild variant="outline" size="md">
               <Link href={`/contact?service=package&package=${item.slug}`}>
                 Book Now
+              </Link>
+            </Button>
+          </div>
+        )}
+
+        {compact && (
+          <div className="flex flex-wrap gap-3">
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/admin/package-management/${item.slug}/edit`}>
+                Edit
               </Link>
             </Button>
           </div>
