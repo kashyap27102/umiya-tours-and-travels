@@ -14,6 +14,8 @@ import type { TravelPackage } from "@/lib/packages-data";
 
 interface PackagesCatalogProps {
   packages: TravelPackage[];
+  header?: React.ReactNode;
+  compactCards?: boolean;
 }
 
 const sortLabels: Record<PackageSortOption, string> = {
@@ -45,7 +47,11 @@ const matchesDuration = (
   return days >= 11;
 };
 
-export default function PackagesCatalog({ packages }: PackagesCatalogProps) {
+export default function PackagesCatalog({
+  packages,
+  header,
+  compactCards,
+}: Readonly<PackagesCatalogProps>) {
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<
     "all" | (typeof PACKAGE_CATEGORIES)[number]
@@ -94,6 +100,8 @@ export default function PackagesCatalog({ packages }: PackagesCatalogProps) {
 
   return (
     <section className="space-y-7">
+      {header}
+
       <div className="grid gap-4 rounded-3xl border border-brand-blue-900/10 bg-white/85 p-5 shadow-[0_8px_28px_rgb(var(--brand-blue-rgb)/0.08)] md:grid-cols-2 lg:grid-cols-4">
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
@@ -209,7 +217,7 @@ export default function PackagesCatalog({ packages }: PackagesCatalogProps) {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {filteredPackages.map((item) => (
-            <PackageCard key={item.slug} item={item} />
+            <PackageCard key={item.slug} item={item} compact={compactCards} />
           ))}
         </div>
       )}

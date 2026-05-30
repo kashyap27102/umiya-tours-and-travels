@@ -33,7 +33,7 @@ const badgeVariants = cva(
         solid: "bg-white/15 text-brand-cream-100 border border-white/25",
       },
       size: {
-        sm: "text-[10px] px-2.5 py-0.5",
+        sm: "text-xs px-3 py-1",
         md: "text-xs px-3 py-1",
         lg: "text-sm px-4 py-1.5",
       },

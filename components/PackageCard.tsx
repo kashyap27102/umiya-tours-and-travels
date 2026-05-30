@@ -5,6 +5,7 @@ import type { TravelPackage } from "@/lib/packages-data";
 
 interface PackageCardProps {
   item: TravelPackage;
+  compact?: boolean;
 }
 
 const formatCurrency = (value: number) =>
@@ -14,7 +15,10 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-export default function PackageCard({ item }: PackageCardProps) {
+export default function PackageCard({
+  item,
+  compact,
+}: Readonly<PackageCardProps>) {
   return (
     <Card variant="elevated" padding="none" className="flex h-full flex-col">
       <div className="relative">
@@ -39,7 +43,7 @@ export default function PackageCard({ item }: PackageCardProps) {
           <CardBody className="mt-1 text-xs uppercase tracking-wide text-brand-muted-600">
             {item.destination}
           </CardBody>
-          <CardBody className="mt-3">{item.summary}</CardBody>
+          {!compact && <CardBody className="mt-3">{item.summary}</CardBody>}
         </div>
 
         <ul className="space-y-2">
@@ -66,16 +70,18 @@ export default function PackageCard({ item }: PackageCardProps) {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Button asChild variant="solid" size="md">
-            <Link href={`/packages/${item.slug}`}>View Details</Link>
-          </Button>
-          <Button asChild variant="outline" size="md">
-            <Link href={`/contact?service=package&package=${item.slug}`}>
-              Book Now
-            </Link>
-          </Button>
-        </div>
+        {!compact && (
+          <div className="flex flex-wrap gap-3">
+            <Button asChild variant="solid" size="md">
+              <Link href={`/packages/${item.slug}`}>View Details</Link>
+            </Button>
+            <Button asChild variant="outline" size="md">
+              <Link href={`/contact?service=package&package=${item.slug}`}>
+                Book Now
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   );
