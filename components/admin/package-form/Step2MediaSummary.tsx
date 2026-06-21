@@ -8,7 +8,7 @@ interface Props {
   hook: UsePackageFormReturn;
 }
 
-export function Step2MediaSummary({ hook }: Props) {
+export function Step2MediaSummary({ hook }: Readonly<Props>) {
   const {
     control,
     watch,

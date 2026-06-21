@@ -1,15 +1,21 @@
 "use client";
 
 import { Controller } from "react-hook-form";
-import { Badge, Button, Card, CardTitle, Input, Textarea } from "@/components/ui";
-import { ReviewPanel } from "./ReviewPanel";
+import {
+  Badge,
+  Button,
+  Card,
+  CardTitle,
+  Input,
+  Textarea,
+} from "@/components/ui";
 import type { UsePackageFormReturn } from "@/hooks/usePackageForm";
 
 interface Props {
   hook: UsePackageFormReturn;
 }
 
-export function Step4Itinerary({ hook }: Props) {
+export function Step4Itinerary({ hook }: Readonly<Props>) {
   const { form, itineraryArray, appendDay, removeDay } = hook;
   const {
     control,
@@ -87,8 +93,6 @@ export function Step4Itinerary({ hook }: Props) {
           ))}
         </div>
       </Card>
-
-      <ReviewPanel form={form} />
     </div>
   );
 }

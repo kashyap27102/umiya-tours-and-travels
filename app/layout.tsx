@@ -1,6 +1,4 @@
-import FloatingWhatsApp from "@/components/FloatingWhatsApp";
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
+import { ToasterProvider } from "@/components/providers/ToasterProvider";
 import {
   createMetadata,
   localBusinessJsonLd,
@@ -54,6 +52,7 @@ export default function RootLayout({
       className={`${displayFont.variable} ${bodyFont.variable} h-full`}
     >
       <body className="min-h-full flex flex-col antialiased">
+        <ToasterProvider />
         {children}
         <script
           type="application/ld+json"

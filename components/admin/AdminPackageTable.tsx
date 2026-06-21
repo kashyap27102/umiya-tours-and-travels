@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableCell,
 } from "@/components/ui";
+import DeletePackageButton from "./DeletePackageButton";
 import type { PackageWithItinerary } from "@/types/package";
 
 interface AdminPackageTableProps {
@@ -82,11 +83,14 @@ export default function AdminPackageTable({
               ₹{pkg.pricePerPerson.toLocaleString("en-IN")}
             </TableCell>
             <TableCell className="text-right">
-              <Link href={`/admin/package-management/${pkg.slug}/edit`}>
-                <Button variant="outline" size="sm" title="Edit package">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </Link>
+              <div className="flex items-center justify-end gap-2">
+                <Link href={`/admin/package-management/${pkg.slug}/edit`}>
+                  <Button variant="outline" size="sm" title="Edit package">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <DeletePackageButton packageId={pkg.id} packageName={pkg.name} />
+              </div>
             </TableCell>
           </TableRow>
         ))}

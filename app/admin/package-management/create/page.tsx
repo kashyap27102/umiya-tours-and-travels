@@ -1,30 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import PackageForm from "@/components/admin/PackageForm";
 import { usePackageForm } from "@/hooks/usePackageForm";
+import { usePackageSubmit } from "@/hooks/usePackageSubmit";
 import type { PackageFormValues } from "@/schemas/package";
 
 export default function CreatePackagePage() {
   const hookResult = usePackageForm();
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-  const [statusMessage, setStatusMessage] = useState("");
+  const { isSubmitting, handleCreate } = usePackageSubmit();
 
-  const handleValidSubmit = (data: PackageFormValues) => {
-    // Normalize itinerary day numbers before saving
-    const normalized = {
-      ...data,
-      itinerary: data.itinerary.map((item, i) => ({ ...item, day: i + 1 })),
-    };
-
-    // TODO: persist normalized to API
-    console.log("Creating package:", normalized);
-
-    setStatus("success");
-    setStatusMessage(`Package "${data.name}" created successfully!`);
-    hookResult.form.reset();
+  const handleValidSubmit = async (data: PackageFormValues) => {
+    await handleCreate(data, {
+      onSuccess: () => hookResult.form.reset(),
+      shouldRedirect: true,
+      redirectPath: "/admin/package-management",
+    });
   };
 
   return (
@@ -45,21 +37,11 @@ export default function CreatePackagePage() {
         </Link>
       </div>
 
-      {status === "error" && (
-        <div className="rounded-xl border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {statusMessage}
-        </div>
-      )}
-      {status === "success" && (
-        <div className="rounded-xl border border-brand-green-500/30 bg-brand-green-500/10 px-4 py-3 text-sm text-brand-green-700">
-          {statusMessage}
-        </div>
-      )}
-
       <PackageForm
         {...hookResult}
         submitLabel="Create Package"
         onValidSubmit={handleValidSubmit}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

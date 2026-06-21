@@ -14,6 +14,7 @@ import type { PackageFormValues } from "@/schemas/package";
 interface PackageFormProps extends UsePackageFormReturn {
   submitLabel: string;
   onValidSubmit: (data: PackageFormValues) => void;
+  isSubmitting?: boolean;
 }
 
 const STEP_PANELS = [
@@ -27,6 +28,7 @@ const STEP_PANELS = [
 export default function PackageForm({
   submitLabel,
   onValidSubmit,
+  isSubmitting = false,
   ...hook
 }: Readonly<PackageFormProps>) {
   const {
@@ -69,8 +71,13 @@ export default function PackageForm({
         </div>
         <div>
           {isLastStep ? (
-            <Button type="submit" variant="primary" size="lg">
-              {submitLabel}
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating..." : submitLabel}
             </Button>
           ) : (
             <Button
@@ -79,6 +86,7 @@ export default function PackageForm({
               size="md"
               onClick={goToNext}
               title="Go to next step"
+              disabled={isSubmitting}
             >
               <span>Next</span>
               <ChevronRight className="h-4 w-4" />

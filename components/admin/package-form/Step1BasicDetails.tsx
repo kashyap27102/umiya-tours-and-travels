@@ -8,7 +8,10 @@ import {
 } from "@/lib/packages-constants";
 import type { UsePackageFormReturn } from "@/hooks/usePackageForm";
 
-const CATEGORY_OPTIONS = PACKAGE_CATEGORIES.map((c) => ({ label: c, value: c }));
+const CATEGORY_OPTIONS = PACKAGE_CATEGORIES.map((c) => ({
+  label: c,
+  value: c,
+}));
 const STATUS_OPTIONS = PACKAGE_STATUS_OPTIONS.map((s) => ({
   label: s.charAt(0).toUpperCase() + s.slice(1),
   value: s,
@@ -18,7 +21,7 @@ interface Props {
   hook: UsePackageFormReturn;
 }
 
-export function Step1BasicDetails({ hook }: Props) {
+export function Step1BasicDetails({ hook }: Readonly<Props>) {
   const {
     control,
     formState: { errors },

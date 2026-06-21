@@ -8,7 +8,7 @@ import {
   TabsTrigger,
   TabsConnector,
 } from "@/components/ui";
-import type { PackageFormStep } from "@/hooks/usePackageForm";
+import type { PackageFormStep } from "@/constants";
 
 interface StepIndicatorProps {
   steps: readonly PackageFormStep[];

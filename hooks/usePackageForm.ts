@@ -4,16 +4,7 @@ import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { packageFormSchema, type PackageFormValues } from "@/schemas/package";
-
-export const PACKAGE_FORM_STEPS = [
-  "Basic Details",
-  "Media & Summary",
-  "Package Features",
-  "Itinerary",
-  "Review",
-] as const;
-
-export type PackageFormStep = (typeof PACKAGE_FORM_STEPS)[number];
+import { PACKAGE_FORM_STEPS, PackageMetaField } from "@/constants";
 
 // Fields validated when advancing past each step
 const STEP_FIELDS: (keyof PackageFormValues)[][] = [
@@ -73,14 +64,11 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
     if (step >= 0 && step < currentStep) setCurrentStep(step);
   };
 
-  const addItem = (field: "highlights" | "inclusions" | "exclusions") => {
+  const addItem = (field: PackageMetaField) => {
     form.setValue(field, [...form.getValues(field), ""], { shouldDirty: true });
   };
 
-  const removeItem = (
-    field: "highlights" | "inclusions" | "exclusions",
-    i: number,
-  ) => {
+  const removeItem = (field: PackageMetaField, i: number) => {
     const current = form.getValues(field);
     if (current.length <= 1) return;
     form.setValue(
@@ -92,11 +80,7 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
     );
   };
 
-  const updateItem = (
-    field: "highlights" | "inclusions" | "exclusions",
-    i: number,
-    val: string,
-  ) => {
+  const updateItem = (field: PackageMetaField, i: number, val: string) => {
     const current = [...form.getValues(field)];
     current[i] = val;
     form.setValue(field, current, { shouldDirty: true });
