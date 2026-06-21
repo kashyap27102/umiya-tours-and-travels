@@ -1,12 +1,14 @@
 "use client";
 
-import { CONTACT } from "@/lib/constants";
-
-export default function FloatingWhatsApp() {
+export default function FloatingWhatsApp({
+  whatsappNumber,
+}: {
+  whatsappNumber: string;
+}) {
   const message = encodeURIComponent(
     "Hi, I'd like to inquire about your travel services. Could you please provide more information?",
   );
-  const url = `https://wa.me/${CONTACT.whatsappNumber}?text=${message}`;
+  const url = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   return (
     <a

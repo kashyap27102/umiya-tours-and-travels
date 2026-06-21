@@ -1,3 +1,6 @@
+export { siteSettingsSchema } from "./settings";
+export type { SiteSettingsFormValues } from "./settings";
+
 export { cabBookingSchema } from "./cab-booking";
 export type { CabBookingData, CabBookingInput } from "./cab-booking";
 

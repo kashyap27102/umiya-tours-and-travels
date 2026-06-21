@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui";
 import { Button } from "@/components/ui";
 import BrandLogo from "@/components/BrandLogo";
 import Link from "next/link";
+import { SettingsService } from "@/services";
 
 export const metadata = createMetadata({
   title: "About Us | Umiya Tours & Travels",
@@ -41,34 +42,19 @@ const VALUES = [
   },
 ];
 
-const STATS = [
-  { value: "500+", label: "Trips Completed" },
-  { value: "2+", label: "Years in Business" },
-  { value: "50+", label: "Destinations Served" },
-  { value: "15+", label: "Vehicles in Fleet" },
-];
+export default async function AboutPage() {
+  const settings = await SettingsService.getCachedSettings();
 
-export default function AboutPage() {
   return (
     <main className="travel-shell flex flex-col gap-14 py-10 md:py-14">
       {/* Story */}
       <section className="grid gap-10 md:grid-cols-2 items-center">
         <div>
           <h1 className="text-4xl font-bold text-brand-ink-900 md:text-5xl">
-            Driven by Passion for Travel
+            {settings?.aboutHeading ?? ""}
           </h1>
           <p className="mt-5 text-brand-muted-600 leading-relaxed">
-            Umiya Tours & Travels was founded with a simple belief: travel
-            should be effortless, enriching, and within reach for every family.
-            Based in Kudasan, Gandhinagar, we serve travellers across Gujarat
-            with reliable cab services, curated tour packages, and comfortable
-            group transport.
-          </p>
-          <p className="mt-4 text-brand-muted-600 leading-relaxed">
-            Over the past 2 years, we have successfully completed 500+ trips,
-            earning the trust of families, corporates, schools, and pilgrimage
-            groups alike. Our commitment to on-time service, safety, and
-            transparent pricing keeps our customers coming back.
+            {settings?.aboutDescription ?? ""}
           </p>
           <div className="mt-8">
             <Button asChild variant="solid" size="md">
@@ -79,7 +65,7 @@ export default function AboutPage() {
 
         {/* Stats block */}
         <div className="grid grid-cols-2 gap-4">
-          {STATS.map((s) => (
+          {(settings?.stats ?? []).map((s) => (
             <Card
               key={s.label}
               variant="tinted"
@@ -132,12 +118,10 @@ export default function AboutPage() {
             Our Mission
           </Badge>
           <h2 className="text-3xl font-bold text-brand-cream-100 md:text-4xl">
-            Making Every Journey Worth Remembering
+            {settings?.missionHeading ?? ""}
           </h2>
           <p className="mt-4 text-brand-mist-200 text-base leading-relaxed">
-            We exist to give every traveller — whether a family on a holiday, a
-            corporate team on an offsite, or elders on a pilgrimage — a journey
-            that is smooth, safe, and filled with moments they cherish.
+            {settings?.missionDescription ?? ""}
           </p>
         </div>
       </section>

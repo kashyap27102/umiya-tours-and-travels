@@ -2,7 +2,7 @@ import { createMetadata } from "@/lib/metadata";
 import Breadcrumb from "@/components/Breadcrumb";
 import ContactForm from "@/components/forms/ContactForm";
 import { Badge, Card, CardBody, CardTitle } from "@/components/ui";
-import { CONTACT } from "@/lib/constants";
+import { SettingsService } from "@/services";
 import { getPackageBySlug } from "@/lib/packages-data";
 import { SERVICE_INTEREST_OPTIONS } from "@/lib/form-constants";
 
@@ -62,7 +62,10 @@ export default async function ContactPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const query = await searchParams;
+  const [query, settings] = await Promise.all([
+    searchParams,
+    SettingsService.getCachedSettings(),
+  ]);
   const selectedService = normalizeService(query.service);
   const selectedPackage = query.package
     ? getPackageBySlug(query.package)
@@ -118,31 +121,31 @@ export default async function ContactPage({
             <p>
               <span className="font-semibold ">Phone:</span>{" "}
               <a
-                href={`tel:${CONTACT.phone}`}
+                href={`tel:${settings?.phone ?? ""}`}
                 className="hover:text-brand-lime-400 transition-colors"
               >
-                {CONTACT.phone}
+                {settings?.phone ?? "—"}
               </a>
             </p>
 
             <p>
               <span className="font-semibold ">Email:</span>{" "}
               <a
-                href={`mailto:${CONTACT.email}`}
+                href={`mailto:${settings?.email ?? ""}`}
                 className="wrap-break-word hover:text-brand-lime-400 transition-colors"
               >
-                {CONTACT.email}
+                {settings?.email ?? "—"}
               </a>
             </p>
 
             <p>
-              <span className="font-semibold ">Address:</span> {CONTACT.address}
+              <span className="font-semibold ">Address:</span> {settings?.address ?? "—"}
             </p>
 
             <p>
               <span className="font-semibold ">WhatsApp:</span>{" "}
               <a
-                href={`https://wa.me/${CONTACT.whatsappNumber}`}
+                href={`https://wa.me/${settings?.whatsappNumber ?? ""}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-brand-lime-400 transition-colors"

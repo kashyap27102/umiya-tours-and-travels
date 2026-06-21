@@ -7,6 +7,8 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import TrendingPackages from "@/components/TrendingPackages";
 import { Button } from "@/components/ui";
 import { travelPackages } from "@/lib/packages-data";
+import { SettingsService } from "@/services";
+import type { Testimonial } from "@/types";
 
 export const metadata = createMetadata({
   title: "Umiya Tours & Travels | Your Journey, Our Passion",
@@ -92,31 +94,9 @@ const DESTINATION_MOMENTS = [
   },
 ];
 
-const TESTIMONIALS = [
-  {
-    name: "Priya Sharma",
-    location: "Ahmedabad, Gujarat",
-    rating: 5 as const,
-    review:
-      "Umiya made our Goa trip absolutely seamless. The cab was on time, the hotel was perfect. Will book again!",
-  },
-  {
-    name: "Rahul Patel",
-    location: "Gandhinagar, Gujarat",
-    rating: 5 as const,
-    review:
-      "Excellent service for our company offsite to Udaipur. The tempo traveller was comfortable and the driver was very professional.",
-  },
-  {
-    name: "Meena Desai",
-    location: "Anand, Gujarat",
-    rating: 4 as const,
-    review:
-      "Booked a Char Dham package for my parents. Everything was arranged perfectly — truly a worry-free pilgrimage.",
-  },
-];
+export default async function Home() {
+  const settings = await SettingsService.getCachedSettings();
 
-export default function Home() {
   const domesticPackages = DOMESTIC_SLUGS.map(
     (slug) => travelPackages.find((p) => p.slug === slug)!,
   ).filter(Boolean);
@@ -128,8 +108,8 @@ export default function Home() {
     <main className="flex flex-col gap-16 ">
       {/* Hero */}
       <HeroBanner
-        heading="See Your Next Journey Before You Even Pack"
-        subheading="Image-rich destinations, smooth transport, and curated plans built for unforgettable travel days."
+        heading={settings?.heroHeading ?? ""}
+        subheading={settings?.heroSubheading ?? ""}
         primaryCta={{ label: "Explore Packages", href: "/packages" }}
         imageSrc="https://images.unsplash.com/photo-1502920917128-1aa500764ce7?auto=format&fit=crop&w=1800&q=80"
         imageAlt="Scenic tropical destination with turquoise water"
@@ -196,8 +176,14 @@ export default function Home() {
           </h2>
         </div>
         <div className="grid gap-5 sm:grid-cols-3">
-          {TESTIMONIALS.map((t) => (
-            <TestimonialCard key={t.name} {...t} />
+          {(settings?.testimonials ?? []).map((t: Testimonial) => (
+            <TestimonialCard
+              key={t.name}
+              name={t.name}
+              location={t.location}
+              rating={t.rating as 1 | 2 | 3 | 4 | 5}
+              review={t.review}
+            />
           ))}
         </div>
       </section>

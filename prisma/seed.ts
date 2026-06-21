@@ -487,6 +487,8 @@ async function main() {
   }
 
   console.log(`✅ ${packageSeeds.length} packages seeded`);
+
+  console.log("ℹ️  SiteSettings: skipped (managed via admin settings page)");
 }
 
 main()

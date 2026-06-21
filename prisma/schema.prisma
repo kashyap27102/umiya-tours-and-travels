@@ -80,3 +80,32 @@ model ItineraryItem {
   @@index([packageId])
   @@unique([packageId, day])
 }
+
+// ── SiteSettings ──────────────────────────────────────────────────────────────
+// Singleton row (id=1). Always upserted with where: { id: 1 }.
+
+model SiteSettings {
+  id Int @id @default(1)
+
+  siteName       String
+  phone          String
+  email          String
+  whatsappNumber String
+  address        String
+
+  heroEyebrow    String
+  heroHeading    String
+  heroSubheading String
+
+  aboutHeading       String
+  aboutDescription   String
+  missionHeading     String
+  missionDescription String
+
+  stats        Json
+  testimonials Json
+
+  footerTagline String
+
+  updatedAt DateTime @updatedAt
+}
