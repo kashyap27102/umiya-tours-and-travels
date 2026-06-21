@@ -3,51 +3,28 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui";
-import PackageForm, {
-  emptyFormValues,
-  type PackageFormValues,
-} from "@/components/admin/PackageForm";
+import PackageForm from "@/components/admin/PackageForm";
+import { usePackageForm } from "@/hooks/usePackageForm";
+import type { PackageFormValues } from "@/lib/schemas/package";
 
 export default function CreatePackagePage() {
-  const [values, setValues] = useState<PackageFormValues>(emptyFormValues);
+  const hookResult = usePackageForm();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState("");
 
-  const setField = <K extends keyof PackageFormValues>(
-    key: K,
-    value: PackageFormValues[K],
-  ) => {
-    setValues((prev) => ({ ...prev, [key]: value }));
-  };
+  const handleValidSubmit = (data: PackageFormValues) => {
+    // Normalize itinerary day numbers before saving
+    const normalized = {
+      ...data,
+      itinerary: data.itinerary.map((item, i) => ({ ...item, day: i + 1 })),
+    };
 
-  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setStatus("idle");
-    setStatusMessage("");
-
-    if (
-      !values.name.trim() ||
-      !values.destination.trim() ||
-      !values.category ||
-      !values.durationDays ||
-      !values.durationNights ||
-      !values.pricePerPerson ||
-      !values.summary.trim()
-    ) {
-      setStatus("error");
-      setStatusMessage("Please fill in all required fields.");
-      return;
-    }
+    // TODO: persist normalized to API
+    console.log("Creating package:", normalized);
 
     setStatus("success");
-    setStatusMessage(`Package "${values.name}" created successfully!`);
-    setValues(emptyFormValues);
-  };
-
-  const handleReset = () => {
-    setValues(emptyFormValues);
-    setStatus("idle");
-    setStatusMessage("");
+    setStatusMessage(`Package "${data.name}" created successfully!`);
+    hookResult.form.reset();
   };
 
   return (
@@ -80,11 +57,9 @@ export default function CreatePackagePage() {
       )}
 
       <PackageForm
-        values={values}
-        onChange={setField}
-        onSubmit={handleSubmit}
-        onReset={handleReset}
+        {...hookResult}
         submitLabel="Create Package"
+        onValidSubmit={handleValidSubmit}
       />
     </div>
   );

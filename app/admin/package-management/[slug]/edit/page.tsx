@@ -3,23 +3,23 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { Badge, Button } from "@/components/ui";
-import PackageForm, {
-  type PackageFormValues,
-} from "@/components/admin/PackageForm";
+import PackageForm from "@/components/admin/PackageForm";
+import { usePackageForm } from "@/hooks/usePackageForm";
+import type { PackageFormValues } from "@/lib/schemas/package";
 import { getPackageBySlug } from "@/lib/packages-data";
 import { notFound } from "next/navigation";
 
 function toFormValues(
   pkg: NonNullable<ReturnType<typeof getPackageBySlug>>,
-): PackageFormValues {
+): Partial<PackageFormValues> {
   return {
     name: pkg.name,
     destination: pkg.destination,
     category: pkg.category,
     status: pkg.status,
-    durationDays: String(pkg.durationDays),
-    durationNights: pkg.durationLabel.match(/^(\d+)/)?.[1] ?? "",
-    pricePerPerson: String(pkg.pricePerPerson),
+    durationDays: pkg.durationDays,
+    durationNights: Number(pkg.durationLabel.match(/^(\d+)/)?.[1] ?? "0"),
+    pricePerPerson: pkg.pricePerPerson,
     image: pkg.image,
     summary: pkg.summary,
     highlights: pkg.highlights.length > 0 ? pkg.highlights : [""],
@@ -44,47 +44,21 @@ export default function EditPackagePage({
     notFound();
   }
 
-  const [values, setValues] = useState<PackageFormValues>(() =>
-    toFormValues(pkg),
-  );
+  const hookResult = usePackageForm(toFormValues(pkg));
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState("");
 
-  const setField = <K extends keyof PackageFormValues>(
-    key: K,
-    value: PackageFormValues[K],
-  ) => {
-    setValues((prev) => ({ ...prev, [key]: value }));
-  };
+  const handleValidSubmit = (data: PackageFormValues) => {
+    const normalized = {
+      ...data,
+      itinerary: data.itinerary.map((item, i) => ({ ...item, day: i + 1 })),
+    };
 
-  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setStatus("idle");
-    setStatusMessage("");
+    // TODO: persist normalized to API (PUT/PATCH)
+    console.log("Updating package:", normalized);
 
-    if (
-      !values.name.trim() ||
-      !values.destination.trim() ||
-      !values.category ||
-      !values.durationDays ||
-      !values.durationNights ||
-      !values.pricePerPerson ||
-      !values.summary.trim()
-    ) {
-      setStatus("error");
-      setStatusMessage("Please fill in all required fields.");
-      return;
-    }
-
-    // In a real app this would PUT/PATCH to an API
     setStatus("success");
-    setStatusMessage(`Package "${values.name}" updated successfully!`);
-  };
-
-  const handleReset = () => {
-    setValues(toFormValues(pkg));
-    setStatus("idle");
-    setStatusMessage("");
+    setStatusMessage(`Package "${data.name}" updated successfully!`);
   };
 
   return (
@@ -96,10 +70,16 @@ export default function EditPackagePage({
               Edit Package
             </h1>
             <Badge
-              variant={values.status === "active" ? "success" : "outline"}
+              variant={
+                hookResult.form.watch("status") === "active"
+                  ? "success"
+                  : "outline"
+              }
               size="md"
             >
-              {values.status === "active" ? "Active" : "Inactive"}
+              {hookResult.form.watch("status") === "active"
+                ? "Active"
+                : "Inactive"}
             </Badge>
           </div>
           <p className="text-sm text-brand-muted-600">
@@ -125,11 +105,9 @@ export default function EditPackagePage({
       )}
 
       <PackageForm
-        values={values}
-        onChange={setField}
-        onSubmit={handleSubmit}
-        onReset={handleReset}
+        {...hookResult}
         submitLabel="Save Changes"
+        onValidSubmit={handleValidSubmit}
       />
     </div>
   );
