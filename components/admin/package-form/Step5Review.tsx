@@ -2,15 +2,13 @@
 
 import { Card, CardTitle } from "@/components/ui";
 import { ReviewPanel } from "./ReviewPanel";
-import type { UsePackageFormReturn } from "@/hooks/usePackageForm";
+import type { PackageFormValues } from "@/schemas/package";
 
 interface Step5ReviewProps {
-  hook: UsePackageFormReturn;
+  data: PackageFormValues;
 }
 
-export function Step5Review({ hook }: Step5ReviewProps) {
-  const { form } = hook;
-
+export function Step5Review({ data }: Step5ReviewProps) {
   return (
     <div className="space-y-6">
       <Card variant="tinted" padding="md">
@@ -20,7 +18,7 @@ export function Step5Review({ hook }: Step5ReviewProps) {
         </p>
       </Card>
 
-      <ReviewPanel form={form} />
+      <ReviewPanel data={data} />
     </div>
   );
 }

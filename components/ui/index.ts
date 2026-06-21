@@ -10,6 +10,8 @@ export { default as ImageCarousel } from "./ImageCarousel";
 export type { CarouselItem } from "./ImageCarousel";
 export { cn } from "./cn";
 export { default as Modal } from "./Modal";
+export { AlertDialog } from "./AlertDialog";
+export type { AlertDialogProps } from "./AlertDialog";
 export { Label } from "./Label";
 export type { LabelProps } from "./Label";
 export { Select } from "./Select";

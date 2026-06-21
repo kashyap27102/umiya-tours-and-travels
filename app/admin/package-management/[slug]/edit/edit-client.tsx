@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { ChevronLeft, Trash2 } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
 import PackageForm from "@/components/admin/PackageForm";
 import { usePackageForm } from "@/hooks/usePackageForm";
@@ -74,13 +74,13 @@ export default function EditPackageClient({
             </h1>
             <Badge
               variant={
-                hookResult.form.watch("status") === "active"
+                hookResult.step1Form.watch("status") === "active"
                   ? "success"
                   : "outline"
               }
               size="md"
             >
-              {hookResult.form.watch("status") === "active"
+              {hookResult.step1Form.watch("status") === "active"
                 ? "Active"
                 : "Inactive"}
             </Badge>
@@ -90,7 +90,6 @@ export default function EditPackageClient({
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            size="sm"
             onClick={handleDeleteClick}
             disabled={isDeleting || isSubmitting}
             className="border-red-300 text-red-700 hover:bg-red-50"
@@ -100,8 +99,9 @@ export default function EditPackageClient({
             <span>{isDeleting ? "Deleting..." : "Delete"}</span>
           </Button>
           <Link href="/admin/package-management">
-            <Button variant="outline" size="sm">
-              ← Back to Packages
+            <Button variant="outline">
+              <ChevronLeft />
+              Back
             </Button>
           </Link>
         </div>

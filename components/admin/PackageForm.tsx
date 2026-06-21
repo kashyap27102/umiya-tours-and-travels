@@ -22,7 +22,6 @@ const STEP_PANELS = [
   Step2MediaSummary,
   Step3Features,
   Step4Itinerary,
-  Step5Review,
 ];
 
 export default function PackageForm({
@@ -32,7 +31,6 @@ export default function PackageForm({
   ...hook
 }: Readonly<PackageFormProps>) {
   const {
-    form,
     currentStep,
     steps,
     isFirstStep,
@@ -40,19 +38,24 @@ export default function PackageForm({
     goToNext,
     goToPrev,
     goToStep,
+    getCombinedData,
   } = hook;
 
   const StepPanel = STEP_PANELS[currentStep];
 
   return (
-    <form onSubmit={form.handleSubmit(onValidSubmit)} className="space-y-6">
+    <div className="space-y-6">
       <StepIndicator
         steps={steps}
         currentStep={currentStep}
         goToStep={goToStep}
       />
 
-      <StepPanel hook={hook} />
+      {isLastStep ? (
+        <Step5Review data={getCombinedData()} />
+      ) : (
+        <StepPanel hook={hook} />
+      )}
 
       <div className="flex items-center justify-between">
         <div>
@@ -72,10 +75,11 @@ export default function PackageForm({
         <div>
           {isLastStep ? (
             <Button
-              type="submit"
+              type="button"
               variant="primary"
               size="lg"
               disabled={isSubmitting}
+              onClick={() => onValidSubmit(getCombinedData())}
             >
               {isSubmitting ? "Creating..." : submitLabel}
             </Button>
@@ -94,6 +98,6 @@ export default function PackageForm({
           )}
         </div>
       </div>
-    </form>
+    </div>
   );
 }

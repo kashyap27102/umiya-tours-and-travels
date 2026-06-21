@@ -13,7 +13,7 @@ export function Step2MediaSummary({ hook }: Readonly<Props>) {
     control,
     watch,
     formState: { errors },
-  } = hook.form;
+  } = hook.step2Form;
 
   return (
     <Card variant="elevated" padding="lg" className="space-y-5">

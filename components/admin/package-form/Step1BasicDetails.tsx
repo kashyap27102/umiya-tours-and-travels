@@ -25,7 +25,7 @@ export function Step1BasicDetails({ hook }: Readonly<Props>) {
   const {
     control,
     formState: { errors },
-  } = hook.form;
+  } = hook.step1Form;
 
   return (
     <Card variant="elevated" padding="lg" className="space-y-5">

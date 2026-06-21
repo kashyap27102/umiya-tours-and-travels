@@ -18,9 +18,9 @@ export function EditableList({
   hook,
   icon,
 }: Readonly<EditableListProps>) {
-  const { form, addItem, removeItem, updateItem } = hook;
-  const items = form.watch(fieldName);
-  const errors = form.formState.errors[fieldName];
+  const { step3Form, addItem, removeItem, updateItem } = hook;
+  const items = step3Form.watch(fieldName);
+  const errors = step3Form.formState.errors[fieldName];
 
   return (
     <div className="space-y-3">

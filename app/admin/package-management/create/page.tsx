@@ -6,6 +6,7 @@ import PackageForm from "@/components/admin/PackageForm";
 import { usePackageForm } from "@/hooks/usePackageForm";
 import { usePackageSubmit } from "@/hooks/usePackageSubmit";
 import type { PackageFormValues } from "@/schemas/package";
+import { ChevronLeft } from "lucide-react";
 
 export default function CreatePackagePage() {
   const hookResult = usePackageForm();
@@ -13,7 +14,7 @@ export default function CreatePackagePage() {
 
   const handleValidSubmit = async (data: PackageFormValues) => {
     await handleCreate(data, {
-      onSuccess: () => hookResult.form.reset(),
+      onSuccess: () => hookResult.resetAll(),
       shouldRedirect: true,
       redirectPath: "/admin/package-management",
     });
@@ -31,8 +32,9 @@ export default function CreatePackagePage() {
           </p>
         </div>
         <Link href="/admin/package-management">
-          <Button variant="outline" size="sm">
-            ← Back to Packages
+          <Button variant="outline">
+            <ChevronLeft />
+            Back
           </Button>
         </Link>
       </div>

@@ -3,59 +3,79 @@
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { packageFormSchema, type PackageFormValues } from "@/schemas/package";
+import {
+  step1Schema,
+  step2Schema,
+  step3Schema,
+  step4Schema,
+  type Step1Values,
+  type Step2Values,
+  type Step3Values,
+  type Step4Values,
+  type PackageFormValues,
+} from "@/schemas/package";
 import { PACKAGE_FORM_STEPS, PackageMetaField } from "@/constants";
-
-// Fields validated when advancing past each step
-const STEP_FIELDS: (keyof PackageFormValues)[][] = [
-  [
-    "name",
-    "destination",
-    "category",
-    "status",
-    "durationDays",
-    "durationNights",
-    "pricePerPerson",
-  ],
-  ["image", "summary"],
-  ["highlights", "inclusions", "exclusions"],
-  ["itinerary"],
-  [], // Review step - no additional validation
-];
 
 export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
   const [currentStep, setCurrentStep] = useState(0);
 
-  const form = useForm<PackageFormValues>({
-    resolver: zodResolver(packageFormSchema),
+  const step1Form = useForm<Step1Values>({
+    resolver: zodResolver(step1Schema),
     defaultValues: {
-      name: "",
-      destination: "",
-      status: "active",
-      durationDays: 1,
-      durationNights: 0,
-      pricePerPerson: 0,
-      image: "",
-      summary: "",
-      highlights: [""],
-      inclusions: [""],
-      exclusions: [""],
-      itinerary: [{ day: 1, title: "", description: "" }],
-      ...defaultValues,
+      name: defaultValues?.name ?? "",
+      destination: defaultValues?.destination ?? "",
+      status: defaultValues?.status ?? "active",
+      durationDays: defaultValues?.durationDays ?? 1,
+      durationNights: defaultValues?.durationNights ?? 0,
+      pricePerPerson: defaultValues?.pricePerPerson ?? 0,
+      ...(defaultValues?.category ? { category: defaultValues.category } : {}),
     },
     mode: "onTouched",
   });
 
+  const step2Form = useForm<Step2Values>({
+    resolver: zodResolver(step2Schema),
+    defaultValues: {
+      image: defaultValues?.image ?? "",
+      summary: defaultValues?.summary ?? "",
+    },
+    mode: "onTouched",
+  });
+
+  const step3Form = useForm<Step3Values>({
+    resolver: zodResolver(step3Schema),
+    defaultValues: {
+      highlights: defaultValues?.highlights ?? [""],
+      inclusions: defaultValues?.inclusions ?? [""],
+      exclusions: defaultValues?.exclusions ?? [""],
+    },
+    mode: "onTouched",
+  });
+
+  const step4Form = useForm<Step4Values>({
+    resolver: zodResolver(step4Schema),
+    defaultValues: {
+      itinerary: defaultValues?.itinerary ?? [
+        { day: 1, title: "", description: "" },
+      ],
+    },
+    mode: "onTouched",
+  });
+
+  const stepForms = [step1Form, step2Form, step3Form, step4Form] as const;
+
   const itineraryArray = useFieldArray({
-    control: form.control,
+    control: step4Form.control,
     name: "itinerary",
   });
 
   const goToNext = async () => {
-    const fields = STEP_FIELDS[currentStep];
-    const valid = await form.trigger(fields);
-    if (valid)
-      setCurrentStep((s) => Math.min(s + 1, PACKAGE_FORM_STEPS.length - 1));
+    if (currentStep < 4) {
+      const currentForm = stepForms[currentStep as 0 | 1 | 2 | 3];
+      const valid = await currentForm.trigger();
+      if (valid)
+        setCurrentStep((s) => Math.min(s + 1, PACKAGE_FORM_STEPS.length - 1));
+    }
   };
 
   const goToPrev = () => setCurrentStep((s) => Math.max(s - 1, 0));
@@ -65,25 +85,25 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
   };
 
   const addItem = (field: PackageMetaField) => {
-    form.setValue(field, [...form.getValues(field), ""], { shouldDirty: true });
+    step3Form.setValue(field, [...step3Form.getValues(field), ""], {
+      shouldDirty: true,
+    });
   };
 
   const removeItem = (field: PackageMetaField, i: number) => {
-    const current = form.getValues(field);
+    const current = step3Form.getValues(field);
     if (current.length <= 1) return;
-    form.setValue(
+    step3Form.setValue(
       field,
       current.filter((_, idx) => idx !== i),
-      {
-        shouldDirty: true,
-      },
+      { shouldDirty: true },
     );
   };
 
   const updateItem = (field: PackageMetaField, i: number, val: string) => {
-    const current = [...form.getValues(field)];
+    const current = [...step3Form.getValues(field)];
     current[i] = val;
-    form.setValue(field, current, { shouldDirty: true });
+    step3Form.setValue(field, current, { shouldDirty: true });
   };
 
   const appendDay = () => {
@@ -97,17 +117,34 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
   const removeDay = (index: number) => {
     if (itineraryArray.fields.length <= 1) return;
     itineraryArray.remove(index);
-    // Re-number remaining days on next tick after react-hook-form updates
     setTimeout(() => {
-      const current = form.getValues("itinerary");
+      const current = step4Form.getValues("itinerary");
       current.forEach((_, i) => {
-        form.setValue(`itinerary.${i}.day`, i + 1, { shouldDirty: true });
+        step4Form.setValue(`itinerary.${i}.day`, i + 1, { shouldDirty: true });
       });
     }, 0);
   };
 
+  const getCombinedData = (): PackageFormValues => ({
+    ...step1Form.getValues(),
+    ...step2Form.getValues(),
+    ...step3Form.getValues(),
+    ...step4Form.getValues(),
+  });
+
+  const resetAll = () => {
+    step1Form.reset();
+    step2Form.reset();
+    step3Form.reset();
+    step4Form.reset();
+    setCurrentStep(0);
+  };
+
   return {
-    form,
+    step1Form,
+    step2Form,
+    step3Form,
+    step4Form,
     currentStep,
     steps: PACKAGE_FORM_STEPS,
     isFirstStep: currentStep === 0,
@@ -121,6 +158,8 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
     addItem,
     removeItem,
     updateItem,
+    getCombinedData,
+    resetAll,
   };
 }
 

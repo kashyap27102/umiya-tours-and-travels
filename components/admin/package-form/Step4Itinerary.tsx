@@ -16,11 +16,11 @@ interface Props {
 }
 
 export function Step4Itinerary({ hook }: Readonly<Props>) {
-  const { form, itineraryArray, appendDay, removeDay } = hook;
+  const { step4Form, itineraryArray, appendDay, removeDay } = hook;
   const {
     control,
     formState: { errors },
-  } = form;
+  } = step4Form;
 
   return (
     <div className="space-y-6">

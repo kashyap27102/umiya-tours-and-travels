@@ -1,6 +1,5 @@
 "use client";
 
-import { useWatch, type UseFormReturn } from "react-hook-form";
 import {
   MapPin,
   Tag,
@@ -15,7 +14,7 @@ import { Badge, Card } from "@/components/ui";
 import type { PackageFormValues } from "@/schemas/package";
 
 interface ReviewPanelProps {
-  form: UseFormReturn<PackageFormValues>;
+  data: PackageFormValues;
 }
 
 interface DetailItemProps {
@@ -34,7 +33,7 @@ function DetailItem({
   return (
     <div className="flex gap-3">
       <div
-        className={`flex-shrink-0 ${highlight ? "text-brand-blue-600" : "text-brand-muted-600"}`}
+        className={`shrink-0 ${highlight ? "text-brand-blue-600" : "text-brand-muted-600"}`}
       >
         {icon}
       </div>
@@ -52,9 +51,7 @@ function DetailItem({
   );
 }
 
-export function ReviewPanel({ form }: Readonly<ReviewPanelProps>) {
-  const v = useWatch({ control: form.control }) as PackageFormValues;
-
+export function ReviewPanel({ data: v }: Readonly<ReviewPanelProps>) {
   return (
     <Card variant="elevated" padding="lg" className="space-y-6">
       {/* Header */}

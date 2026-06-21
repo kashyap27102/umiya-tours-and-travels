@@ -4,7 +4,7 @@ import { cn } from "@/components/ui/cn";
 
 const cardVariants = cva(
   // Base — always present
-  "rounded-2xl overflow-hidden transition-shadow",
+  "rounded-2xl transition-shadow",
   {
     variants: {
       variant: {
