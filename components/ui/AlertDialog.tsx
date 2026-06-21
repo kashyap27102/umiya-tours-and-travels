@@ -139,16 +139,11 @@ function AlertDialogContent({
             >
               {cancelLabel}
             </Button>
-            <button
+            <Button
               onClick={onConfirm}
               disabled={isLoading}
-              className={cn(
-                "inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-xs",
-                "min-h-8 px-4 py-1 transition-all",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-                "disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer",
-                config.confirmClass,
-              )}
+              className={config.confirmClass}
+              size="sm"
             >
               {isLoading ? (
                 <>
@@ -158,7 +153,7 @@ function AlertDialogContent({
               ) : (
                 confirmLabel
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

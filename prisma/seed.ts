@@ -1,5 +1,6 @@
 import { PrismaClient } from "../app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import bcrypt from "bcryptjs";
 import "dotenv/config";
 
 const adapter = new PrismaPg({
@@ -441,13 +442,14 @@ async function main() {
   console.log("🌱 Starting seed...");
 
   // ── Admin ──────────────────────────────────────────────────────────────────
+  const hashedPassword = await bcrypt.hash("admin@123", 12);
   await prisma.admin.upsert({
     where: { email: "umiyatoursandtravels123@gmail.com" },
-    update: {},
+    update: { password: hashedPassword },
     create: {
       name: "Umiya Tours and Travels",
       email: "umiyatoursandtravels123@gmail.com",
-      password: "admin@123",
+      password: hashedPassword,
     },
   });
   console.log("✅ Admin seeded");

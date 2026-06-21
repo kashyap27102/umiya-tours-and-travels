@@ -1,53 +1,67 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Boxes,
+  PackagePlus,
+  SlidersHorizontal,
+  ShieldCheck,
+  LogOut,
+} from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
+import { AlertDialog } from "@/components/ui/AlertDialog";
 import { cn } from "@/components/ui";
+import { logoutAction } from "@/app/login/actions";
 
 const ADMIN_NAV_ITEMS = [
   {
     href: "/admin",
     label: "Dashboard",
-    description: "Overview and quick actions",
+    icon: LayoutDashboard,
   },
   {
     href: "/admin/package-management",
-    label: "Package Management",
-    description: "View all published packages",
+    label: "Packages",
+    icon: Boxes,
   },
   {
     href: "/admin/create-client-package",
-    label: "Create Client Package",
-    description: "Build a custom package form",
+    label: "New Package",
+    icon: PackagePlus,
   },
   {
     href: "/admin/settings",
     label: "Settings",
-    description: "Manage admin settings",
+    icon: SlidersHorizontal,
   },
 ] as const;
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  function handleLogoutConfirm() {
+    startTransition(async () => {
+      await logoutAction();
+    });
+  }
 
   return (
     <div className="flex h-full min-h-dvh flex-col bg-brand-blue-900 text-brand-cream-100">
-      <div className="border-b border-white/15 px-5 py-5">
+      <div className="border-b border-white/10 px-5 py-5">
         <BrandLogo size="sm" className="h-14 w-auto" variant="white" />
-      </div>
-
-      <div className="px-5 pt-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-cream-100/55">
-          Navigation
-        </p>
       </div>
 
       <nav
         aria-label="Admin navigation"
-        className="mt-3 flex flex-col gap-1 px-3"
+        className="mt-4 flex flex-col gap-0.5 px-3"
       >
         {ADMIN_NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
           const isActive =
             item.href === "/admin"
               ? pathname === "/admin"
@@ -58,41 +72,65 @@ export default function AdminSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group rounded-xl border px-3 py-3 transition-all",
+                "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 isActive
-                  ? "border-brand-lime-400/70 bg-brand-blue-700/80 shadow-[inset_0_0_0_1px_rgb(255_255_255/10%)]"
-                  : "border-transparent text-brand-cream-100/90 hover:border-white/15 hover:bg-white/6",
+                  ? "bg-white/10 text-brand-cream-100"
+                  : "text-brand-cream-100/60 hover:bg-white/6 hover:text-brand-cream-100/90",
               )}
             >
-              <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "inline-block h-1.5 w-1.5 rounded-full transition-colors",
-                    isActive
-                      ? "bg-brand-lime-400"
-                      : "bg-brand-cream-100/45 group-hover:bg-brand-cream-100/70",
-                  )}
-                />
-                <h3 className="text-sm font-semibold">{item.label}</h3>
-              </div>
-              <p
+              {isActive && (
+                <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-brand-lime-400" />
+              )}
+              <Icon
+                size={17}
                 className={cn(
-                  "mt-1 pl-3.5 text-xs",
+                  "shrink-0 transition-colors",
                   isActive
-                    ? "text-brand-cream-100/85"
-                    : "text-brand-cream-100/60",
+                    ? "text-brand-lime-400"
+                    : "text-brand-cream-100/45 group-hover:text-brand-cream-100/70",
                 )}
-              >
-                {item.description}
-              </p>
+              />
+              <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto border-t border-white/15 px-5 py-4 text-xs text-brand-cream-100/65">
-        Umiya Tours Admin Workspace
+      <div className="mt-auto border-t border-white/10 px-4 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-lime-400/15 text-brand-lime-400">
+            <ShieldCheck size={15} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-medium text-brand-cream-100/80">
+              Admin
+            </p>
+            <p className="truncate text-[11px] text-brand-cream-100/40">
+              Umiya Tours and Travels
+            </p>
+          </div>
+          <button
+            type="button"
+            title="Sign out"
+            onClick={() => setShowLogoutDialog(true)}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-brand-cream-100/35 transition-colors hover:bg-white/8 hover:text-brand-cream-100/70"
+          >
+            <LogOut size={14} />
+          </button>
+        </div>
       </div>
+
+      <AlertDialog
+        open={showLogoutDialog}
+        variant="warning"
+        title="Sign out?"
+        description="You'll be returned to the login page. Any unsaved changes will be lost."
+        confirmLabel="Sign out"
+        cancelLabel="Stay"
+        isLoading={isPending}
+        onConfirm={handleLogoutConfirm}
+        onCancel={() => setShowLogoutDialog(false)}
+      />
     </div>
   );
 }
