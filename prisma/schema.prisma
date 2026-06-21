@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  password String
+  name     String?
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────────
+
+enum PackageCategory {
+  Beach
+  Hill
+  Heritage
+  Pilgrimage
+  International
+  Honeymoon
+  Family
+}
+
+enum PackageStatus {
+  active
+  inactive
+}
+
+// ── Package ───────────────────────────────────────────────────────────────────
+
+model Package {
+  id              String          @id @default(cuid())
+  slug            String          @unique
+  name            String
+  destination     String
+  category        PackageCategory
+  status          PackageStatus   @default(active)
+  durationDays    Int
+  durationNights  Int
+  pricePerPerson  Int
+  image           String          @default("")
+  summary         String
+  highlights      String[]
+  inclusions      String[]
+  exclusions      String[]
+  popularityScore Int             @default(0)
+  itinerary       ItineraryItem[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([category])
+  @@index([status])
+  @@index([destination])
+}
+
+// ── ItineraryItem ─────────────────────────────────────────────────────────────
+// Separate model because each day has multiple fields (day, title, description).
+// Stored as a relation so days can be queried, filtered, and updated independently.
+
+model ItineraryItem {
+  id          Int     @id @default(autoincrement())
+  day         Int
+  title       String
+  description String
+  package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId   String
+
+  @@index([packageId])
+  @@unique([packageId, day])
+}
