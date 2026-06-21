@@ -27,3 +27,11 @@ export type {
   TabsTriggerProps,
   TabsContentProps,
 } from "./Tabs";
+export {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+} from "./Table";
