@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableCell,
 } from "@/components/ui";
-import type { PackageWithItinerary } from "@/lib/types/package";
+import type { PackageWithItinerary } from "@/types/package";
 
 interface AdminPackageTableProps {
   packages: PackageWithItinerary[];

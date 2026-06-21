@@ -1,15 +1,23 @@
 "use client";
 
+import { X, Plus } from "lucide-react";
 import { Button, Input, Label } from "@/components/ui";
+import type { ReactNode } from "react";
 import type { UsePackageFormReturn } from "@/hooks/usePackageForm";
 
 interface EditableListProps {
   label: string;
   fieldName: "highlights" | "inclusions" | "exclusions";
   hook: UsePackageFormReturn;
+  icon?: ReactNode;
 }
 
-export function EditableList({ label, fieldName, hook }: EditableListProps) {
+export function EditableList({
+  label,
+  fieldName,
+  hook,
+  icon,
+}: Readonly<EditableListProps>) {
   const { form, addItem, removeItem, updateItem } = hook;
   const items = form.watch(fieldName);
   const errors = form.formState.errors[fieldName];
@@ -17,14 +25,19 @@ export function EditableList({ label, fieldName, hook }: EditableListProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label>{label}</Label>
+        <div className="flex items-center gap-2">
+          {icon && <span className="text-brand-blue-600">{icon}</span>}
+          <Label>{label}</Label>
+        </div>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => addItem(fieldName)}
+          title="Add item"
         >
-          + Add
+          <Plus className="h-4 w-4" />
+          <span>Add</span>
         </Button>
       </div>
       <div className="space-y-2">
@@ -50,9 +63,10 @@ export function EditableList({ label, fieldName, hook }: EditableListProps) {
               <button
                 type="button"
                 onClick={() => removeItem(fieldName, i)}
-                className="mt-2 shrink-0 cursor-pointer text-xs font-medium text-red-500 transition-colors hover:text-red-700"
+                className="mt-2 shrink-0 cursor-pointer text-red-500 transition-colors hover:text-red-700"
+                title="Remove item"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>

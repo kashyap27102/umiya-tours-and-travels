@@ -4,7 +4,7 @@ import { Button } from "@/components/ui";
 import AdminPackageTable from "@/components/admin/AdminPackageTable";
 import AdminPackageFilters from "@/components/admin/AdminPackageFilters";
 import AdminPagination from "@/components/admin/AdminPagination";
-import { PackageService } from "@/lib/services";
+import { PackageService } from "@/services";
 
 interface PageProps {
   searchParams: Promise<{

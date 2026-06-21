@@ -1,8 +1,8 @@
 "use client";
 
 import { Fragment } from "react";
-import { Card } from "@/components/ui";
 import {
+  Card,
   Tabs,
   TabsList,
   TabsTrigger,
@@ -20,7 +20,7 @@ export function StepIndicator({
   steps,
   currentStep,
   goToStep,
-}: StepIndicatorProps) {
+}: Readonly<StepIndicatorProps>) {
   return (
     <Card variant="elevated" padding="sm" className="space-y-1.5">
       <Tabs value={steps[currentStep]}>
@@ -43,14 +43,6 @@ export function StepIndicator({
           ))}
         </TabsList>
       </Tabs>
-
-      <p className="px-3 pb-1 text-xs font-medium text-brand-muted-600">
-        <span className="font-bold text-brand-blue-600">
-          Step {currentStep + 1} of {steps.length}
-        </span>
-        {" — "}
-        {steps[currentStep]}
-      </p>
     </Card>
   );
 }

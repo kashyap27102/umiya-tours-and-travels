@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui";
 import PackageForm from "@/components/admin/PackageForm";
 import { usePackageForm } from "@/hooks/usePackageForm";
-import type { PackageFormValues } from "@/lib/schemas/package";
+import type { PackageFormValues } from "@/schemas/package";
 
 export default function CreatePackagePage() {
   const hookResult = usePackageForm();

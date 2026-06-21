@@ -2,7 +2,7 @@
 
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { Badge, Card, CardTitle } from "@/components/ui";
-import type { PackageFormValues } from "@/lib/schemas/package";
+import type { PackageFormValues } from "@/schemas/package";
 
 interface ReviewPanelProps {
   form: UseFormReturn<PackageFormValues>;
@@ -77,7 +77,8 @@ export function ReviewPanel({ form }: ReviewPanelProps) {
       {v.itinerary && v.itinerary.length > 0 && (
         <div className="space-y-2 border-t border-brand-blue-900/10 pt-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
-            Itinerary ({v.itinerary.length} day{v.itinerary.length !== 1 ? "s" : ""})
+            Itinerary ({v.itinerary.length} day
+            {v.itinerary.length !== 1 ? "s" : ""})
           </p>
           <ol className="space-y-3">
             {v.itinerary.map((day, i) => (
@@ -87,7 +88,11 @@ export function ReviewPanel({ form }: ReviewPanelProps) {
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-brand-ink-900">
-                    {day.title || <span className="italic text-brand-muted-600">Untitled</span>}
+                    {day.title || (
+                      <span className="italic text-brand-muted-600">
+                        Untitled
+                      </span>
+                    )}
                   </p>
                   {day.description && (
                     <p className="mt-0.5 text-xs text-brand-muted-600 line-clamp-2">

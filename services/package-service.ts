@@ -1,4 +1,4 @@
-import { prismaClient } from "@/lib/db/prisma";
+import { prismaClient } from "@/lib/prisma";
 import { PackageWithItinerary, ApiResponse } from "../types";
 import type {
   PackageCategory,

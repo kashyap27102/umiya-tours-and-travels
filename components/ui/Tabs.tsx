@@ -110,7 +110,7 @@ export function TabsTrigger({
           className={cn(
             "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
             isActive
-              ? "bg-brand-blue-600 text-white"
+              ? "bg-brand-blue-600 bg-brand-muted-600/15"
               : isCompleted
                 ? "bg-brand-green-500 text-white"
                 : "bg-brand-muted-600/15 text-brand-muted-600/50",

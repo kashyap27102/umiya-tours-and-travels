@@ -3,16 +3,14 @@
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  packageFormSchema,
-  type PackageFormValues,
-} from "@/lib/schemas/package";
+import { packageFormSchema, type PackageFormValues } from "@/schemas/package";
 
 export const PACKAGE_FORM_STEPS = [
   "Basic Details",
   "Media & Summary",
   "Package Features",
   "Itinerary",
+  "Review",
 ] as const;
 
 export type PackageFormStep = (typeof PACKAGE_FORM_STEPS)[number];
@@ -31,6 +29,7 @@ const STEP_FIELDS: (keyof PackageFormValues)[][] = [
   ["image", "summary"],
   ["highlights", "inclusions", "exclusions"],
   ["itinerary"],
+  [], // Review step - no additional validation
 ];
 
 export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {

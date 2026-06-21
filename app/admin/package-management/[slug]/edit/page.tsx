@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Badge, Button } from "@/components/ui";
 import PackageForm from "@/components/admin/PackageForm";
 import { usePackageForm } from "@/hooks/usePackageForm";
-import type { PackageFormValues } from "@/lib/schemas/package";
+import type { PackageFormValues } from "@/schemas/package";
 import { getPackageBySlug } from "@/lib/packages-data";
 import { notFound } from "next/navigation";
 
