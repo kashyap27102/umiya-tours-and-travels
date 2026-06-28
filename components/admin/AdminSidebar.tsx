@@ -55,7 +55,7 @@ export default function AdminSidebar({ onNavClick }: AdminSidebarProps) {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto bg-brand-blue-900 text-brand-cream-100">
+    <div className="flex h-full w-full flex-col overflow-y-auto bg-brand-blue-900 text-brand-cream-100">
       <div className="border-b border-white/10 px-5 py-5">
         <BrandLogo size="sm" className="h-14 w-auto" variant="white" />
       </div>

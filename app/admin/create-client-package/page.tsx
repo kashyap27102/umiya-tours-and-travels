@@ -31,7 +31,6 @@ export default function CreateClientPackagePage() {
         resetFormState={resetFormState}
         handleSubmit={handleSubmit}
       />
-      <CreatedPackagesList createdPackages={createdPackages} />
     </div>
   );
 }
