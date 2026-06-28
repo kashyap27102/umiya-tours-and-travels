@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
+import { AlertDialog } from "@/components/ui/AlertDialog";
 import PackageForm from "@/components/admin/PackageForm";
 import { usePackageForm } from "@/hooks/usePackageForm";
 import { usePackageSubmit } from "@/hooks/usePackageSubmit";
@@ -41,22 +42,13 @@ export default function EditPackageClient({
   const hookResult = usePackageForm(toFormValues(pkg));
   const { isSubmitting, handleEdit, handleDelete } = usePackageSubmit();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleValidSubmit = async (data: PackageFormValues) => {
     await handleEdit(pkg.id, data);
   };
 
-  const handleDeleteClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-
-    if (
-      !confirm(
-        `Are you sure you want to delete "${pkg.name}"? This action cannot be undone.`,
-      )
-    ) {
-      return;
-    }
-
+  const handleDeleteConfirm = async () => {
     setIsDeleting(true);
     await handleDelete(pkg.id, pkg.name, {
       shouldRedirect: true,
@@ -90,13 +82,13 @@ export default function EditPackageClient({
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={handleDeleteClick}
+            onClick={() => setDeleteDialogOpen(true)}
             disabled={isDeleting || isSubmitting}
-            className="border-red-300 text-red-700 hover:bg-red-50"
+            className="border-red-300 text-red-700 hover:bg-red-100 hover:border-red-500 hover:text-red-800"
             title="Delete package"
           >
             <Trash2 className="h-4 w-4" />
-            <span>{isDeleting ? "Deleting..." : "Delete"}</span>
+            <span>Delete</span>
           </Button>
           <Link href="/admin/package-management">
             <Button variant="outline">
@@ -105,6 +97,18 @@ export default function EditPackageClient({
             </Button>
           </Link>
         </div>
+
+        <AlertDialog
+          open={deleteDialogOpen}
+          variant="danger"
+          title="Delete Package"
+          description={`Are you sure you want to delete "${pkg.name}"? This action cannot be undone.`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteDialogOpen(false)}
+          isLoading={isDeleting}
+        />
       </div>
 
       <PackageForm

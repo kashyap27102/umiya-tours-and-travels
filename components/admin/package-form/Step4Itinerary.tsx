@@ -1,6 +1,7 @@
 "use client";
 
 import { Controller } from "react-hook-form";
+import { Trash2 } from "lucide-react";
 import {
   Badge,
   Button,
@@ -46,9 +47,10 @@ export function Step4Itinerary({ hook }: Readonly<Props>) {
                   <button
                     type="button"
                     onClick={() => removeDay(index)}
-                    className="cursor-pointer text-xs font-medium text-red-500 transition-colors hover:text-red-700"
+                    className="shrink-0 cursor-pointer text-red-500 transition-colors hover:text-red-700 hover:bg-red-50 p-1 rounded"
+                    title="Delete day"
                   >
-                    Remove
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 )}
               </div>

@@ -4,7 +4,7 @@ import {
   MapPin,
   Tag,
   Calendar,
-  DollarSign,
+  IndianRupee,
   Star,
   CheckCircle,
   XCircle,
@@ -78,26 +78,18 @@ export function ReviewPanel({ data: v }: Readonly<ReviewPanelProps>) {
               </Badge>
             }
           />
-          <div className="flex gap-3">
-            <div
-              className={`shrink-0 ${v.status === "active" ? "text-brand-green-500" : "text-brand-muted-600"}`}
-            >
+          <DetailItem
+            icon={
               <Badge
                 variant={v.status === "active" ? "success" : "outline"}
                 size="md"
               >
                 {v.status?.toUpperCase()}
               </Badge>
-            </div>
-            <div className="flex-1 min-w-0">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
-                Status
-              </dt>
-              <dd className="mt-0.5 text-sm font-medium text-brand-ink-900">
-                {v.status === "active" ? "Published" : "Draft"}
-              </dd>
-            </div>
-          </div>
+            }
+            label="Status"
+            value={v.status === "active" ? "Published" : "Draft"}
+          />
           <DetailItem
             icon={<Calendar className="h-4 w-4" />}
             label="Duration"
@@ -105,7 +97,7 @@ export function ReviewPanel({ data: v }: Readonly<ReviewPanelProps>) {
             highlight
           />
           <DetailItem
-            icon={<DollarSign className="h-4 w-4" />}
+            icon={<IndianRupee className="h-4 w-4" />}
             label="Price Per Person"
             value={`₹${Number(v.pricePerPerson).toLocaleString("en-IN")}`}
             highlight

@@ -91,7 +91,7 @@ function AlertDialogContent({
         type="button"
         tabIndex={isLoading ? -1 : 0}
         aria-label="Close dialog"
-        className="fixed inset-0 bg-black/40 cursor-default"
+        className="fixed inset-0 bg-black/60 cursor-default"
         onClick={handleBackdropClick}
         onKeyDown={handleBackdropKeyDown}
       />

@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Plus } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { Button, Input, Label } from "@/components/ui";
 import type { ReactNode } from "react";
 import type { UsePackageFormReturn } from "@/hooks/usePackageForm";
@@ -63,10 +63,10 @@ export function EditableList({
               <button
                 type="button"
                 onClick={() => removeItem(fieldName, i)}
-                className="mt-2 shrink-0 cursor-pointer text-red-500 transition-colors hover:text-red-700"
-                title="Remove item"
+                className="mt-2 shrink-0 cursor-pointer text-red-500 transition-colors hover:text-red-700 hover:bg-red-50 p-1 rounded"
+                title="Delete item"
               >
-                <X className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </button>
             )}
           </div>

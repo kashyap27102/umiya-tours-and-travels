@@ -51,7 +51,7 @@ export default function DeletePackageButton({
         variant="outline"
         size="sm"
         onClick={() => setDialogOpen(true)}
-        className="border-red-300 text-red-700 hover:bg-red-50"
+        className="border-red-300 text-red-700 hover:bg-red-100 hover:border-red-500 hover:text-red-800"
         title="Delete package"
       >
         <Trash2 className="h-4 w-4" />
