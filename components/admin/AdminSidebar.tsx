@@ -29,7 +29,7 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     href: "/admin/create-client-package",
-    label: "New Package",
+    label: "Create Package",
     icon: PackagePlus,
   },
   {
@@ -39,7 +39,11 @@ const ADMIN_NAV_ITEMS = [
   },
 ] as const;
 
-export default function AdminSidebar() {
+interface AdminSidebarProps {
+  onNavClick?: () => void;
+}
+
+export default function AdminSidebar({ onNavClick }: AdminSidebarProps) {
   const pathname = usePathname();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -51,7 +55,7 @@ export default function AdminSidebar() {
   }
 
   return (
-    <div className="flex h-full min-h-dvh flex-col bg-brand-blue-900 text-brand-cream-100">
+    <div className="flex h-full flex-col overflow-y-auto bg-brand-blue-900 text-brand-cream-100">
       <div className="border-b border-white/10 px-5 py-5">
         <BrandLogo size="sm" className="h-14 w-auto" variant="white" />
       </div>
@@ -71,6 +75,7 @@ export default function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavClick}
               className={cn(
                 "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 isActive

@@ -8,7 +8,7 @@ const Table = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-2xl border border-brand-mist-200 overflow-hidden",
+      "rounded-2xl border border-brand-mist-200 overflow-x-auto overflow-y-hidden",
       className,
     )}
     {...props}

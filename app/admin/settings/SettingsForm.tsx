@@ -39,13 +39,13 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Sit
       )}
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
-        <div className="overflow-x-auto">
-          <TabsList className="inline-flex gap-1 rounded-xl bg-brand-mist-200/60 p-1 min-w-full sm:min-w-0">
+        <div className="overflow-x-auto pb-0.5">
+          <TabsList className="inline-flex gap-1 rounded-xl bg-brand-mist-200/60 p-1">
             {TABS.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className={`flex-1 justify-center rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                className={`whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition-all ${
                   activeTab === tab.value
                     ? "bg-white text-brand-blue-700 shadow-sm"
                     : "text-brand-muted-600 hover:text-brand-ink-900 cursor-pointer"

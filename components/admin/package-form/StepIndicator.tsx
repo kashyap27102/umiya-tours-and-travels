@@ -24,9 +24,10 @@ export function StepIndicator({
   return (
     <Card variant="elevated" padding="sm" className="space-y-1.5">
       <Tabs value={steps[currentStep]}>
-        <TabsList className="w-full px-2">
-          {steps.map((step, i) => (
-            <Fragment key={step}>
+        <div className="overflow-x-auto">
+          <TabsList className="min-w-max px-2">
+            {steps.map((step, i) => (
+              <Fragment key={step}>
               <TabsTrigger
                 value={step}
                 stepNumber={i + 1}
@@ -41,7 +42,8 @@ export function StepIndicator({
               )}
             </Fragment>
           ))}
-        </TabsList>
+          </TabsList>
+        </div>
       </Tabs>
     </Card>
   );
