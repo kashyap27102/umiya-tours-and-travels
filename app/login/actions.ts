@@ -13,7 +13,12 @@ export async function loginAction(_: unknown, formData: FormData) {
     return { error: "Email and password are required." };
   }
 
-  const admin = await prismaClient.admin.findUnique({ where: { email } });
+  let admin;
+  try {
+    admin = await prismaClient.admin.findUnique({ where: { email } });
+  } catch {
+    return { error: "Database error. Please try again." };
+  }
 
   if (!admin) {
     return { error: "Invalid email." };
@@ -25,7 +30,12 @@ export async function loginAction(_: unknown, formData: FormData) {
     return { error: "Invalid email or password." };
   }
 
-  await createSession(admin.id);
+  try {
+    await createSession(admin.id);
+  } catch {
+    return { error: "Session error. Please try again." };
+  }
+
   redirect("/admin");
 }
 
