@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState, useTransition } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Badge,
   Button,
@@ -11,29 +13,16 @@ import {
   Select,
   Textarea,
 } from "@/components/ui";
-import { appConfig } from "@/lib/config";
+import { submitContactForm } from "@/lib/actions/contact-actions";
 import { SERVICE_INTEREST_OPTIONS } from "@/lib/form-constants";
-import { useFormSubmit } from "@/hooks/useFormSubmit";
-import { contactSchema, type ContactInput } from "@/schemas/contact";
-
-type ContactFormValues = {
-  name: string;
-  email: string;
-  phone: string;
-  serviceInterested: (typeof SERVICE_INTEREST_OPTIONS)[number];
-  message: string;
-};
-
-const defaultInitialValues: ContactFormValues = {
-  name: "",
-  email: "",
-  phone: "",
-  serviceInterested: "General Inquiry",
-  message: "",
-};
+import {
+  contactSchema,
+  type ContactData,
+  type ContactInput,
+} from "@/schemas/contact";
 
 interface ContactFormProps {
-  initialServiceInterested?: ContactFormValues["serviceInterested"];
+  initialServiceInterested?: ContactData["serviceInterested"];
   initialMessage?: string;
 }
 
@@ -41,56 +30,44 @@ export default function ContactForm({
   initialServiceInterested,
   initialMessage,
 }: ContactFormProps) {
-  const initialValues: ContactFormValues = {
-    ...defaultInitialValues,
-    serviceInterested:
-      initialServiceInterested ?? defaultInitialValues.serviceInterested,
-    message: initialMessage ?? defaultInitialValues.message,
+  const defaultValues: ContactInput = {
+    name: "",
+    email: "",
+    phone: "",
+    serviceInterested: initialServiceInterested ?? "General Inquiry",
+    message: initialMessage ?? "",
   };
-
-  const [values, setValues] = useState(initialValues);
 
   const {
-    submit,
-    isSubmitting,
-    isSuccess,
-    isError,
-    errorMessage,
-    fieldErrors,
+    register,
+    control,
+    handleSubmit,
     reset,
-  } = useFormSubmit({
-    schema: contactSchema,
-    endpoint: appConfig.forms.formspree.contactEndpoint,
-    toPayload: (data) => ({
-      ...data,
-      service: "Contact Inquiry",
-    }),
+    formState: { errors },
+  } = useForm<ContactInput, unknown, ContactData>({
+    resolver: zodResolver(contactSchema),
+    defaultValues,
   });
 
-  const setField = <K extends keyof ContactFormValues>(
-    key: K,
-    next: ContactFormValues[K],
-  ) => {
-    setValues((prev) => ({ ...prev, [key]: next }));
-  };
+  const [isPending, startTransition] = useTransition();
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState("");
 
-  const commonError = useMemo(
-    () => fieldErrors as Record<string, string | undefined>,
-    [fieldErrors],
-  );
+  const onSubmit = (data: ContactData) => {
+    startTransition(async () => {
+      const result = await submitContactForm(data, honeypot);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const payload: ContactInput = {
-      ...values,
-    };
-
-    const result = await submit(payload);
-
-    if (result.ok) {
-      setValues(initialValues);
-    }
+      if (result.success) {
+        setStatus("success");
+        setErrorMessage(null);
+        reset(defaultValues);
+        setHoneypot("");
+      } else {
+        setStatus("error");
+        setErrorMessage(result.error);
+      }
+    });
   };
 
   return (
@@ -108,45 +85,53 @@ export default function ContactForm({
         </Badge>
       </div>
 
-      {isSuccess && (
+      {status === "success" && (
         <div className="rounded-xl border border-brand-green-500/30 bg-brand-green-500/10 px-4 py-3 text-sm text-brand-green-700">
           Your inquiry was submitted successfully. Our team will contact you
           soon.
         </div>
       )}
 
-      {isError && errorMessage && (
+      {status === "error" && errorMessage && (
         <div className="rounded-xl border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorMessage}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden"
+        />
+
         <div className="grid gap-4 md:grid-cols-3">
           <Input
             label="Name"
             placeholder="Enter your name"
-            value={values.name}
-            onChange={(e) => setField("name", e.target.value)}
-            errorMessage={commonError.name}
+            errorMessage={errors.name?.message}
+            {...register("name")}
           />
 
           <Input
             label="Phone"
             type="tel"
             placeholder="Enter your phone number"
-            value={values.phone}
-            onChange={(e) => setField("phone", e.target.value)}
-            errorMessage={commonError.phone}
+            errorMessage={errors.phone?.message}
+            {...register("phone")}
           />
 
           <Input
             label="Email"
             type="email"
             placeholder="Enter your email"
-            value={values.email}
-            onChange={(e) => setField("email", e.target.value)}
-            errorMessage={commonError.email}
+            errorMessage={errors.email?.message}
+            {...register("email")}
           />
         </div>
 
@@ -157,23 +142,24 @@ export default function ContactForm({
           >
             Service Interested
           </label>
-          <Select
-            id="service-interested"
-            value={values.serviceInterested}
-            onChange={(next) =>
-              setField(
-                "serviceInterested",
-                next as ContactFormValues["serviceInterested"],
-              )
-            }
-            options={SERVICE_INTEREST_OPTIONS.map((option) => ({
-              label: option,
-              value: option,
-            }))}
+          <Controller
+            name="serviceInterested"
+            control={control}
+            render={({ field }) => (
+              <Select
+                id="service-interested"
+                value={field.value}
+                onChange={field.onChange}
+                options={SERVICE_INTEREST_OPTIONS.map((option) => ({
+                  label: option,
+                  value: option,
+                }))}
+              />
+            )}
           />
-          {commonError.serviceInterested && (
+          {errors.serviceInterested && (
             <p className="text-xs text-red-500">
-              {commonError.serviceInterested}
+              {errors.serviceInterested.message}
             </p>
           )}
         </div>
@@ -181,9 +167,8 @@ export default function ContactForm({
         <Textarea
           label="Message"
           placeholder="Tell us about your trip plan, dates, destinations, group size, and preferences."
-          value={values.message}
-          onChange={(e) => setField("message", e.target.value)}
-          errorMessage={commonError.message}
+          errorMessage={errors.message?.message}
+          {...register("message")}
         />
 
         <div className="flex flex-wrap items-center gap-3">
@@ -191,9 +176,9 @@ export default function ContactForm({
             type="submit"
             variant="primary"
             size="lg"
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? "Submitting..." : "Submit Inquiry"}
+            {isPending ? "Submitting..." : "Submit Inquiry"}
           </Button>
 
           <Button
@@ -201,10 +186,12 @@ export default function ContactForm({
             variant="outline"
             size="lg"
             onClick={() => {
-              setValues(initialValues);
-              reset();
+              reset(defaultValues);
+              setStatus("idle");
+              setErrorMessage(null);
+              setHoneypot("");
             }}
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             Reset
           </Button>

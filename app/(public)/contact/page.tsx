@@ -107,49 +107,24 @@ export default async function ContactPage({
         >
           <div>
             <CardTitle className="text-brand-cream-100">
-              Reach Us Directly
+              Umiya Tours & Travels (OPC) Pvt. Ltd.
             </CardTitle>
-            <CardBody className="mt-2 text-brand-mist-200">
-              Prefer direct contact? Call, email, or chat with us on WhatsApp.
-            </CardBody>
           </div>
 
           <div className="space-y-3 text-sm ">
             <p>
               <span className="font-semibold ">Phone:</span>{" "}
-              <a
-                href={`tel:${settings?.phone ?? ""}`}
-                className="hover:text-brand-lime-400 transition-colors"
-              >
-                {settings?.phone ?? "—"}
-              </a>
+              {settings?.phone ?? "—"}
             </p>
 
             <p>
               <span className="font-semibold ">Email:</span>{" "}
-              <a
-                href={`mailto:${settings?.email ?? ""}`}
-                className="wrap-break-word hover:text-brand-lime-400 transition-colors"
-              >
-                {settings?.email ?? "—"}
-              </a>
+              {settings?.email ?? "—"}
             </p>
 
             <p>
               <span className="font-semibold ">Address:</span>{" "}
               {settings?.address ?? "—"}
-            </p>
-
-            <p>
-              <span className="font-semibold ">WhatsApp:</span>{" "}
-              <a
-                href={`https://wa.me/${settings?.whatsappNumber ?? ""}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-brand-lime-400 transition-colors"
-              >
-                Start chat
-              </a>
             </p>
           </div>
         </Card>

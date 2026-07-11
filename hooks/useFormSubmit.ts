@@ -61,7 +61,7 @@ export function useFormSubmit<TSchema extends z.ZodTypeAny>({
         const payload = toPayload
           ? toPayload(parsed.data)
           : (parsed.data as Record<string, unknown>);
-        const body = toFormDataEntries(payload as Record<string, unknown>);
+        const body = toFormDataEntries(payload);
 
         const response = await fetch(endpoint, {
           method: "POST",

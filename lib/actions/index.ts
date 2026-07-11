@@ -7,3 +7,4 @@ export {
   updateTestimonialsSettings,
   updateFooterSettings,
 } from "./settings-actions";
+export { submitContactForm } from "./contact-actions";
