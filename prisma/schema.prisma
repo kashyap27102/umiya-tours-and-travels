@@ -78,8 +78,8 @@ model ItineraryItem {
   package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId   String
 
-  @@index([packageId])
   @@unique([packageId, day])
+  @@index([packageId])
 }
 
 // ── SiteSettings ──────────────────────────────────────────────────────────────

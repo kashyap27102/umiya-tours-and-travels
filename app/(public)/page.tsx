@@ -111,7 +111,7 @@ export default async function Home() {
         heading={settings?.heroHeading ?? ""}
         subheading={settings?.heroSubheading ?? ""}
         primaryCta={{ label: "Explore Packages", href: "/packages" }}
-        imageSrc="https://images.unsplash.com/photo-1502920917128-1aa500764ce7?auto=format&fit=crop&w=1800&q=80"
+        imageSrc="https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1800&q=80"
         imageAlt="Scenic tropical destination with turquoise water"
       />
 
