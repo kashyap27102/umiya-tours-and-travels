@@ -23,7 +23,11 @@ export default function TripTypeSelector<T extends string>({
         {label}
       </p>
 
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+      <div
+        role="radiogroup"
+        aria-label={label}
+        className="grid grid-cols-2 gap-2 md:grid-cols-3"
+      >
         {options.map((option) => {
           const isActive = option === value;
 
@@ -31,6 +35,8 @@ export default function TripTypeSelector<T extends string>({
             <button
               key={option}
               type="button"
+              role="radio"
+              aria-checked={isActive}
               onClick={() => onChange(option)}
               className={cn(
                 "min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold transition",

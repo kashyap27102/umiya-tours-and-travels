@@ -1,4 +1,5 @@
 import { Card, CardBody } from "@/components/ui";
+import { Star } from "lucide-react";
 
 interface TestimonialCardProps {
   name: string;
@@ -12,21 +13,16 @@ function Stars({ count }: { count: number }) {
   return (
     <span className="flex gap-0.5" aria-label={`${count} out of 5 stars`}>
       {Array.from({ length: 5 }, (_, i) => (
-        <svg
+        <Star
           key={i}
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
+          size={14}
           fill={i < count ? "currentColor" : "none"}
-          stroke="currentColor"
           strokeWidth={i < count ? 0 : 1.5}
           aria-hidden
           className={
             i < count ? "text-brand-lime-400" : "text-brand-muted-600/40"
           }
-        >
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-        </svg>
+        />
       ))}
     </span>
   );

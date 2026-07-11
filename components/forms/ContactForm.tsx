@@ -8,6 +8,7 @@ import {
   CardBody,
   CardTitle,
   Input,
+  Select,
   Textarea,
 } from "@/components/ui";
 import { appConfig } from "@/lib/config";
@@ -156,23 +157,20 @@ export default function ContactForm({
           >
             Service Interested
           </label>
-          <select
+          <Select
             id="service-interested"
-            className="min-h-11 w-full rounded-xl border border-brand-blue-900/20 bg-white px-4 py-2.5 text-sm font-medium text-brand-ink-900 transition-all outline-none focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-500/20"
             value={values.serviceInterested}
-            onChange={(e) =>
+            onChange={(next) =>
               setField(
                 "serviceInterested",
-                e.target.value as ContactFormValues["serviceInterested"],
+                next as ContactFormValues["serviceInterested"],
               )
             }
-          >
-            {SERVICE_INTEREST_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+            options={SERVICE_INTEREST_OPTIONS.map((option) => ({
+              label: option,
+              value: option,
+            }))}
+          />
           {commonError.serviceInterested && (
             <p className="text-xs text-red-500">
               {commonError.serviceInterested}

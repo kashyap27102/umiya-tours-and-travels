@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import PackageCard from "@/components/PackageCard";
-import { Badge, cn } from "@/components/ui";
+import { Badge, cn, Select } from "@/components/ui";
 import {
   PACKAGE_CATEGORIES,
   PACKAGE_DURATION_BUCKETS,
@@ -142,65 +142,54 @@ export default function PackagesCatalog({
           <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
             Category
           </span>
-          <select
+          <Select
             value={selectedCategory}
-            onChange={(event) =>
+            onChange={(next) =>
               setSelectedCategory(
-                event.target.value as
-                  | "all"
-                  | (typeof PACKAGE_CATEGORIES)[number],
+                next as "all" | (typeof PACKAGE_CATEGORIES)[number],
               )
             }
-            className="min-h-11 rounded-xl border border-brand-blue-900/20 bg-white px-3.5 text-sm text-brand-ink-900 outline-none transition-all focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-500/20"
-          >
-            <option value="all">All Categories</option>
-            {PACKAGE_CATEGORIES.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+            options={[
+              { label: "All Categories", value: "all" },
+              ...PACKAGE_CATEGORIES.map((option) => ({
+                label: option,
+                value: option,
+              })),
+            ]}
+          />
         </label>
 
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
             Duration
           </span>
-          <select
+          <Select
             value={selectedDuration}
-            onChange={(event) =>
-              setSelectedDuration(
-                event.target.value as "all" | PackageDurationBucket,
-              )
+            onChange={(next) =>
+              setSelectedDuration(next as "all" | PackageDurationBucket)
             }
-            className="min-h-11 rounded-xl border border-brand-blue-900/20 bg-white px-3.5 text-sm text-brand-ink-900 outline-none transition-all focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-500/20"
-          >
-            <option value="all">Any Duration</option>
-            {PACKAGE_DURATION_BUCKETS.map((option) => (
-              <option key={option} value={option}>
-                {option} Days
-              </option>
-            ))}
-          </select>
+            options={[
+              { label: "Any Duration", value: "all" },
+              ...PACKAGE_DURATION_BUCKETS.map((option) => ({
+                label: `${option} Days`,
+                value: option,
+              })),
+            ]}
+          />
         </label>
 
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
             Sort By
           </span>
-          <select
+          <Select
             value={sortBy}
-            onChange={(event) =>
-              setSortBy(event.target.value as PackageSortOption)
-            }
-            className="min-h-11 rounded-xl border border-brand-blue-900/20 bg-white px-3.5 text-sm text-brand-ink-900 outline-none transition-all focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-500/20"
-          >
-            {PACKAGE_SORT_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {sortLabels[option]}
-              </option>
-            ))}
-          </select>
+            onChange={(next) => setSortBy(next as PackageSortOption)}
+            options={PACKAGE_SORT_OPTIONS.map((option) => ({
+              label: sortLabels[option],
+              value: option,
+            }))}
+          />
         </label>
 
         {compactCards && (
@@ -208,20 +197,19 @@ export default function PackagesCatalog({
             <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
               Status
             </span>
-            <select
+            <Select
               value={selectedStatus}
-              onChange={(event) =>
-                setSelectedStatus(event.target.value as "all" | PackageStatus)
+              onChange={(next) =>
+                setSelectedStatus(next as "all" | PackageStatus)
               }
-              className="min-h-11 rounded-xl border border-brand-blue-900/20 bg-white px-3.5 text-sm text-brand-ink-900 outline-none transition-all focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-500/20"
-            >
-              <option value="all">All Status</option>
-              {PACKAGE_STATUS_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option.charAt(0).toUpperCase() + option.slice(1)}
-                </option>
-              ))}
-            </select>
+              options={[
+                { label: "All Status", value: "all" },
+                ...PACKAGE_STATUS_OPTIONS.map((option) => ({
+                  label: option.charAt(0).toUpperCase() + option.slice(1),
+                  value: option,
+                })),
+              ]}
+            />
           </label>
         )}
       </div>

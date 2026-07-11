@@ -35,7 +35,11 @@ export default function VehicleSelector({
         {label}
       </p>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div
+        role="radiogroup"
+        aria-label={label}
+        className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+      >
         {mappedOptions.map((option) => {
           const isActive = option.label === value;
 
@@ -43,6 +47,8 @@ export default function VehicleSelector({
             <button
               key={option.label}
               type="button"
+              role="radio"
+              aria-checked={isActive}
               onClick={() => onChange(option.label)}
               className={cn(
                 "rounded-2xl border p-4 text-left transition",

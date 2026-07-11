@@ -80,13 +80,10 @@ export default async function ContactPage({
     : selectedService;
 
   return (
-    <main className="flex flex-col gap-10 py-10 md:py-14">
+    <main className="flex flex-col gap-10">
       <section className="brand-hero relative overflow-hidden px-6 py-10 md:px-10 md:py-12">
         <div className="brand-hero-glow pointer-events-none absolute inset-0" />
         <div className="relative max-w-3xl travel-shell ">
-          <Badge variant="solid" size="md" className="mb-4">
-            Plan Your Next Trip
-          </Badge>
           <h1 className="text-4xl font-bold text-brand-cream-100 md:text-5xl">
             Contact Umiya Tours & Travels
           </h1>
@@ -139,7 +136,8 @@ export default async function ContactPage({
             </p>
 
             <p>
-              <span className="font-semibold ">Address:</span> {settings?.address ?? "—"}
+              <span className="font-semibold ">Address:</span>{" "}
+              {settings?.address ?? "—"}
             </p>
 
             <p>

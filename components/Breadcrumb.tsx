@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 
 interface Crumb {
   label: string;
@@ -25,16 +26,11 @@ export default function Breadcrumb({ crumbs }: BreadcrumbProps) {
           const isLast = idx === crumbs.length - 1;
           return (
             <li key={crumb.label} className="flex items-center gap-1.5">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="currentColor"
+              <ChevronRight
+                size={12}
                 aria-hidden
                 className="text-brand-muted-600/50"
-              >
-                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-              </svg>
+              />
               {isLast || !crumb.href ? (
                 <span
                   aria-current={isLast ? "page" : undefined}

@@ -175,7 +175,7 @@ export default async function Home() {
             Happy Faces, Real Journeys
           </h2>
         </div>
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {(settings?.testimonials ?? []).map((t: Testimonial) => (
             <TestimonialCard
               key={t.name}

@@ -3,6 +3,7 @@
 import BrandLogo from "@/components/BrandLogo";
 import { Button } from "@/components/ui";
 import Link from "next/link";
+import { Menu, X } from "lucide-react";
 import * as React from "react";
 
 const NAV_LINKS = [
@@ -17,11 +18,16 @@ export default function Navbar() {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <header className={"z-50 w-full transition-all "}>
-      <div className="travel-shell flex h-16 items-center justify-between gap-4">
+    <header
+      className={
+        "z-50 w-full transition-all shadow-sm " +
+        (open ? "bg-white/95 backdrop-blur" : "bg-white")
+      }
+    >
+      <div className="travel-shell flex h-20 items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="shrink-0" aria-label="Umiya Tours home">
-          <BrandLogo size="md" className="h-20 w-auto" priority />
+          <BrandLogo size="md" className="h-16 w-auto" priority />
         </Link>
 
         {/* Desktop nav */}
@@ -61,29 +67,9 @@ export default function Navbar() {
           >
             <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
             {open ? (
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden
-              >
-                <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
-              </svg>
+              <X size={20} aria-hidden />
             ) : (
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M3 5h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Menu size={20} aria-hidden />
             )}
           </button>
         </div>
