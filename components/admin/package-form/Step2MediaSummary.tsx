@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { Controller } from "react-hook-form";
+import { Plus, X } from "lucide-react";
 import { Card, CardTitle, Textarea, Button } from "@/components/ui";
+import { MAX_PACKAGE_IMAGES } from "@/lib/packages-constants";
 import type { UsePackageFormReturn } from "@/hooks/usePackageForm";
 import ImageUploadModal from "./ImageUploadModal";
 
@@ -19,42 +21,68 @@ export function Step2MediaSummary({ hook }: Readonly<Props>) {
     formState: { errors },
   } = hook.step2Form;
 
+  const images = watch("images");
+
+  const removeImage = (index: number) => {
+    setValue(
+      "images",
+      images.filter((_, i) => i !== index),
+      { shouldValidate: true },
+    );
+  };
+
   return (
     <Card variant="elevated" padding="lg" className="space-y-5">
       <CardTitle className="text-lg">Media &amp; Summary</CardTitle>
 
       <div className="space-y-3">
-        <div className="text-sm font-medium text-brand-ink-900">Image</div>
-        {watch("image") ? (
-          <div className="space-y-3">
-            <div
-              className="bg-gray-50 rounded-xl overflow-auto border border-brand-blue-900/10 flex items-center justify-center"
-              style={{ maxHeight: "800px" }}
-            >
-              <img
-                src={watch("image")}
-                alt="Package preview"
-                className="w-auto h-auto max-w-full max-h-full object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-            </div>
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium text-brand-ink-900">
+            Images ({images.length}/{MAX_PACKAGE_IMAGES})
+          </div>
+          {images.length < MAX_PACKAGE_IMAGES && (
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={() => setUploadModalOpen(true)}
             >
-              Change Image
+              <Plus className="h-4 w-4" />
+              <span>Add Image</span>
             </Button>
+          )}
+        </div>
+
+        {images.length > 0 && (
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+            {images.map((url, index) => (
+              <div
+                key={url}
+                className="relative aspect-square overflow-hidden rounded-xl border border-brand-blue-900/10 bg-gray-50"
+              >
+                <img
+                  src={url}
+                  alt={`Package preview ${index + 1}`}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  title="Remove image"
+                  className="absolute top-1 right-1 cursor-pointer rounded-full bg-white/90 p-1 text-red-500 shadow-sm transition-colors hover:bg-red-50 hover:text-red-700"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
           </div>
-        ) : (
-          <Button variant="outline" onClick={() => setUploadModalOpen(true)}>
-            Upload Image
-          </Button>
         )}
-        {errors.image && (
-          <p className="text-sm text-red-600">{errors.image.message}</p>
+
+        {errors.images && (
+          <p className="text-sm text-red-600">{errors.images.message}</p>
         )}
       </div>
 
@@ -82,7 +110,7 @@ export function Step2MediaSummary({ hook }: Readonly<Props>) {
         open={uploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
         onUploadComplete={(url) => {
-          setValue("image", url, { shouldValidate: true });
+          setValue("images", [...images, url], { shouldValidate: true });
           setUploadModalOpen(false);
         }}
       />

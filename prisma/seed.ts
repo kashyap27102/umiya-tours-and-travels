@@ -471,7 +471,7 @@ async function main() {
         durationNights: seed.durationNights,
         pricePerPerson: seed.pricePerPerson,
         popularityScore: seed.popularityScore,
-        image: seed.image,
+        images: [seed.image],
         summary: seed.summary,
         highlights: seed.highlights,
         inclusions: defaultInclusions,

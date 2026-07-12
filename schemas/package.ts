@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  MAX_PACKAGE_IMAGES,
   PACKAGE_CATEGORIES,
   PACKAGE_STATUS_OPTIONS,
 } from "@/lib/packages-constants";
@@ -23,12 +24,10 @@ export const step1Schema = z.object({
 });
 
 export const step2Schema = z.object({
-  image: z
-    .string()
-    .refine(
-      (val) => val === "" || /^https?:\/\/.+/.test(val),
-      "Enter a valid image URL",
-    ),
+  images: z
+    .array(z.string().refine((val) => /^https?:\/\/.+/.test(val), "Invalid image URL"))
+    .min(1, "At least one image is required")
+    .max(MAX_PACKAGE_IMAGES, `Maximum ${MAX_PACKAGE_IMAGES} images allowed`),
   summary: z.string().min(10, "At least 10 characters"),
 });
 
@@ -52,12 +51,10 @@ export const packageFormSchema = z.object({
   durationDays: z.number().min(1, "Min 1 day"),
   durationNights: z.number().min(0, "Min 0 nights"),
   pricePerPerson: z.number().min(1, "Price is required"),
-  image: z
-    .string()
-    .refine(
-      (val) => val === "" || /^https?:\/\/.+/.test(val),
-      "Enter a valid image URL",
-    ),
+  images: z
+    .array(z.string().refine((val) => /^https?:\/\/.+/.test(val), "Invalid image URL"))
+    .min(1, "At least one image is required")
+    .max(MAX_PACKAGE_IMAGES, `Maximum ${MAX_PACKAGE_IMAGES} images allowed`),
   summary: z.string().min(10, "At least 10 characters"),
   highlights: z.array(z.string().min(1, "Cannot be empty")).min(1),
   inclusions: z.array(z.string().min(1, "Cannot be empty")).min(1),

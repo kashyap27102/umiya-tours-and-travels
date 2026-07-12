@@ -24,7 +24,7 @@ function toFormValues(pkg: PackageWithItinerary): Partial<PackageFormValues> {
     durationDays: pkg.durationDays,
     durationNights: pkg.durationNights,
     pricePerPerson: pkg.pricePerPerson,
-    image: pkg.image,
+    images: pkg.images,
     summary: pkg.summary,
     highlights: pkg.highlights.length > 0 ? pkg.highlights : [""],
     inclusions: pkg.inclusions.length > 0 ? pkg.inclusions : [""],

@@ -36,7 +36,7 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
   const step2Form = useForm<Step2Values>({
     resolver: zodResolver(step2Schema),
     defaultValues: {
-      image: defaultValues?.image ?? "",
+      images: defaultValues?.images ?? [],
       summary: defaultValues?.summary ?? "",
     },
     mode: "onTouched",

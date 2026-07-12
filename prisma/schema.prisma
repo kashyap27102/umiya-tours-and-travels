@@ -52,7 +52,7 @@ model Package {
   durationDays    Int
   durationNights  Int
   pricePerPerson  Int
-  image           String          @default("")
+  images          String[]        @default([])
   summary         String
   highlights      String[]
   inclusions      String[]
