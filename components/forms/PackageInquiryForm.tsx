@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { Button, Input, Textarea } from "@/components/ui";
 import { appConfig } from "@/lib/config";
-import { travelPackages } from "@/lib/packages-data";
 import { useFormSubmit } from "@/hooks/useFormSubmit";
 import {
   packageInquirySchema,
@@ -20,8 +19,11 @@ type PackageInquiryFormValues = {
   message: string;
 };
 
-const makeInitialValues = (packageSlug?: string): PackageInquiryFormValues => ({
-  packageSlug: packageSlug ?? travelPackages[0]?.slug ?? "",
+const makeInitialValues = (
+  packages: { slug: string; name: string }[],
+  packageSlug?: string,
+): PackageInquiryFormValues => ({
+  packageSlug: packageSlug ?? packages[0]?.slug ?? "",
   travelDate: "",
   travelers: "",
   name: "",
@@ -32,15 +34,17 @@ const makeInitialValues = (packageSlug?: string): PackageInquiryFormValues => ({
 
 interface PackageInquiryFormProps {
   preselectedPackageSlug?: string;
+  packages: { slug: string; name: string }[];
   onSuccess?: () => void;
 }
 
 export default function PackageInquiryForm({
   preselectedPackageSlug,
+  packages,
   onSuccess,
 }: PackageInquiryFormProps) {
   const [values, setValues] = useState<PackageInquiryFormValues>(() =>
-    makeInitialValues(preselectedPackageSlug),
+    makeInitialValues(packages, preselectedPackageSlug),
   );
 
   const {
@@ -91,7 +95,7 @@ export default function PackageInquiryForm({
     const result = await submit(payload);
 
     if (result.ok) {
-      setValues(makeInitialValues(preselectedPackageSlug));
+      setValues(makeInitialValues(packages, preselectedPackageSlug));
       onSuccess?.();
     }
   };
@@ -131,7 +135,7 @@ export default function PackageInquiryForm({
               value={values.packageSlug}
               onChange={(event) => setField("packageSlug", event.target.value)}
             >
-              {travelPackages.map((item) => (
+              {packages.map((item) => (
                 <option key={item.slug} value={item.slug}>
                   {item.name}
                 </option>
@@ -213,7 +217,7 @@ export default function PackageInquiryForm({
             variant="outline"
             size="lg"
             onClick={() => {
-              setValues(makeInitialValues(preselectedPackageSlug));
+              setValues(makeInitialValues(packages, preselectedPackageSlug));
               reset();
             }}
             disabled={isSubmitting}

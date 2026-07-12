@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prismaClient } from "@/lib/prisma";
 import { PackageWithItinerary, ApiResponse } from "../types";
 import type {
@@ -206,6 +207,77 @@ export class PackageService {
         error instanceof Error
           ? error.message
           : "Failed to fetch active packages";
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+  }
+
+  static getCachedActivePackages = cache(() => PackageService.getActivePackages());
+
+  static getCachedPackageBySlug = cache((slug: string) =>
+    PackageService.getPackageBySlug(slug),
+  );
+
+  static async getRelatedPackages(
+    category: PackageCategory,
+    excludeSlug: string,
+    limit = 3,
+  ): Promise<ApiResponse<PackageWithItinerary[]>> {
+    try {
+      const packages = await prismaClient.package.findMany({
+        where: {
+          category,
+          status: "active",
+          slug: { not: excludeSlug },
+        },
+        include: {
+          itinerary: {
+            orderBy: {
+              day: "asc",
+            },
+          },
+        },
+        take: limit,
+      });
+
+      return {
+        success: true,
+        data: packages,
+        message: "Related packages fetched successfully",
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch related packages";
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+  }
+
+  static async getActivePackageSlugs(): Promise<
+    ApiResponse<{ slug: string; updatedAt: Date }[]>
+  > {
+    try {
+      const slugs = await prismaClient.package.findMany({
+        where: { status: "active" },
+        select: { slug: true, updatedAt: true },
+      });
+
+      return {
+        success: true,
+        data: slugs,
+        message: "Package slugs fetched successfully",
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch package slugs";
       return {
         success: false,
         error: errorMessage,

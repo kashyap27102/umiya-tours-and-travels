@@ -1,7 +1,7 @@
 import PackagesCatalog from "@/components/packages/PackagesCatalog";
 import { Button } from "@/components/ui";
 import { createMetadata } from "@/lib/metadata";
-import { travelPackages } from "@/lib/packages-data";
+import { PackageService } from "@/services";
 import Link from "next/link";
 
 export const metadata = createMetadata({
@@ -18,7 +18,10 @@ export const metadata = createMetadata({
   ],
 });
 
-export default function PackagesPage() {
+export default async function PackagesPage() {
+  const activePackages = await PackageService.getCachedActivePackages();
+  const packages = activePackages.success ? activePackages.data : [];
+
   return (
     <main className="flex flex-col gap-10 ">
       <section className="brand-hero relative overflow-hidden px-6 py-10 md:px-10 md:py-12">
@@ -35,7 +38,7 @@ export default function PackagesPage() {
       </section>
 
       <div className="travel-shell flex flex-col gap-10">
-        <PackagesCatalog packages={travelPackages} />
+        <PackagesCatalog packages={packages} />
 
         <section className="brand-hero relative overflow-hidden rounded-3xl px-8 py-12 text-center md:px-12">
           <div className="brand-hero-glow pointer-events-none absolute inset-0" />

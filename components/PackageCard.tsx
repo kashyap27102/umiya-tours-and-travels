@@ -2,10 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
-import type { TravelPackage } from "@/lib/packages-data";
+import { formatDurationLabel } from "@/lib/packages-constants";
+import type { PackageWithItinerary } from "@/types/package";
 
 interface PackageCardProps {
-  item: TravelPackage;
+  item: PackageWithItinerary;
   compact?: boolean;
 }
 
@@ -28,7 +29,7 @@ export default function PackageCard({
     >
       <div className="relative">
         <Image
-          src={item.image}
+          src={item.images[0] ?? "/logo.png"}
           alt={`${item.name} destination view`}
           width={1200}
           height={900}
@@ -63,7 +64,8 @@ export default function PackageCard({
             {formatCurrency(item.pricePerPerson)}
           </p>
           <p className="text-xs text-brand-muted-600">
-            per person · {item.durationLabel}
+            per person ·{" "}
+            {formatDurationLabel(item.durationNights, item.durationDays)}
           </p>
         </div>
 

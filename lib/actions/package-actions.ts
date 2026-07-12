@@ -55,6 +55,8 @@ export async function createPackage(
 
     // Revalidate the package listing page
     revalidatePath("/admin/package-management");
+    revalidatePath("/packages");
+    revalidatePath("/");
 
     return {
       success: true,
@@ -124,6 +126,9 @@ export async function editPackage(
     // Revalidate both the listing and the detail page
     revalidatePath("/admin/package-management");
     revalidatePath(`/admin/package-management/${updatedPackage.slug}/edit`);
+    revalidatePath("/packages");
+    revalidatePath(`/packages/${updatedPackage.slug}`);
+    revalidatePath("/");
 
     return {
       success: true,
@@ -167,6 +172,9 @@ export async function deletePackage(
 
     // Revalidate the listing page
     revalidatePath("/admin/package-management");
+    revalidatePath("/packages");
+    revalidatePath(`/packages/${pkg.slug}`);
+    revalidatePath("/");
 
     return {
       success: true,

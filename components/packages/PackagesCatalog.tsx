@@ -12,10 +12,10 @@ import {
   type PackageSortOption,
   type PackageStatus,
 } from "@/lib/packages-constants";
-import type { TravelPackage } from "@/lib/packages-data";
+import type { PackageWithItinerary } from "@/types/package";
 
 interface PackagesCatalogProps {
-  packages: TravelPackage[];
+  packages: PackageWithItinerary[];
   header?: React.ReactNode;
   compactCards?: boolean;
 }

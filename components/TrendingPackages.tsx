@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { TravelPackage } from "@/lib/packages-data";
+import { formatDurationLabel } from "@/lib/packages-constants";
+import type { PackageWithItinerary } from "@/types/package";
 
 type Tab = "domestic" | "international";
 
@@ -20,8 +21,8 @@ export default function TrendingPackages({
   domestic,
   international,
 }: {
-  domestic: TravelPackage[];
-  international: TravelPackage[];
+  domestic: PackageWithItinerary[];
+  international: PackageWithItinerary[];
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("domestic");
   const packages = activeTab === "domestic" ? domestic : international;
@@ -69,7 +70,7 @@ export default function TrendingPackages({
             {/* Image */}
             <div className="relative h-52 overflow-hidden">
               <Image
-                src={pkg.image}
+                src={pkg.images[0] ?? "/logo.png"}
                 alt={pkg.name}
                 fill
                 className="object-cover transition duration-500 group-hover:scale-105"
@@ -81,7 +82,7 @@ export default function TrendingPackages({
               </span>
               {/* Duration badge */}
               <span className="absolute bottom-3 right-3 rounded-full bg-brand-blue-900/80 px-3 py-1 text-xs font-medium text-brand-cream-100">
-                {pkg.durationLabel}
+                {formatDurationLabel(pkg.durationNights, pkg.durationDays)}
               </span>
             </div>
 

@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
 import { CORE_ROUTES } from "@/lib/constants";
 import { appConfig } from "@/lib/config";
-import { getPackageSlugs } from "@/lib/packages-data";
+import { PackageService } from "@/services";
 
 const SITE_URL = appConfig.siteUrl;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const staticPages: MetadataRoute.Sitemap = CORE_ROUTES.map((route) => ({
@@ -15,9 +15,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === "/" ? 1 : 0.8,
   }));
 
-  const packagePages: MetadataRoute.Sitemap = getPackageSlugs().map((slug) => ({
+  const slugsResult = await PackageService.getActivePackageSlugs();
+  const packagePages: MetadataRoute.Sitemap = (
+    slugsResult.success ? slugsResult.data : []
+  ).map(({ slug, updatedAt }) => ({
     url: `${SITE_URL}/packages/${slug}`,
-    lastModified: now,
+    lastModified: updatedAt,
     changeFrequency: "weekly",
     priority: 0.7,
   }));

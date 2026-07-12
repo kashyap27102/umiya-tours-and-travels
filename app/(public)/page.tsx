@@ -6,8 +6,7 @@ import TestimonialCard from "@/components/TestimonialCard";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import TrendingPackages from "@/components/TrendingPackages";
 import { Button } from "@/components/ui";
-import { travelPackages } from "@/lib/packages-data";
-import { SettingsService } from "@/services";
+import { PackageService, SettingsService } from "@/services";
 import type { Testimonial } from "@/types";
 
 export const metadata = createMetadata({
@@ -95,14 +94,20 @@ const DESTINATION_MOMENTS = [
 ];
 
 export default async function Home() {
-  const settings = await SettingsService.getCachedSettings();
+  const [settings, activePackagesResult] = await Promise.all([
+    SettingsService.getCachedSettings(),
+    PackageService.getCachedActivePackages(),
+  ]);
+  const activePackages = activePackagesResult.success
+    ? activePackagesResult.data
+    : [];
 
-  const domesticPackages = DOMESTIC_SLUGS.map(
-    (slug) => travelPackages.find((p) => p.slug === slug)!,
-  ).filter(Boolean);
-  const internationalPackages = INTERNATIONAL_SLUGS.map(
-    (slug) => travelPackages.find((p) => p.slug === slug)!,
-  ).filter(Boolean);
+  const domesticPackages = DOMESTIC_SLUGS.map((slug) =>
+    activePackages.find((p) => p.slug === slug),
+  ).filter((p) => p !== undefined);
+  const internationalPackages = INTERNATIONAL_SLUGS.map((slug) =>
+    activePackages.find((p) => p.slug === slug),
+  ).filter((p) => p !== undefined);
 
   return (
     <main className="flex flex-col gap-16 ">

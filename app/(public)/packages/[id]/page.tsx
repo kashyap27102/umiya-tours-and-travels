@@ -8,18 +8,17 @@ import PackageShareButton from "@/components/PackageShareButton";
 import { Badge, Card, CardTitle } from "@/components/ui";
 import { createMetadata, toJsonLd } from "@/lib/metadata";
 import { appConfig } from "@/lib/config";
-import {
-  getPackageBySlug,
-  getPackageSlugs,
-  getRelatedPackages,
-} from "@/lib/packages-data";
+import { formatDurationLabel } from "@/lib/packages-constants";
+import { PackageService } from "@/services";
 
 type RouteParams = {
   id: string;
 };
 
-export const generateStaticParams = async () =>
-  getPackageSlugs().map((slug) => ({ id: slug }));
+export const generateStaticParams = async () => {
+  const slugs = await PackageService.getActivePackageSlugs();
+  return slugs.success ? slugs.data.map(({ slug }) => ({ id: slug })) : [];
+};
 
 export async function generateMetadata({
   params,
@@ -27,9 +26,10 @@ export async function generateMetadata({
   params: Promise<RouteParams>;
 }) {
   const { id } = await params;
-  const travelPackage = getPackageBySlug(id);
+  const result = await PackageService.getCachedPackageBySlug(id);
+  const travelPackage = result.success ? result.data : null;
 
-  if (!travelPackage) {
+  if (!travelPackage || travelPackage.status !== "active") {
     return createMetadata({
       title: "Package Not Found | Umiya Tours & Travels",
       description: "The requested package does not exist.",
@@ -38,15 +38,20 @@ export async function generateMetadata({
     });
   }
 
+  const durationLabel = formatDurationLabel(
+    travelPackage.durationNights,
+    travelPackage.durationDays,
+  );
+
   return createMetadata({
     title: `${travelPackage.name} | Umiya Tours & Travels`,
     description: travelPackage.summary,
     path: `/packages/${travelPackage.slug}`,
-    image: travelPackage.image,
+    image: travelPackage.images[0],
     keywords: [
       travelPackage.destination.toLowerCase(),
       `${travelPackage.category.toLowerCase()} travel package`,
-      `${travelPackage.durationLabel.toLowerCase()} package`,
+      `${durationLabel.toLowerCase()} package`,
       "travel itinerary",
       "holiday package booking",
     ],
@@ -66,13 +71,27 @@ export default async function PackageDetailPage({
   params: Promise<RouteParams>;
 }) {
   const { id } = await params;
-  const travelPackage = getPackageBySlug(id);
+  const result = await PackageService.getCachedPackageBySlug(id);
+  const travelPackage = result.success ? result.data : null;
 
-  if (!travelPackage) {
+  if (!travelPackage || travelPackage.status !== "active") {
     notFound();
   }
 
-  const relatedPackages = getRelatedPackages(travelPackage.slug, 3);
+  const durationLabel = formatDurationLabel(
+    travelPackage.durationNights,
+    travelPackage.durationDays,
+  );
+
+  const [relatedResult, activePackagesResult] = await Promise.all([
+    PackageService.getRelatedPackages(travelPackage.category, travelPackage.slug, 3),
+    PackageService.getCachedActivePackages(),
+  ]);
+  const relatedPackages = relatedResult.success ? relatedResult.data : [];
+  const enquiryPackages = (
+    activePackagesResult.success ? activePackagesResult.data : []
+  ).map(({ slug, name }) => ({ slug, name }));
+
   const canonicalUrl = `${appConfig.siteUrl}/packages/${travelPackage.slug}`;
   const derivedRatingValue = Math.max(
     4,
@@ -113,7 +132,7 @@ export default async function PackageDetailPage({
     "@type": "Product",
     name: travelPackage.name,
     description: travelPackage.summary,
-    image: [travelPackage.image],
+    image: travelPackage.images,
     sku: travelPackage.slug,
     category: `${travelPackage.category} Travel Package`,
     brand: {
@@ -147,7 +166,7 @@ export default async function PackageDetailPage({
       {
         "@type": "PropertyValue",
         name: "Duration",
-        value: travelPackage.durationLabel,
+        value: durationLabel,
       },
       {
         "@type": "PropertyValue",
@@ -170,14 +189,7 @@ export default async function PackageDetailPage({
       />
 
       <section>
-        <PackageGallery
-          images={
-            travelPackage.images?.length
-              ? travelPackage.images
-              : [travelPackage.image]
-          }
-          alt={travelPackage.name}
-        />
+        <PackageGallery images={travelPackage.images} alt={travelPackage.name} />
       </section>
 
       <section className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
@@ -188,9 +200,9 @@ export default async function PackageDetailPage({
               <PackageShareButton
                 packageName={travelPackage.name}
                 destination={travelPackage.destination}
-                durationLabel={travelPackage.durationLabel}
+                durationLabel={durationLabel}
                 priceLabel={`${formatCurrency(travelPackage.pricePerPerson)} per person`}
-                image={travelPackage.image}
+                image={travelPackage.images[0] ?? "/logo.png"}
                 url={canonicalUrl}
               />
             </div>
@@ -199,7 +211,7 @@ export default async function PackageDetailPage({
               {travelPackage.summary}
             </p>
             <Badge variant="brand" size="sm" className="mb-1">
-              {travelPackage.durationLabel}
+              {durationLabel}
             </Badge>
           </Card>
 
@@ -215,10 +227,11 @@ export default async function PackageDetailPage({
               {formatCurrency(travelPackage.pricePerPerson)}
             </p>
             <p className="text-sm text-brand-muted-600">
-              per person · {travelPackage.durationLabel}
+              per person · {durationLabel}
             </p>
             <PackageEnquiryTrigger
               packageSlug={travelPackage.slug}
+              packages={enquiryPackages}
               label="Enquire Now"
               variant="primary"
               size="md"

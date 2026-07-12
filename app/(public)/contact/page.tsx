@@ -2,8 +2,7 @@ import { createMetadata } from "@/lib/metadata";
 import Breadcrumb from "@/components/Breadcrumb";
 import ContactForm from "@/components/forms/ContactForm";
 import { Badge, Card, CardBody, CardTitle } from "@/components/ui";
-import { SettingsService } from "@/services";
-import { getPackageBySlug } from "@/lib/packages-data";
+import { PackageService, SettingsService } from "@/services";
 import { SERVICE_INTEREST_OPTIONS } from "@/lib/form-constants";
 
 export const metadata = createMetadata({
@@ -67,8 +66,11 @@ export default async function ContactPage({
     SettingsService.getCachedSettings(),
   ]);
   const selectedService = normalizeService(query.service);
-  const selectedPackage = query.package
-    ? getPackageBySlug(query.package)
+  const selectedPackageResult = query.package
+    ? await PackageService.getCachedPackageBySlug(query.package)
+    : undefined;
+  const selectedPackage = selectedPackageResult?.success
+    ? selectedPackageResult.data
     : undefined;
 
   const initialMessage = selectedPackage

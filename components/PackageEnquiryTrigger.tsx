@@ -6,6 +6,7 @@ import { Button, Modal, type ButtonProps } from "@/components/ui";
 
 interface PackageEnquiryTriggerProps {
   packageSlug: string;
+  packages: { slug: string; name: string }[];
   label: string;
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
@@ -14,6 +15,7 @@ interface PackageEnquiryTriggerProps {
 
 export default function PackageEnquiryTrigger({
   packageSlug,
+  packages,
   label,
   variant = "primary",
   size = "md",
@@ -40,7 +42,10 @@ export default function PackageEnquiryTrigger({
         size="lg"
         title="Enquire About This Package"
       >
-        <PackageInquiryForm preselectedPackageSlug={packageSlug} />
+        <PackageInquiryForm
+          preselectedPackageSlug={packageSlug}
+          packages={packages}
+        />
       </Modal>
     </>
   );
