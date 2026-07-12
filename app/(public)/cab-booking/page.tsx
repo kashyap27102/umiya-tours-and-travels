@@ -19,15 +19,10 @@ export const metadata = createMetadata({
 
 export default function CabBookingPage() {
   return (
-    <main className="travel-shell flex flex-col gap-10 py-10 md:py-14">
-      <Breadcrumb crumbs={[{ label: "Cab Booking" }]} />
-
-      <section className="brand-hero relative overflow-hidden rounded-3xl px-6 py-10 md:px-10 md:py-12">
+    <main className=" flex flex-col gap-10 ">
+      <section className="brand-hero relative overflow-hidden px-6 py-10 md:px-10 md:py-12">
         <div className="brand-hero-glow pointer-events-none absolute inset-0" />
         <div className="relative max-w-3xl">
-          <Badge variant="solid" size="md" className="mb-4">
-            Instant Cab Request
-          </Badge>
           <h1 className="text-4xl font-bold text-brand-cream-100 md:text-5xl">
             Book Safe, Comfortable Cabs in Minutes
           </h1>
@@ -37,8 +32,9 @@ export default function CabBookingPage() {
           </p>
         </div>
       </section>
-
-      <CabBookingForm />
+      <div className="travel-shell">
+        <CabBookingForm />
+      </div>
     </main>
   );
 }

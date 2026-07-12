@@ -11,6 +11,8 @@ export interface ModalProps extends Omit<
   footer?: React.ReactNode;
   size?: "sm" | "md" | "lg";
   showClose?: boolean;
+  /** Renders as a full-width bottom sheet below `md:`, centered dialog at `md:` and above. */
+  mobileDrawer?: boolean;
 }
 
 const sizeClasses: Record<NonNullable<ModalProps["size"]>, string> = {
@@ -30,6 +32,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       size = "md",
       className,
       showClose = true,
+      mobileDrawer = false,
       ...props
     },
     ref,
@@ -59,6 +62,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       <div
         className={cn(
           "fixed inset-0 z-50 flex items-center justify-center p-4",
+          mobileDrawer && "items-end p-0 md:items-center md:p-4",
           className,
         )}
         role="dialog"
@@ -68,10 +72,20 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
         <div className="fixed inset-0 bg-black/40" onClick={onClose} />
 
         <div
-          className={cn("relative w-full mx-auto", sizeClasses[size])}
+          className={cn(
+            "relative w-full mx-auto",
+            sizeClasses[size],
+            mobileDrawer && "motion-drawer-in md:motion-fade-up",
+          )}
           ref={ref}
         >
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div
+            className={cn(
+              "bg-white rounded-2xl shadow-lg overflow-hidden",
+              mobileDrawer &&
+                "rounded-b-none rounded-t-3xl max-h-[85vh] overflow-y-auto md:rounded-2xl md:max-h-[90vh]",
+            )}
+          >
             {(title || showClose) && (
               <div className="flex items-start justify-between gap-4 p-6 border-b">
                 <div className="text-lg font-semibold text-brand-ink-900">

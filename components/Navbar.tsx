@@ -27,7 +27,7 @@ export default function Navbar() {
       <div className="travel-shell flex h-20 items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="shrink-0" aria-label="Umiya Tours home">
-          <BrandLogo size="md" className="h-16 w-auto" priority />
+          <BrandLogo size="md" className="h-20 w-auto" priority />
         </Link>
 
         {/* Desktop nav */}

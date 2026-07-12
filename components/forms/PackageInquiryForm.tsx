@@ -1,15 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Badge,
-  Button,
-  Card,
-  CardBody,
-  CardTitle,
-  Input,
-  Textarea,
-} from "@/components/ui";
+import { Button, Input, Textarea } from "@/components/ui";
 import { appConfig } from "@/lib/config";
 import { travelPackages } from "@/lib/packages-data";
 import { useFormSubmit } from "@/hooks/useFormSubmit";
@@ -40,10 +32,12 @@ const makeInitialValues = (packageSlug?: string): PackageInquiryFormValues => ({
 
 interface PackageInquiryFormProps {
   preselectedPackageSlug?: string;
+  onSuccess?: () => void;
 }
 
 export default function PackageInquiryForm({
   preselectedPackageSlug,
+  onSuccess,
 }: PackageInquiryFormProps) {
   const [values, setValues] = useState<PackageInquiryFormValues>(() =>
     makeInitialValues(preselectedPackageSlug),
@@ -98,25 +92,16 @@ export default function PackageInquiryForm({
 
     if (result.ok) {
       setValues(makeInitialValues(preselectedPackageSlug));
+      onSuccess?.();
     }
   };
 
   return (
-    <Card variant="elevated" padding="lg" className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <CardTitle className="text-2xl md:text-3xl">
-            Package Inquiry
-          </CardTitle>
-          <CardBody className="mt-2">
-            Share your preferred dates and traveler count. We will call you back
-            with quote and final itinerary options.
-          </CardBody>
-        </div>
-        <Badge variant="brand" size="md">
-          Quote Assistance
-        </Badge>
-      </div>
+    <div className="space-y-6">
+      <p className="text-sm text-brand-muted-600">
+        Share your preferred dates and traveler count. We will call you back
+        with quote and final itinerary options.
+      </p>
 
       {isSuccess && (
         <div className="rounded-xl border border-brand-green-500/30 bg-brand-green-500/10 px-4 py-3 text-sm text-brand-green-700">
@@ -237,6 +222,6 @@ export default function PackageInquiryForm({
           </Button>
         </div>
       </form>
-    </Card>
+    </div>
   );
 }

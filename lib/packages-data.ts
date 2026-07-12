@@ -21,6 +21,8 @@ export type TravelPackage = {
   pricePerPerson: number;
   popularityScore: number;
   image: string;
+  /** Optional full gallery photo set (including the cover shot). Falls back to `[image]` when absent. Rendered by PackageGallery, capped at 5. */
+  images?: string[];
   summary: string;
   highlights: string[];
   inclusions: string[];

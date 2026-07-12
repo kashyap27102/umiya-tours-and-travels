@@ -1,10 +1,11 @@
-import Image from "next/image";
-import Link from "next/link";
+import { Check, X } from "lucide-react";
 import { notFound } from "next/navigation";
-import Breadcrumb from "@/components/Breadcrumb";
 import PackageCard from "@/components/PackageCard";
-import PackageInquiryForm from "@/components/forms/PackageInquiryForm";
-import { Badge, Button, Card, CardBody, CardTitle } from "@/components/ui";
+import PackageGallery from "@/components/PackageGallery";
+import PackageItinerary from "@/components/PackageItinerary";
+import PackageEnquiryTrigger from "@/components/PackageEnquiryTrigger";
+import PackageShareButton from "@/components/PackageShareButton";
+import { Badge, Card, CardTitle } from "@/components/ui";
 import { createMetadata, toJsonLd } from "@/lib/metadata";
 import { appConfig } from "@/lib/config";
 import {
@@ -168,88 +169,63 @@ export default async function PackageDetailPage({
         dangerouslySetInnerHTML={{ __html: toJsonLd(productJsonLd) }}
       />
 
-      <Breadcrumb
-        crumbs={[
-          { label: "Packages", href: "/packages" },
-          { label: travelPackage.name },
-        ]}
-      />
-
-      <section className="grid items-center gap-8 lg:grid-cols-2">
-        <div>
-          <Badge variant="solid" size="md" className="mb-4">
-            {travelPackage.category} Package
-          </Badge>
-          <h1 className="text-4xl font-bold text-brand-ink-900 md:text-5xl">
-            {travelPackage.name}
-          </h1>
-          <p className="mt-4 max-w-2xl text-brand-muted-600 md:text-lg">
-            {travelPackage.summary}
-          </p>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Badge variant="brand" size="sm">
-              {travelPackage.destination}
-            </Badge>
-            <Badge variant="brand" size="sm">
-              {travelPackage.durationLabel}
-            </Badge>
-            <Badge variant="brand" size="sm">
-              {formatCurrency(travelPackage.pricePerPerson)} per person
-            </Badge>
-          </div>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild variant="primary" size="lg">
-              <Link
-                href={`/contact?service=package&package=${travelPackage.slug}`}
-              >
-                Book This Package
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/packages">Back to Packages</Link>
-            </Button>
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden rounded-3xl border border-brand-blue-900/10 bg-white shadow-[0_16px_40px_rgb(var(--brand-blue-rgb)/0.14)]">
-          <Image
-            src={travelPackage.image}
-            alt={`${travelPackage.name} hero image`}
-            width={1400}
-            height={1000}
-            className="h-full min-h-72 w-full object-cover"
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            priority
-          />
-        </div>
+      <section>
+        <PackageGallery
+          images={
+            travelPackage.images?.length
+              ? travelPackage.images
+              : [travelPackage.image]
+          }
+          alt={travelPackage.name}
+        />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <Card variant="elevated" padding="lg" className="space-y-5">
-          <CardTitle>Day-Wise Itinerary</CardTitle>
-          <div className="space-y-4">
-            {travelPackage.itinerary.map((item) => (
-              <div
-                key={item.day}
-                className="rounded-2xl border border-brand-blue-900/10 bg-white/80 p-4"
-              >
-                <p className="text-xs font-semibold uppercase tracking-wide text-brand-blue-700">
-                  Day {item.day}
-                </p>
-                <h3 className="mt-1 text-lg font-semibold text-brand-ink-900">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm text-brand-muted-600">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Card>
-
+      <section className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-6">
+          <Card variant="elevated" padding="lg" className="space-y-2">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <CardTitle className="text-2xl">{travelPackage.name}</CardTitle>
+              <PackageShareButton
+                packageName={travelPackage.name}
+                destination={travelPackage.destination}
+                durationLabel={travelPackage.durationLabel}
+                priceLabel={`${formatCurrency(travelPackage.pricePerPerson)} per person`}
+                image={travelPackage.image}
+                url={canonicalUrl}
+              />
+            </div>
+
+            <p className="max-w-2xl text-brand-muted-600 md:text-lg">
+              {travelPackage.summary}
+            </p>
+            <Badge variant="brand" size="sm" className="mb-1">
+              {travelPackage.durationLabel}
+            </Badge>
+          </Card>
+
+          <PackageItinerary itinerary={travelPackage.itinerary} />
+        </div>
+
+        <div className="space-y-6 lg:sticky lg:top-6">
+          <Card variant="tinted" padding="lg" className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
+              Starting Price
+            </p>
+            <p className="text-3xl font-bold text-brand-ink-900">
+              {formatCurrency(travelPackage.pricePerPerson)}
+            </p>
+            <p className="text-sm text-brand-muted-600">
+              per person · {travelPackage.durationLabel}
+            </p>
+            <PackageEnquiryTrigger
+              packageSlug={travelPackage.slug}
+              label="Enquire Now"
+              variant="primary"
+              size="md"
+              className="mt-2 w-full"
+            />
+          </Card>
+
           <Card variant="default" padding="lg" className="space-y-4">
             <CardTitle className="text-xl">Inclusions</CardTitle>
             <ul className="space-y-2">
@@ -258,7 +234,7 @@ export default async function PackageDetailPage({
                   key={item}
                   className="flex items-start gap-2 text-sm text-brand-muted-600"
                 >
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-brand-green-500" />
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-green-500" />
                   {item}
                 </li>
               ))}
@@ -273,35 +249,13 @@ export default async function PackageDetailPage({
                   key={item}
                   className="flex items-start gap-2 text-sm text-brand-muted-600"
                 >
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-brand-blue-700" />
+                  <X className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                   {item}
                 </li>
               ))}
             </ul>
           </Card>
-
-          <Card variant="tinted" padding="lg">
-            <CardTitle className="text-xl">Need a Custom Version?</CardTitle>
-            <CardBody className="mt-2">
-              We can customize itinerary pace, hotel category, and transport
-              based on your group and budget.
-            </CardBody>
-            <div className="mt-4">
-              <Button asChild variant="solid" size="md">
-                <Link href="/contact?service=custom-packages">
-                  Request Customization
-                </Link>
-              </Button>
-            </div>
-          </Card>
         </div>
-      </section>
-
-      <section className="space-y-5">
-        <h2 className="text-3xl font-bold text-brand-ink-900">
-          Quick Inquiry for This Package
-        </h2>
-        <PackageInquiryForm preselectedPackageSlug={travelPackage.slug} />
       </section>
 
       {relatedPackages.length > 0 && (
