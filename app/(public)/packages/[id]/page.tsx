@@ -6,8 +6,14 @@ import PackageItinerary from "@/components/PackageItinerary";
 import PackageEnquiryTrigger from "@/components/PackageEnquiryTrigger";
 import PackageShareButton from "@/components/PackageShareButton";
 import { Badge, Card, CardTitle } from "@/components/ui";
-import { createMetadata, toJsonLd } from "@/lib/metadata";
+import {
+  breadcrumbJsonLd,
+  createMetadata,
+  productJsonLd,
+  toJsonLd,
+} from "@/lib/metadata";
 import { appConfig } from "@/lib/config";
+import { formatCurrency } from "@/lib/format";
 import { formatDurationLabel } from "@/lib/packages-constants";
 import { PackageService } from "@/services";
 
@@ -58,13 +64,6 @@ export async function generateMetadata({
   });
 }
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(value);
-
 export default async function PackageDetailPage({
   params,
 }: {
@@ -102,90 +101,39 @@ export default async function PackageDetailPage({
     Math.round(travelPackage.popularityScore * 2),
   );
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: appConfig.siteUrl,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Packages",
-        item: `${appConfig.siteUrl}/packages`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: travelPackage.name,
-        item: canonicalUrl,
-      },
-    ],
-  };
+  const breadcrumbJsonLdData = breadcrumbJsonLd([
+    { name: "Home", url: appConfig.siteUrl },
+    { name: "Packages", url: `${appConfig.siteUrl}/packages` },
+    { name: travelPackage.name, url: canonicalUrl },
+  ]);
 
-  const productJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
+  const productJsonLdData = productJsonLd({
     name: travelPackage.name,
     description: travelPackage.summary,
-    image: travelPackage.images,
+    images: travelPackage.images,
     sku: travelPackage.slug,
     category: `${travelPackage.category} Travel Package`,
-    brand: {
-      "@type": "Brand",
-      name: "Umiya Tours & Travels",
-    },
-    offers: {
-      "@type": "Offer",
-      url: canonicalUrl,
-      priceCurrency: "INR",
-      price: travelPackage.pricePerPerson,
-      availability: "https://schema.org/InStock",
-      seller: {
-        "@type": "TravelAgency",
-        name: "Umiya Tours & Travels",
-      },
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: derivedRatingValue,
-      ratingCount: derivedRatingCount,
-      bestRating: 5,
-      worstRating: 1,
-    },
-    additionalProperty: [
-      {
-        "@type": "PropertyValue",
-        name: "Destination",
-        value: travelPackage.destination,
-      },
-      {
-        "@type": "PropertyValue",
-        name: "Duration",
-        value: durationLabel,
-      },
-      {
-        "@type": "PropertyValue",
-        name: "Highlights",
-        value: travelPackage.highlights.join(", "),
-      },
+    price: travelPackage.pricePerPerson,
+    url: canonicalUrl,
+    ratingValue: derivedRatingValue,
+    ratingCount: derivedRatingCount,
+    additionalProperties: [
+      { name: "Destination", value: travelPackage.destination },
+      { name: "Duration", value: durationLabel },
+      { name: "Highlights", value: travelPackage.highlights.join(", ") },
     ],
-  };
+  });
 
   return (
     <main className="travel-shell flex flex-col gap-10 py-10 md:py-14">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: toJsonLd(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: toJsonLd(breadcrumbJsonLdData) }}
       />
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: toJsonLd(productJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: toJsonLd(productJsonLdData) }}
       />
 
       <section>

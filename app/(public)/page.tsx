@@ -5,7 +5,8 @@ import HeroBanner from "@/components/HeroBanner";
 import TestimonialCard from "@/components/TestimonialCard";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import TrendingPackages from "@/components/TrendingPackages";
-import { Button } from "@/components/ui";
+import SectionHeading from "@/components/SectionHeading";
+import CtaBanner from "@/components/CtaBanner";
 import { PackageService, SettingsService } from "@/services";
 import type { Testimonial } from "@/types";
 
@@ -128,14 +129,11 @@ export default async function Home() {
 
       {/* Visual service cards */}
       <section className="travel-shell">
-        <div className="mb-8 max-w-xl">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-brand-blue-700">
-            Services
-          </p>
-          <h2 className="text-3xl font-bold text-brand-ink-900 md:text-4xl">
-            Pick Your Travel Style
-          </h2>
-        </div>
+        <SectionHeading
+          eyebrow="Services"
+          title="Pick Your Travel Style"
+          maxWidth="xl"
+        />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {SERVICES.map((service) => (
             <Link
@@ -172,14 +170,7 @@ export default async function Home() {
 
       {/* Testimonials */}
       <section className="travel-shell">
-        <div className="mb-8 max-w-lg">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-brand-blue-700">
-            Traveller Stories
-          </p>
-          <h2 className="text-3xl font-bold text-brand-ink-900 md:text-4xl">
-            Happy Faces, Real Journeys
-          </h2>
-        </div>
+        <SectionHeading eyebrow="Traveller Stories" title="Happy Faces, Real Journeys" />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {(settings?.testimonials ?? []).map((t: Testimonial) => (
             <TestimonialCard
@@ -195,31 +186,22 @@ export default async function Home() {
 
       {/* CTA banner */}
       <section className="travel-shell">
-        <div className="brand-hero relative overflow-hidden rounded-3xl px-8 py-14 text-center md:px-16">
-          <Image
-            src="https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1800&q=80"
-            alt="Travel collage background"
-            fill
-            sizes="(max-width: 768px) 100vw, 1200px"
-            className="object-cover opacity-20"
-          />
-          <div className="brand-hero-glow pointer-events-none absolute inset-0" />
-          <h2 className="relative text-3xl font-bold text-brand-cream-100 md:text-4xl">
-            Ready to Turn These Visuals Into Your Real Trip?
-          </h2>
-          <p className="relative mt-3 text-brand-mist-200 text-base md:text-lg">
-            Share your dream destination. We will craft the route, stay, and
-            transport.
-          </p>
-          <div className="relative mt-8 flex flex-wrap justify-center gap-4">
-            <Button asChild variant="primary" size="lg">
-              <Link href="/contact">Talk to an Expert</Link>
-            </Button>
-            <Button asChild variant="hero-outline" size="lg">
-              <Link href="/packages">Browse Packages</Link>
-            </Button>
-          </div>
-        </div>
+        <CtaBanner
+          heading="Ready to Turn These Visuals Into Your Real Trip?"
+          description="Share your dream destination. We will craft the route, stay, and transport."
+          backgroundImage={{
+            src: "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1800&q=80",
+            alt: "Travel collage background",
+          }}
+          actions={[
+            { label: "Talk to an Expert", href: "/contact" },
+            {
+              label: "Browse Packages",
+              href: "/packages",
+              variant: "hero-outline",
+            },
+          ]}
+        />
       </section>
     </main>
   );

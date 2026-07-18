@@ -1,7 +1,7 @@
 import { createMetadata } from "@/lib/metadata";
-import Breadcrumb from "@/components/Breadcrumb";
 import ContactForm from "@/components/forms/ContactForm";
-import { Badge, Card, CardBody, CardTitle } from "@/components/ui";
+import PageHero from "@/components/PageHero";
+import { Card, CardTitle } from "@/components/ui";
 import { PackageService, SettingsService } from "@/services";
 import { SERVICE_INTEREST_OPTIONS } from "@/lib/form-constants";
 
@@ -83,18 +83,10 @@ export default async function ContactPage({
 
   return (
     <main className="flex flex-col gap-10">
-      <section className="brand-hero relative overflow-hidden px-6 py-10 md:px-10 md:py-12">
-        <div className="brand-hero-glow pointer-events-none absolute inset-0" />
-        <div className="relative max-w-3xl travel-shell ">
-          <h1 className="text-4xl font-bold text-brand-cream-100 md:text-5xl">
-            Contact Umiya Tours & Travels
-          </h1>
-          <p className="mt-4 max-w-2xl text-base text-brand-mist-200 md:text-lg">
-            Tell us what you need and we will suggest the right package, cab, or
-            group vehicle option for your journey.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        heading="Contact Umiya Tours & Travels"
+        description="Tell us what you need and we will suggest the right package, cab, or group vehicle option for your journey."
+      />
 
       <section className="travel-shell grid gap-6 lg:grid-cols-[2fr_1fr]">
         <ContactForm
@@ -102,15 +94,9 @@ export default async function ContactPage({
           initialMessage={initialMessage}
         />
 
-        <Card
-          variant="elevated"
-          padding="lg"
-          className="h-fit space-y-5 bg-brand-blue-900 "
-        >
+        <Card variant="elevated" padding="lg" className="h-fit space-y-5">
           <div>
-            <CardTitle className="text-brand-cream-100">
-              Umiya Tours & Travels (OPC) Pvt. Ltd.
-            </CardTitle>
+            <CardTitle>Umiya Tours & Travels (OPC) Pvt. Ltd.</CardTitle>
           </div>
 
           <div className="space-y-3 text-sm ">

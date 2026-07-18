@@ -1,5 +1,5 @@
-import BrandLogo from "@/components/BrandLogo";
 import { Badge, Button, Card, CardBody, CardTitle } from "@/components/ui";
+import CtaBanner from "@/components/CtaBanner";
 import { createMetadata } from "@/lib/metadata";
 import Image from "next/image";
 import Link from "next/link";
@@ -239,29 +239,15 @@ export default function ServicesPage() {
       </ServiceShowcase>
 
       {/* CTA */}
-      <section className="brand-hero relative overflow-hidden rounded-3xl px-8 py-14 text-center">
-        <div className="brand-hero-glow pointer-events-none absolute inset-0" />
-        <BrandLogo
-          variant="white"
-          size="lg"
-          decorative
-          className="pointer-events-none absolute right-4 top-4 h-10 w-auto opacity-60 md:right-6 md:top-6 md:h-14"
-        />
-        <h2 className="relative text-3xl font-bold text-brand-cream-100 md:text-4xl">
-          Not Sure Which Service Fits You?
-        </h2>
-        <p className="relative mt-3 text-brand-mist-200">
-          Chat with us and we will plan the perfect trip for you.
-        </p>
-        <div className="relative mt-8 flex flex-wrap justify-center gap-4">
-          <Button asChild variant="primary" size="lg">
-            <Link href="/contact">Contact Us</Link>
-          </Button>
-          <Button asChild variant="hero-outline" size="lg">
-            <Link href="/packages">View Packages</Link>
-          </Button>
-        </div>
-      </section>
+      <CtaBanner
+        heading="Not Sure Which Service Fits You?"
+        description="Chat with us and we will plan the perfect trip for you."
+        showLogo
+        actions={[
+          { label: "Contact Us", href: "/contact" },
+          { label: "View Packages", href: "/packages", variant: "hero-outline" },
+        ]}
+      />
     </main>
   );
 }

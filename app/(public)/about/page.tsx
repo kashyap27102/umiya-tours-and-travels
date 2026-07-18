@@ -1,9 +1,9 @@
 import { createMetadata } from "@/lib/metadata";
-import Breadcrumb from "@/components/Breadcrumb";
 import { Card, CardTitle, CardBody } from "@/components/ui";
 import { Badge } from "@/components/ui";
 import { Button } from "@/components/ui";
 import BrandLogo from "@/components/BrandLogo";
+import SectionHeading from "@/components/SectionHeading";
 import Link from "next/link";
 import { SettingsService } from "@/services";
 
@@ -83,14 +83,7 @@ export default async function AboutPage() {
 
       {/* Values */}
       <section>
-        <div className="mb-8 max-w-lg">
-          <Badge variant="brand" className="mb-3">
-            Our Values
-          </Badge>
-          <h2 className="text-3xl font-bold text-brand-ink-900 md:text-4xl">
-            What We Stand For
-          </h2>
-        </div>
+        <SectionHeading badge="Our Values" title="What We Stand For" />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {VALUES.map((v) => (
             <Card key={v.title} variant="default" padding="md">

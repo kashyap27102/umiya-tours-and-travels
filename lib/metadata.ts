@@ -115,5 +115,79 @@ export const localBusinessJsonLd = (): JsonLdNode => ({
   },
 });
 
+export const breadcrumbJsonLd = (
+  items: { name: string; url: string }[],
+): JsonLdNode => ({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: items.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.name,
+    item: item.url,
+  })),
+});
+
+type ProductJsonLdInput = {
+  name: string;
+  description: string;
+  images: string[];
+  sku: string;
+  category: string;
+  price: number;
+  url: string;
+  ratingValue: number;
+  ratingCount: number;
+  additionalProperties?: { name: string; value: string }[];
+};
+
+export const productJsonLd = ({
+  name,
+  description,
+  images,
+  sku,
+  category,
+  price,
+  url,
+  ratingValue,
+  ratingCount,
+  additionalProperties = [],
+}: ProductJsonLdInput): JsonLdNode => ({
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name,
+  description,
+  image: images,
+  sku,
+  category,
+  brand: {
+    "@type": "Brand",
+    name: SITE_NAME,
+  },
+  offers: {
+    "@type": "Offer",
+    url,
+    priceCurrency: "INR",
+    price,
+    availability: "https://schema.org/InStock",
+    seller: {
+      "@type": "TravelAgency",
+      name: SITE_NAME,
+    },
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue,
+    ratingCount,
+    bestRating: 5,
+    worstRating: 1,
+  },
+  additionalProperty: additionalProperties.map(({ name: propName, value }) => ({
+    "@type": "PropertyValue",
+    name: propName,
+    value,
+  })),
+});
+
 export const toJsonLd = (data: JsonLdNode | JsonLdNode[]) =>
   JSON.stringify(data);

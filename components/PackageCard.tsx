@@ -3,19 +3,13 @@ import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
 import { formatDurationLabel } from "@/lib/packages-constants";
+import { formatCurrency } from "@/lib/format";
 import type { PackageWithItinerary } from "@/types/package";
 
 interface PackageCardProps {
   item: PackageWithItinerary;
   compact?: boolean;
 }
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(value);
 
 export default function PackageCard({
   item,
