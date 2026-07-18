@@ -190,14 +190,14 @@ export default function ServicesPage() {
       </ServiceShowcase>
 
       <ServiceShowcase
-        id="cab-booking"
+        id="vehicle-booking"
         indexLabel="Service 02"
-        title="Cab Booking"
-        description="Reliable, on-time rides across Gujarat for airport transfers, railway pickups, local travel, and outstation plans. Choose the vehicle that matches your comfort and group size."
+        title="Vehicle Booking"
+        description="One form for every ride — reliable cabs for airport transfers, railway pickups, local travel, and outstation plans, plus group vehicles for school trips, weddings, tours, yatras, and corporate outings."
         imageSrc="https://images.unsplash.com/photo-1485291571150-772bcfc10da5?auto=format&fit=crop&w=1200&q=80"
         imageAlt="Premium travel car driving on scenic road"
-        ctaHref="/cab-booking"
-        ctaLabel="Book a Cab"
+        ctaHref="/vehicle-booking"
+        ctaLabel="Book Now"
         reverse
       >
         <div className="grid gap-4 sm:grid-cols-2">
@@ -208,18 +208,6 @@ export default function ServicesPage() {
             </Card>
           ))}
         </div>
-      </ServiceShowcase>
-
-      <ServiceShowcase
-        id="vehicle-booking"
-        indexLabel="Service 03"
-        title="Travel Vehicle Booking (Group Transport)"
-        description="Perfect for school trips, weddings, tours, yatras, and corporate outings. We help you choose the right vehicle capacity and route setup for a smooth group journey."
-        imageSrc="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80"
-        imageAlt="Large travel bus on highway"
-        ctaHref="/vehicle-booking"
-        ctaLabel="Hire a Vehicle"
-      >
         <div className="grid gap-4 md:grid-cols-3">
           {VEHICLES.map((v) => (
             <Card

@@ -54,7 +54,7 @@ export default function Navbar() {
             size="sm"
             className="hidden md:inline-flex"
           >
-            <Link href="/cab-booking">Book Now</Link>
+            <Link href="/vehicle-booking">Book Now</Link>
           </Button>
 
           {/* Mobile hamburger */}
@@ -98,7 +98,7 @@ export default function Navbar() {
           ))}
           <li className="px-6 pt-2 pb-4">
             <Button asChild variant="primary" size="md" className="w-full">
-              <Link href="/cab-booking" onClick={() => setOpen(false)}>
+              <Link href="/vehicle-booking" onClick={() => setOpen(false)}>
                 Book Now
               </Link>
             </Button>

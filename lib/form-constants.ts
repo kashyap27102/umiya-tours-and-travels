@@ -7,14 +7,11 @@ export const TRIP_TYPES = [
   "Railway Drop",
 ] as const;
 
-export const CAB_VEHICLE_TYPES = [
+export const VEHICLE_TYPES = [
   "Sedan",
   "SUV",
   "Innova Crysta",
   "Luxury",
-] as const;
-
-export const GROUP_VEHICLE_TYPES = [
   "Tempo Traveller 9-14",
   "Mini Bus 20-27",
   "Full Bus 35-50+",
@@ -31,7 +28,6 @@ export const TRAVEL_PURPOSES = [
 
 export const SERVICE_INTEREST_OPTIONS = [
   "Customized Travel Packages",
-  "Cab Booking",
   "Vehicle Booking",
   "Pre-Designed Packages",
   "General Inquiry",

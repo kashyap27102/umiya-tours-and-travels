@@ -37,10 +37,37 @@ export const phoneSchema = z.preprocess(
   z.string().regex(/^[+]?[0-9]{10,15}$/, "Enter a valid phone number"),
 );
 
+export const optionalNameSchema = z
+  .string()
+  .trim()
+  .max(FORM_LIMITS.nameMax, "Name is too long")
+  .transform(stripExtraSpaces)
+  .optional()
+  .or(z.literal(""));
+
+export const optionalPhoneSchema = z
+  .preprocess(
+    (value) => (typeof value === "string" ? value.replace(/\s+/g, "") : value),
+    z.union([
+      z.literal(""),
+      z.string().regex(/^[+]?[0-9]{10,15}$/, "Enter a valid phone number"),
+    ]),
+  )
+  .optional();
+
 export const emailSchema = z
   .string()
   .email("Enter a valid email address")
   .transform((value) => value.toLowerCase().trim());
+
+export const optionalEmailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .pipe(
+    z.union([z.literal(""), z.string().email("Enter a valid email address")]),
+  )
+  .optional();
 
 export const passengersSchema = z.coerce
   .number()

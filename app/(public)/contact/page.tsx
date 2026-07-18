@@ -41,11 +41,7 @@ const normalizeService = (
     return "Customized Travel Packages";
   }
 
-  if (normalized === "cab") {
-    return "Cab Booking";
-  }
-
-  if (normalized === "vehicle") {
+  if (normalized === "cab" || normalized === "vehicle") {
     return "Vehicle Booking";
   }
 

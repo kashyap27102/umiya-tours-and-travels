@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useTransition, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Badge,
   Button,
@@ -8,102 +10,81 @@ import {
   CardBody,
   CardTitle,
   Input,
+  Select,
+  Textarea,
 } from "@/components/ui";
+import TripTypeSelector from "@/components/forms/TripTypeSelector";
 import VehicleSelector from "@/components/forms/VehicleSelector";
-import { appConfig } from "@/lib/config";
-import {
-  GROUP_VEHICLE_TYPES,
-  TRAVEL_PURPOSES,
-  type TRAVEL_PURPOSES as TravelPurpose,
-} from "@/lib/form-constants";
-import { useFormSubmit } from "@/hooks/useFormSubmit";
+import { submitVehicleBookingForm } from "@/lib/actions/vehicle-booking-actions";
+import { TRAVEL_PURPOSES, TRIP_TYPES, VEHICLE_TYPES } from "@/lib/form-constants";
 import {
   vehicleBookingSchema,
+  type VehicleBookingData,
   type VehicleBookingInput,
 } from "@/schemas/vehicle-booking";
 
-const vehicleDescriptions: Partial<
-  Record<(typeof GROUP_VEHICLE_TYPES)[number], string>
-> = {
+const vehicleDescriptions: Partial<Record<(typeof VEHICLE_TYPES)[number], string>> = {
+  Sedan: "Comfortable for 1-3 travelers",
+  SUV: "Extra space for families",
+  "Innova Crysta": "Premium long-distance comfort",
+  Luxury: "Best-in-class experience",
   "Tempo Traveller 9-14": "Ideal for family tours and smaller groups",
   "Mini Bus 20-27": "Comfortable option for medium-size group travel",
   "Full Bus 35-50+": "Best for school, corporate, and large pilgrimages",
 };
 
-type VehicleBookingFormValues = {
-  vehicleType: (typeof GROUP_VEHICLE_TYPES)[number];
-  departureLocation: string;
-  destinationRoute: string;
-  travelStartDate: string;
-  travelEndDate: string;
-  passengers: number;
-  purpose: (typeof TravelPurpose)[number];
-  contactName: string;
-  contactPhone: string;
-  contactEmail: string;
-};
+const purposeOptions = [
+  { label: "Not specified", value: "" },
+  ...TRAVEL_PURPOSES.map((option) => ({ label: option, value: option })),
+];
 
-const initialValues: VehicleBookingFormValues = {
-  vehicleType: "Tempo Traveller 9-14",
-  departureLocation: "",
-  destinationRoute: "",
-  travelStartDate: "",
-  travelEndDate: "",
+const defaultValues: VehicleBookingInput = {
+  tripType: "One Way",
+  vehicleType: "Sedan",
+  pickupLocation: "",
+  dropLocation: "",
+  departureDate: "",
+  returnDate: "",
   passengers: 1,
-  purpose: "Tour",
+  purpose: "",
   contactName: "",
   contactPhone: "",
   contactEmail: "",
+  specialRequests: "",
 };
 
 export default function VehicleBookingForm() {
-  const [values, setValues] = useState(initialValues);
-
   const {
-    submit,
-    isSubmitting,
-    isSuccess,
-    isError,
-    errorMessage,
-    fieldErrors,
+    register,
+    control,
+    handleSubmit,
+    watch,
     reset,
-  } = useFormSubmit({
-    schema: vehicleBookingSchema,
-    endpoint: appConfig.forms.formspree.vehicleBookingEndpoint,
-    toPayload: (data) => ({
-      ...data,
-      service: "Vehicle Booking",
-    }),
+    formState: { errors },
+  } = useForm<VehicleBookingInput, unknown, VehicleBookingData>({
+    resolver: zodResolver(vehicleBookingSchema),
+    defaultValues,
   });
 
-  const setField = <K extends keyof VehicleBookingFormValues>(
-    key: K,
-    next: VehicleBookingFormValues[K],
-  ) => {
-    setValues((prev) => ({ ...prev, [key]: next }));
-  };
+  const [isPending, startTransition] = useTransition();
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const commonError = useMemo(
-    () => fieldErrors as Record<string, string | undefined>,
-    [fieldErrors],
-  );
+  const isRoundTrip = watch("tripType") === "Round Trip";
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const onSubmit = (data: VehicleBookingData) => {
+    startTransition(async () => {
+      const result = await submitVehicleBookingForm(data);
 
-    const payload: VehicleBookingInput = {
-      ...values,
-      travelStartDate: values.travelStartDate as unknown as Date,
-      travelEndDate: values.travelEndDate
-        ? (values.travelEndDate as unknown as Date)
-        : undefined,
-    };
-
-    const result = await submit(payload);
-
-    if (result.ok) {
-      setValues(initialValues);
-    }
+      if (result.success) {
+        setStatus("success");
+        setErrorMessage(null);
+        reset(defaultValues);
+      } else {
+        setStatus("error");
+        setErrorMessage(result.error);
+      }
+    });
   };
 
   return (
@@ -114,156 +95,166 @@ export default function VehicleBookingForm() {
             Vehicle Booking Form
           </CardTitle>
           <CardBody className="mt-2">
-            Book group transport for tours, events, pilgrimages, schools, and
-            corporate travel.
+            Book a cab or group vehicle for any trip — outstation rides,
+            airport transfers, tours, pilgrimages, and corporate travel. We
+            will confirm availability and pricing quickly.
           </CardBody>
         </div>
         <Badge variant="brand" size="md">
-          Group Transport
+          24x7 Support
         </Badge>
       </div>
 
-      {isSuccess && (
+      {status === "success" && (
         <div className="rounded-xl border border-brand-green-500/30 bg-brand-green-500/10 px-4 py-3 text-sm text-brand-green-700">
-          Your vehicle booking request was submitted successfully. Our team will
-          contact you soon.
+          Your vehicle booking request was submitted successfully. Our team
+          will contact you soon.
         </div>
       )}
 
-      {isError && errorMessage && (
+      {status === "error" && errorMessage && (
         <div className="rounded-xl border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorMessage}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <VehicleSelector
-          options={GROUP_VEHICLE_TYPES}
-          value={values.vehicleType}
-          onChange={(next) =>
-            setField(
-              "vehicleType",
-              next as VehicleBookingFormValues["vehicleType"],
-            )
-          }
-          descriptions={vehicleDescriptions}
-          label="Group Vehicle Type"
-          errorMessage={commonError.vehicleType}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <Controller
+          name="tripType"
+          control={control}
+          render={({ field }) => (
+            <TripTypeSelector
+              options={TRIP_TYPES}
+              value={field.value}
+              onChange={field.onChange}
+              errorMessage={errors.tripType?.message}
+            />
+          )}
+        />
+
+        <Controller
+          name="vehicleType"
+          control={control}
+          render={({ field }) => (
+            <VehicleSelector
+              options={VEHICLE_TYPES}
+              value={field.value}
+              onChange={field.onChange}
+              descriptions={vehicleDescriptions}
+              errorMessage={errors.vehicleType?.message}
+            />
+          )}
         />
 
         <div className="grid gap-4 md:grid-cols-2">
           <Input
-            label="Departure Location"
-            placeholder="Enter departure location"
-            value={values.departureLocation}
-            onChange={(e) => setField("departureLocation", e.target.value)}
-            errorMessage={commonError.departureLocation}
+            label="Pickup Location"
+            placeholder="Enter pickup location"
+            errorMessage={errors.pickupLocation?.message}
+            {...register("pickupLocation")}
           />
 
           <Input
-            label="Destination / Route"
-            placeholder="Enter destination or route"
-            value={values.destinationRoute}
-            onChange={(e) => setField("destinationRoute", e.target.value)}
-            errorMessage={commonError.destinationRoute}
-          />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <Input
-            label="Travel Start Date"
-            type="date"
-            value={values.travelStartDate}
-            onChange={(e) => setField("travelStartDate", e.target.value)}
-            errorMessage={commonError.travelStartDate}
-          />
-
-          <Input
-            label="Travel End Date (Optional)"
-            type="date"
-            value={values.travelEndDate}
-            onChange={(e) => setField("travelEndDate", e.target.value)}
-            errorMessage={commonError.travelEndDate}
-          />
-
-          <Input
-            label="Passengers"
-            type="number"
-            min={1}
-            max={80}
-            value={values.passengers}
-            onChange={(e) => setField("passengers", Number(e.target.value))}
-            errorMessage={commonError.passengers}
+            label="Drop Location"
+            placeholder="Enter destination"
+            errorMessage={errors.dropLocation?.message}
+            {...register("dropLocation")}
           />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="travel-purpose"
-              className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600"
-            >
-              Purpose
-            </label>
-            <select
-              id="travel-purpose"
-              className="min-h-11 w-full rounded-xl border border-brand-blue-900/20 bg-white px-4 py-2.5 text-sm font-medium text-brand-ink-900 transition-all outline-none focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-500/20"
-              value={values.purpose}
-              onChange={(e) =>
-                setField(
-                  "purpose",
-                  e.target.value as VehicleBookingFormValues["purpose"],
-                )
-              }
-            >
-              {TRAVEL_PURPOSES.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-            {commonError.purpose && (
-              <p className="text-xs text-red-500">{commonError.purpose}</p>
+          <Input
+            label="Departure Date & Time"
+            type="datetime-local"
+            errorMessage={errors.departureDate?.message}
+            {...register("departureDate")}
+          />
+
+          {isRoundTrip ? (
+            <Input
+              label="Return Date & Time"
+              type="datetime-local"
+              errorMessage={errors.returnDate?.message}
+              {...register("returnDate")}
+            />
+          ) : (
+            <div className="rounded-xl border border-dashed border-brand-blue-900/20 bg-brand-mist-200/35 px-4 py-3 text-sm text-brand-muted-600">
+              Return date is required only for round trips.
+            </div>
+          )}
+        </div>
+
+        <Input
+          label="Passengers"
+          type="number"
+          min={1}
+          max={80}
+          errorMessage={errors.passengers?.message}
+          {...register("passengers")}
+        />
+
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="purpose"
+            className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600"
+          >
+            Purpose (Optional)
+          </label>
+          <Controller
+            name="purpose"
+            control={control}
+            render={({ field }) => (
+              <Select
+                id="purpose"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                options={purposeOptions}
+                errorMessage={errors.purpose?.message}
+              />
             )}
-          </div>
+          />
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <Input
-            label="Contact Name"
+            label="Contact Name (Optional)"
             placeholder="Enter full name"
-            value={values.contactName}
-            onChange={(e) => setField("contactName", e.target.value)}
-            errorMessage={commonError.contactName}
+            errorMessage={errors.contactName?.message}
+            {...register("contactName")}
           />
 
           <Input
-            label="Contact Phone"
+            label="Contact Phone (Optional)"
             type="tel"
             placeholder="Enter phone number"
-            value={values.contactPhone}
-            onChange={(e) => setField("contactPhone", e.target.value)}
-            errorMessage={commonError.contactPhone}
+            errorMessage={errors.contactPhone?.message}
+            {...register("contactPhone")}
           />
 
           <Input
-            label="Contact Email"
+            label="Contact Email (Optional)"
             type="email"
             placeholder="Enter email address"
-            value={values.contactEmail}
-            onChange={(e) => setField("contactEmail", e.target.value)}
-            errorMessage={commonError.contactEmail}
+            errorMessage={errors.contactEmail?.message}
+            {...register("contactEmail")}
           />
         </div>
+
+        <Textarea
+          label="Special Requests (Optional)"
+          placeholder="Luggage info, child seat requirement, pickup notes, etc."
+          errorMessage={errors.specialRequests?.message}
+          {...register("specialRequests")}
+        />
 
         <div className="flex flex-wrap items-center gap-3">
           <Button
             type="submit"
             variant="primary"
             size="lg"
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? "Submitting..." : "Submit Vehicle Request"}
+            {isPending ? "Submitting..." : "Submit Booking Request"}
           </Button>
 
           <Button
@@ -271,10 +262,11 @@ export default function VehicleBookingForm() {
             variant="outline"
             size="lg"
             onClick={() => {
-              setValues(initialValues);
-              reset();
+              reset(defaultValues);
+              setStatus("idle");
+              setErrorMessage(null);
             }}
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             Reset
           </Button>

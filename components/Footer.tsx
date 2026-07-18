@@ -7,7 +7,6 @@ const QUICK_LINKS = [
   { href: "/about", label: "About Us" },
   { href: "/services", label: "Our Services" },
   { href: "/packages", label: "Travel Packages" },
-  { href: "/cab-booking", label: "Cab Booking" },
   { href: "/vehicle-booking", label: "Vehicle Booking" },
   { href: "/contact", label: "Contact Us" },
 ];

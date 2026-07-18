@@ -1,38 +1,49 @@
 import { z } from "zod";
-import { GROUP_VEHICLE_TYPES, TRAVEL_PURPOSES } from "@/lib/form-constants";
+import { TRAVEL_PURPOSES, TRIP_TYPES, VEHICLE_TYPES } from "@/lib/form-constants";
 import {
   dateSchema,
-  emailSchema,
   locationSchema,
-  nameSchema,
   optionalDateSchema,
+  optionalEmailSchema,
+  optionalMessageSchema,
+  optionalNameSchema,
+  optionalPhoneSchema,
   passengersSchema,
-  phoneSchema,
 } from "@/schemas/shared";
 
 export const vehicleBookingSchema = z
   .object({
-    vehicleType: z.enum(GROUP_VEHICLE_TYPES, {
+    tripType: z.enum(TRIP_TYPES, {
+      error: "Select a trip type",
+    }),
+    vehicleType: z.enum(VEHICLE_TYPES, {
       error: "Select a vehicle type",
     }),
-    departureLocation: locationSchema,
-    destinationRoute: locationSchema,
-    travelStartDate: dateSchema,
-    travelEndDate: optionalDateSchema,
+    pickupLocation: locationSchema,
+    dropLocation: locationSchema,
+    departureDate: dateSchema,
+    returnDate: optionalDateSchema,
     passengers: passengersSchema,
-    purpose: z.enum(TRAVEL_PURPOSES, {
-      error: "Select a purpose",
-    }),
-    contactName: nameSchema,
-    contactPhone: phoneSchema,
-    contactEmail: emailSchema,
+    purpose: z.enum(TRAVEL_PURPOSES).optional().or(z.literal("")),
+    contactName: optionalNameSchema,
+    contactPhone: optionalPhoneSchema,
+    contactEmail: optionalEmailSchema,
+    specialRequests: optionalMessageSchema,
   })
   .superRefine((value, ctx) => {
-    if (value.travelEndDate && value.travelEndDate < value.travelStartDate) {
+    if (value.tripType === "Round Trip" && !value.returnDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["travelEndDate"],
-        message: "End date cannot be earlier than start date",
+        path: ["returnDate"],
+        message: "Return date is required for round trips",
+      });
+    }
+
+    if (value.returnDate && value.returnDate < value.departureDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["returnDate"],
+        message: "Return date cannot be earlier than departure date",
       });
     }
   });

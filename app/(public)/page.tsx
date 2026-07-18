@@ -33,17 +33,10 @@ const SERVICES = [
     ctaHref: "/services#custom-packages",
   },
   {
-    title: "Cab Booking",
+    title: "Vehicle Booking",
     image:
       "https://images.unsplash.com/photo-1485291571150-772bcfc10da5?auto=format&fit=crop&w=1200&q=80",
-    ctaLabel: "Book a Cab",
-    ctaHref: "/cab-booking",
-  },
-  {
-    title: "Group Vehicles",
-    image:
-      "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80",
-    ctaLabel: "Hire a Vehicle",
+    ctaLabel: "Book Now",
     ctaHref: "/vehicle-booking",
   },
   {
