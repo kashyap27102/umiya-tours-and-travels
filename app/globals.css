@@ -141,6 +141,10 @@ a {
   animation: drawer-in 220ms ease-out;
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes drift-aurora {
   0% {
     transform: translate3d(-2%, 0, 0) scale(1);

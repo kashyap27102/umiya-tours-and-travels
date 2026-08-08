@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import PackageCard from "@/components/PackageCard";
 import { Badge, cn, Select } from "@/components/ui";
 import {
@@ -54,10 +55,17 @@ export default function PackagesCatalog({
   header,
   compactCards,
 }: Readonly<PackagesCatalogProps>) {
-  const [query, setQuery] = useState("");
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(() => searchParams.get("search") ?? "");
   const [selectedCategory, setSelectedCategory] = useState<
     "all" | (typeof PACKAGE_CATEGORIES)[number]
-  >("all");
+  >(() => {
+    const category = searchParams.get("category");
+    const categories: readonly string[] = PACKAGE_CATEGORIES;
+    return category && categories.includes(category)
+      ? (category as (typeof PACKAGE_CATEGORIES)[number])
+      : "all";
+  });
   const [selectedDuration, setSelectedDuration] = useState<
     "all" | PackageDurationBucket
   >("all");

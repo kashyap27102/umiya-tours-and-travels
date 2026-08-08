@@ -1,8 +1,15 @@
+import { Suspense } from "react";
 import PackagesCatalog from "@/components/packages/PackagesCatalog";
 import CtaBanner from "@/components/CtaBanner";
 import PageHero from "@/components/PageHero";
 import { createMetadata } from "@/lib/metadata";
 import { PackageService } from "@/services";
+
+function PackagesCatalogFallback() {
+  return (
+    <div className="h-64 animate-pulse rounded-3xl border border-brand-blue-900/10 bg-white/60" />
+  );
+}
 
 export const metadata = createMetadata({
   title: "Travel Packages | Umiya Tours & Travels",
@@ -30,7 +37,9 @@ export default async function PackagesPage() {
       />
 
       <div className="travel-shell flex flex-col gap-10">
-        <PackagesCatalog packages={packages} />
+        <Suspense fallback={<PackagesCatalogFallback />}>
+          <PackagesCatalog packages={packages} />
+        </Suspense>
 
         <CtaBanner
           heading="Need Help Choosing the Right Package?"

@@ -5,9 +5,11 @@ import HeroBanner from "@/components/HeroBanner";
 import TestimonialCard from "@/components/TestimonialCard";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import TrendingPackages from "@/components/TrendingPackages";
+import DomesticDestinations from "@/components/DomesticDestinations";
 import SectionHeading from "@/components/SectionHeading";
 import CtaBanner from "@/components/CtaBanner";
 import { PackageService, SettingsService } from "@/services";
+import { DOMESTIC_DESTINATIONS } from "@/lib/destinations";
 import type { Testimonial } from "@/types";
 
 export const metadata = createMetadata({
@@ -142,6 +144,9 @@ export default async function Home() {
         domestic={domesticPackages}
         international={internationalPackages}
       />
+
+      {/* Domestic destinations */}
+      <DomesticDestinations destinations={DOMESTIC_DESTINATIONS} />
 
       {/* Visual service cards */}
       <section className="travel-shell">
