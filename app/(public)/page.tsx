@@ -7,7 +7,6 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import TrendingPackages from "@/components/TrendingPackages";
 import DomesticDestinations from "@/components/DomesticDestinations";
 import SectionHeading from "@/components/SectionHeading";
-import CtaBanner from "@/components/CtaBanner";
 import { PackageService, SettingsService } from "@/services";
 import { DOMESTIC_DESTINATIONS } from "@/lib/destinations";
 import type { Testimonial } from "@/types";
@@ -208,25 +207,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* CTA banner */}
-      <section className="travel-shell">
-        <CtaBanner
-          heading="Ready to Turn These Visuals Into Your Real Trip?"
-          description="Share your dream destination. We will craft the route, stay, and transport."
-          backgroundImage={{
-            src: "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1800&q=80",
-            alt: "Travel collage background",
-          }}
-          actions={[
-            { label: "Talk to an Expert", href: "/contact" },
-            {
-              label: "Browse Packages",
-              href: "/packages",
-              variant: "hero-outline",
-            },
-          ]}
-        />
-      </section>
     </main>
   );
 }
