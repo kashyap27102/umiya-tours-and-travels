@@ -17,7 +17,6 @@ export const CONTACT = {
 export const CORE_ROUTES = [
   "/",
   "/about",
-  "/services",
   "/packages",
   "/vehicle-booking",
   "/contact",

@@ -7,10 +7,7 @@ import { Menu, X } from "lucide-react";
 import * as React from "react";
 
 const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/services", label: "Services" },
-  { href: "/packages", label: "Packages" },
+  { href: "/packages", label: "Tour Packages" },
   { href: "/contact", label: "Contact" },
 ] as const;
 

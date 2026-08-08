@@ -15,7 +15,7 @@ export default function ServiceCard({
   title,
   description,
   ctaLabel = "Learn More",
-  ctaHref = "/services",
+  ctaHref = "/about",
 }: ServiceCardProps) {
   return (
     <Card
