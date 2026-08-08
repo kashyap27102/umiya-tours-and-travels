@@ -8,6 +8,8 @@ export { Badge, badgeVariants } from "./Badge";
 export type { BadgeProps } from "./Badge";
 export { default as ImageCarousel } from "./ImageCarousel";
 export type { CarouselItem } from "./ImageCarousel";
+export { default as HorizontalScroller } from "./HorizontalScroller";
+export type { HorizontalScrollerProps } from "./HorizontalScroller";
 export { cn } from "./cn";
 export { default as Modal } from "./Modal";
 export { AlertDialog } from "./AlertDialog";

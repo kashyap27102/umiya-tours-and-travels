@@ -7,6 +7,7 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import TrendingPackages from "@/components/TrendingPackages";
 import DomesticDestinations from "@/components/DomesticDestinations";
 import SectionHeading from "@/components/SectionHeading";
+import { HorizontalScroller } from "@/components/ui";
 import { PackageService, SettingsService } from "@/services";
 import { DOMESTIC_DESTINATIONS } from "@/lib/destinations";
 import type { Testimonial } from "@/types";
@@ -194,17 +195,21 @@ export default async function Home() {
           eyebrow="Traveller Stories"
           title="Happy Faces, Real Journeys"
         />
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <HorizontalScroller itemLabel="testimonials">
           {(settings?.testimonials ?? []).map((t: Testimonial) => (
-            <TestimonialCard
+            <div
               key={t.name}
-              name={t.name}
-              location={t.location}
-              rating={t.rating as 1 | 2 | 3 | 4 | 5}
-              review={t.review}
-            />
+              className="mx-1 w-72 flex-none snap-start sm:w-80"
+            >
+              <TestimonialCard
+                name={t.name}
+                location={t.location}
+                rating={t.rating as 1 | 2 | 3 | 4 | 5}
+                review={t.review}
+              />
+            </div>
           ))}
-        </div>
+        </HorizontalScroller>
       </section>
 
     </main>
