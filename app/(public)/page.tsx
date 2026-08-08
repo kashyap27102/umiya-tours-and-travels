@@ -24,6 +24,31 @@ export const metadata = createMetadata({
   ],
 });
 
+const HERO_IMAGES = [
+  {
+    src: "https://images.unsplash.com/photo-1567255097545-018d2b9c414c?auto=format&fit=crop&w=1800&q=80",
+    alt: "Taj Mahal, Agra",
+    focalPoint: "center",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1578999935853-4ec5fa6c1f60?auto=format&fit=crop&w=1800&q=80",
+    alt: "Hawa Mahal, Jaipur",
+    focalPoint: "center",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1663480450637-a635e10ac562?auto=format&fit=crop&w=1800&q=80",
+    alt: "Kerala backwaters",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1727276884218-ec3be46cda91?auto=format&fit=crop&w=1800&q=80",
+    alt: "Beach in Goa",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1715457573748-8e8a70b2c1be?auto=format&fit=crop&w=1800&q=80",
+    alt: "Dal Lake, Srinagar",
+  },
+];
+
 const SERVICES = [
   {
     title: "Custom Packages",
@@ -107,11 +132,9 @@ export default async function Home() {
     <main className="flex flex-col gap-16 ">
       {/* Hero */}
       <HeroBanner
-        heading={settings?.heroHeading ?? ""}
-        subheading={settings?.heroSubheading ?? ""}
-        primaryCta={{ label: "Explore Packages", href: "/packages" }}
-        imageSrc="https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1800&q=80"
-        imageAlt="Scenic tropical destination with turquoise water"
+        heading={`Har Safar,\nEk Yaadgaar Kahani`}
+        subheading="Family holidays, spiritual journeys, weekend getaways and international adventures—planned with care."
+        images={HERO_IMAGES}
       />
 
       {/* Trending packages */}
@@ -163,7 +186,10 @@ export default async function Home() {
 
       {/* Testimonials */}
       <section className="travel-shell">
-        <SectionHeading eyebrow="Traveller Stories" title="Happy Faces, Real Journeys" />
+        <SectionHeading
+          eyebrow="Traveller Stories"
+          title="Happy Faces, Real Journeys"
+        />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {(settings?.testimonials ?? []).map((t: Testimonial) => (
             <TestimonialCard
