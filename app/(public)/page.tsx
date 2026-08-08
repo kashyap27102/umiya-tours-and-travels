@@ -191,11 +191,11 @@ export default async function Home() {
 
       {/* Testimonials */}
       <section className="travel-shell">
-        <SectionHeading
+        <HorizontalScroller
           eyebrow="Traveller Stories"
           title="Happy Faces, Real Journeys"
-        />
-        <HorizontalScroller itemLabel="testimonials">
+          itemLabel="testimonials"
+        >
           {(settings?.testimonials ?? []).map((t: Testimonial) => (
             <div
               key={t.name}

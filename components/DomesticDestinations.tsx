@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HorizontalScroller } from "@/components/ui";
-import SectionHeading from "@/components/SectionHeading";
 import type { Destination } from "@/lib/destinations";
 
 interface DomesticDestinationsProps {
@@ -17,9 +16,11 @@ export default function DomesticDestinations({
 
   return (
     <section className="travel-shell">
-      <SectionHeading eyebrow="Explore India" title="Domestic Destinations" />
-
-      <HorizontalScroller itemLabel="destinations">
+      <HorizontalScroller
+        eyebrow="Explore India"
+        title="Domestic Destinations"
+        itemLabel="destinations"
+      >
         {destinations.map((destination) => (
           <Link
             key={destination.slug}

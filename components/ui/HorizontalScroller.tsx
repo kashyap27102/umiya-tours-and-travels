@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@/components/ui/Button";
+import SectionHeading from "@/components/SectionHeading";
 import { cn } from "@/components/ui/cn";
 
 export interface HorizontalScrollerProps {
@@ -10,12 +10,16 @@ export interface HorizontalScrollerProps {
   className?: string;
   /** Used to build the prev/next button aria-labels, e.g. "destinations" */
   itemLabel?: string;
+  eyebrow?: string;
+  title: string;
 }
 
 export default function HorizontalScroller({
   children,
   className,
   itemLabel = "items",
+  eyebrow,
+  title,
 }: HorizontalScrollerProps) {
   const scrollerRef = React.useRef<HTMLDivElement>(null);
 
@@ -32,7 +36,31 @@ export default function HorizontalScroller({
   };
 
   return (
-    <div className="group relative">
+    <div>
+      <div className="mb-4 flex items-end justify-between gap-4">
+        <SectionHeading eyebrow={eyebrow} title={title} className="mb-0" />
+
+        <div className="hidden shrink-0 gap-2 lg:flex">
+          <button
+            type="button"
+            aria-label={`Scroll to previous ${itemLabel}`}
+            onClick={() => scrollByCards(-1)}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-brand-blue-700 bg-brand-blue-700 text-lg font-bold text-white shadow-md transition-colors hover:bg-brand-blue-900"
+          >
+            <span aria-hidden>‹</span>
+          </button>
+
+          <button
+            type="button"
+            aria-label={`Scroll to next ${itemLabel}`}
+            onClick={() => scrollByCards(1)}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-brand-blue-700 bg-brand-blue-700 text-lg font-bold text-white shadow-md transition-colors hover:bg-brand-blue-900"
+          >
+            <span aria-hidden>›</span>
+          </button>
+        </div>
+      </div>
+
       <div
         ref={scrollerRef}
         className={cn(
@@ -46,32 +74,6 @@ export default function HorizontalScroller({
       >
         {children}
       </div>
-
-      <Button
-        type="button"
-        variant="solid"
-        size="md"
-        aria-label={`Scroll to previous ${itemLabel}`}
-        onClick={() => scrollByCards(-1)}
-        className="absolute left-0 top-1/2 hidden -translate-y-1/2 rounded-full px-4 py-3 transition-all duration-300 hover:bg-brand-blue-900 lg:flex"
-      >
-        <span aria-hidden className="text-lg font-bold">
-          ‹
-        </span>
-      </Button>
-
-      <Button
-        type="button"
-        variant="solid"
-        size="md"
-        aria-label={`Scroll to next ${itemLabel}`}
-        onClick={() => scrollByCards(1)}
-        className="absolute right-0 top-1/2 hidden -translate-y-1/2 rounded-full px-4 py-3 transition-all duration-300 hover:bg-brand-blue-900 lg:flex"
-      >
-        <span aria-hidden className="text-lg font-bold">
-          ›
-        </span>
-      </Button>
     </div>
   );
 }
