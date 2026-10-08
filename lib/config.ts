@@ -4,12 +4,6 @@ const siteUrlFromEnv = process.env.NEXT_PUBLIC_SITE_URL;
 
 export const appConfig = {
   siteUrl: normalizeUrl(siteUrlFromEnv || "https://umiyatoursandtravels.com"),
-  forms: {
-    formspree: {
-      contactEndpoint: process.env.NEXT_PUBLIC_FORMSPREE_CONTACT || "",
-      packageInquiryEndpoint: process.env.NEXT_PUBLIC_FORMSPREE_PACKAGE || "",
-    },
-  },
   featureFlags: {
     enablePackageFiltering: true,
     enablePackageSorting: true,

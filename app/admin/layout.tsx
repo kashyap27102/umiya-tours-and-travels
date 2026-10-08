@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminMobileHeader from "@/components/admin/AdminMobileHeader";
+import { createMetadata } from "@/lib/metadata";
+
+export const metadata: Metadata = createMetadata({
+  title: "Admin Dashboard",
+  description: "Umiya Tours & Travels admin dashboard.",
+  path: "/admin",
+  noIndex: true,
+});
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (

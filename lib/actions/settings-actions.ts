@@ -37,7 +37,8 @@ export async function updateBusinessSettings(
     revalidate();
     return { success: true, data: null, message: "Business settings saved" };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Failed to save" };
+    console.error("Failed to save settings:", error);
+    return { success: false, error: "Failed to save. Please try again." };
   }
 }
 
@@ -55,7 +56,8 @@ export async function updateHeroSettings(
     revalidate();
     return { success: true, data: null, message: "Hero settings saved" };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Failed to save" };
+    console.error("Failed to save settings:", error);
+    return { success: false, error: "Failed to save. Please try again." };
   }
 }
 
@@ -73,7 +75,8 @@ export async function updateAboutSettings(
     revalidate();
     return { success: true, data: null, message: "About settings saved" };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Failed to save" };
+    console.error("Failed to save settings:", error);
+    return { success: false, error: "Failed to save. Please try again." };
   }
 }
 
@@ -92,7 +95,8 @@ export async function updateStatsSettings(
     revalidate();
     return { success: true, data: null, message: "Stats saved" };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Failed to save" };
+    console.error("Failed to save settings:", error);
+    return { success: false, error: "Failed to save. Please try again." };
   }
 }
 
@@ -111,7 +115,8 @@ export async function updateTestimonialsSettings(
     revalidate();
     return { success: true, data: null, message: "Testimonials saved" };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Failed to save" };
+    console.error("Failed to save settings:", error);
+    return { success: false, error: "Failed to save. Please try again." };
   }
 }
 
@@ -129,6 +134,7 @@ export async function updateFooterSettings(
     revalidate();
     return { success: true, data: null, message: "Footer settings saved" };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Failed to save" };
+    console.error("Failed to save settings:", error);
+    return { success: false, error: "Failed to save. Please try again." };
   }
 }

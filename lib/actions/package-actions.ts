@@ -2,12 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 import { prismaClient } from "@/lib/prisma";
-import type { PackageFormValues } from "@/schemas/package";
+import { packageFormSchema, type PackageFormValues } from "@/schemas/package";
 import type { ApiResponse } from "@/types/api-response";
 
 export async function createPackage(
-  data: PackageFormValues,
+  input: PackageFormValues,
 ): Promise<ApiResponse<{ id: string; slug: string }>> {
+  const parsed = packageFormSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Please check the package details and try again.",
+    };
+  }
+  const data = parsed.data;
+
   try {
     // Generate slug from package name
     const slug = data.name
@@ -64,19 +73,27 @@ export async function createPackage(
       message: "Package created successfully",
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to create package";
+    console.error("Failed to create package:", error);
     return {
       success: false,
-      error: errorMessage,
+      error: "Failed to create package. Please try again.",
     };
   }
 }
 
 export async function editPackage(
   packageId: string,
-  data: PackageFormValues,
+  input: PackageFormValues,
 ): Promise<ApiResponse<{ id: string; slug: string }>> {
+  const parsed = packageFormSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Please check the package details and try again.",
+    };
+  }
+  const data = parsed.data;
+
   try {
     const existingPackage = await prismaClient.package.findUnique({
       where: { id: packageId },
@@ -136,11 +153,10 @@ export async function editPackage(
       message: "Package updated successfully",
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to update package";
+    console.error("Failed to update package:", error);
     return {
       success: false,
-      error: errorMessage,
+      error: "Failed to update package. Please try again.",
     };
   }
 }
@@ -182,11 +198,10 @@ export async function deletePackage(
       message: "Package deleted successfully",
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to delete package";
+    console.error("Failed to delete package:", error);
     return {
       success: false,
-      error: errorMessage,
+      error: "Failed to delete package. Please try again.",
     };
   }
 }

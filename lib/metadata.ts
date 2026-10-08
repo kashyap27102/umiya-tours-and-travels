@@ -87,7 +87,7 @@ export const organizationJsonLd = (): JsonLdNode => ({
   "@type": "TravelAgency",
   name: SITE_NAME,
   url: SITE_URL,
-  telephone: "+91 99741 48390",
+  telephone: "+91 76006 17936",
   address: {
     "@type": "PostalAddress",
     streetAddress: "204, Keshav Aaradhyam, Kudasan",
@@ -104,7 +104,7 @@ export const localBusinessJsonLd = (): JsonLdNode => ({
   name: SITE_NAME,
   image: toAbsoluteUrl(DEFAULT_OG_IMAGE),
   url: SITE_URL,
-  telephone: "+91 99741 48390",
+  telephone: "+91 76006 17936",
   address: {
     "@type": "PostalAddress",
     streetAddress: "204, Keshav Aaradhyam, Kudasan",

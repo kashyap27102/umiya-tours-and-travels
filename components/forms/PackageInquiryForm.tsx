@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Button, Input, Textarea } from "@/components/ui";
-import { appConfig } from "@/lib/config";
-import { useFormSubmit } from "@/hooks/useFormSubmit";
+import { submitPackageInquiry } from "@/lib/actions/package-inquiry-actions";
+import { mapZodFieldErrors, type FieldErrors } from "@/lib/form-utils";
 import {
   packageInquirySchema,
   type PackageInquiryInput,
@@ -46,23 +46,13 @@ export default function PackageInquiryForm({
   const [values, setValues] = useState<PackageInquiryFormValues>(() =>
     makeInitialValues(packages, preselectedPackageSlug),
   );
-
-  const {
-    submit,
-    isSubmitting,
-    isSuccess,
-    isError,
-    errorMessage,
-    fieldErrors,
-    reset,
-  } = useFormSubmit({
-    schema: packageInquirySchema,
-    endpoint: appConfig.forms.formspree.packageInquiryEndpoint,
-    toPayload: (data) => ({
-      ...data,
-      service: "Package Inquiry",
-    }),
-  });
+  const [honeypot, setHoneypot] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    FieldErrors<Record<string, unknown>>
+  >({});
 
   const setField = <K extends keyof PackageInquiryFormValues>(
     key: K,
@@ -76,10 +66,12 @@ export default function PackageInquiryForm({
     [fieldErrors],
   );
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setErrorMessage(null);
+    setFieldErrors({});
 
-    const payload: PackageInquiryInput = {
+    const rawPayload: PackageInquiryInput = {
       packageSlug: values.packageSlug,
       travelDate: values.travelDate
         ? (values.travelDate as unknown as Date)
@@ -92,12 +84,26 @@ export default function PackageInquiryForm({
       serviceInterested: "Pre-Designed Packages",
     };
 
-    const result = await submit(payload);
-
-    if (result.ok) {
-      setValues(makeInitialValues(packages, preselectedPackageSlug));
-      onSuccess?.();
+    const parsed = packageInquirySchema.safeParse(rawPayload);
+    if (!parsed.success) {
+      setFieldErrors(mapZodFieldErrors(parsed.error));
+      setStatus("error");
+      return;
     }
+
+    startTransition(async () => {
+      const result = await submitPackageInquiry(parsed.data, honeypot);
+
+      if (result.success) {
+        setStatus("success");
+        setValues(makeInitialValues(packages, preselectedPackageSlug));
+        setHoneypot("");
+        onSuccess?.();
+      } else {
+        setStatus("error");
+        setErrorMessage(result.error);
+      }
+    });
   };
 
   return (
@@ -107,20 +113,31 @@ export default function PackageInquiryForm({
         with quote and final itinerary options.
       </p>
 
-      {isSuccess && (
+      {status === "success" && (
         <div className="rounded-xl border border-brand-green-500/30 bg-brand-green-500/10 px-4 py-3 text-sm text-brand-green-700">
           Your package inquiry was submitted successfully. We will contact you
           shortly.
         </div>
       )}
 
-      {isError && errorMessage && (
+      {status === "error" && errorMessage && (
         <div className="rounded-xl border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorMessage}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden"
+        />
+
         <div className="grid gap-4 md:grid-cols-3">
           <div className="flex flex-col gap-1.5 md:col-span-2">
             <label
@@ -207,9 +224,9 @@ export default function PackageInquiryForm({
             type="submit"
             variant="primary"
             size="lg"
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? "Submitting..." : "Submit Package Inquiry"}
+            {isPending ? "Submitting..." : "Submit Package Inquiry"}
           </Button>
 
           <Button
@@ -218,9 +235,12 @@ export default function PackageInquiryForm({
             size="lg"
             onClick={() => {
               setValues(makeInitialValues(packages, preselectedPackageSlug));
-              reset();
+              setHoneypot("");
+              setStatus("idle");
+              setErrorMessage(null);
+              setFieldErrors({});
             }}
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             Reset
           </Button>
