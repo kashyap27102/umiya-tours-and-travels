@@ -12,6 +12,10 @@ import {
 } from "lucide-react";
 import { Badge, Card } from "@/components/ui";
 import { computeStartingPrice } from "@/lib/package-pricing";
+import {
+  PACKAGE_STATUS_BADGE,
+  PACKAGE_STATUS_LABEL,
+} from "@/lib/package-status";
 import type { PackageFormValues } from "@/schemas/package";
 import type { DestinationWithHotels } from "@/services/taxonomy-service";
 import type { Category } from "@/app/generated/prisma/client";
@@ -109,15 +113,18 @@ export function ReviewPanel({
           />
           <DetailItem
             icon={
-              <Badge
-                variant={v.status === "active" ? "success" : "outline"}
-                size="md"
-              >
-                {v.status?.toUpperCase()}
+              <Badge variant={PACKAGE_STATUS_BADGE[v.status]} size="md">
+                {PACKAGE_STATUS_LABEL[v.status].toUpperCase()}
               </Badge>
             }
             label="Status"
-            value={v.status === "active" ? "Published" : "Draft"}
+            value={
+              v.status === "active"
+                ? "Published"
+                : v.status === "draft"
+                  ? "Draft - not on the website"
+                  : "Hidden from the website"
+            }
           />
           <DetailItem
             icon={<Calendar className="h-4 w-4" />}

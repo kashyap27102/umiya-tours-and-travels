@@ -8,6 +8,10 @@ import { AlertDialog } from "@/components/ui/AlertDialog";
 import PackageForm from "@/components/admin/PackageForm";
 import { usePackageForm } from "@/hooks/usePackageForm";
 import { usePackageSubmit } from "@/hooks/usePackageSubmit";
+import {
+  PACKAGE_STATUS_BADGE,
+  PACKAGE_STATUS_LABEL,
+} from "@/lib/package-status";
 import type { PackageFormValues } from "@/schemas/package";
 import type { PackageForEdit } from "@/types/package";
 import type { DestinationWithHotels } from "@/services/taxonomy-service";
@@ -27,21 +31,26 @@ function toFormValues(pkg: PackageForEdit): Partial<PackageFormValues> {
     status: pkg.status,
     durationDays: pkg.durationDays,
     durationNights: pkg.durationNights,
-    variants: pkg.variants.map((v) => ({
-      name: v.name,
-      pricingMode: v.pricingMode,
-      flatPrice: v.flatPrice,
-      prices: v.prices.map((p) => ({
-        persons: p.persons,
-        pricePerPerson: p.pricePerPerson,
-      })),
-      stays: v.stays.map((s) => ({
-        destinationId: s.destinationId,
-        hotelId: s.hotelId,
-        nights: s.nights,
-        roomType: s.roomType ?? "",
-      })),
-    })),
+    // A draft may have no variants yet; leaving this undefined gives the form
+    // its default empty "Standard" variant.
+    variants:
+      pkg.variants.length === 0
+        ? undefined
+        : pkg.variants.map((v) => ({
+            name: v.name,
+            pricingMode: v.pricingMode,
+            flatPrice: v.flatPrice,
+            prices: v.prices.map((p) => ({
+              persons: p.persons,
+              pricePerPerson: p.pricePerPerson,
+            })),
+            stays: v.stays.map((s) => ({
+              destinationId: s.destinationId,
+              hotelId: s.hotelId,
+              nights: s.nights,
+              roomType: s.roomType ?? "",
+            })),
+          })),
     images: pkg.images,
     summary: pkg.summary,
     highlights: pkg.highlights.length > 0 ? pkg.highlights : [""],
@@ -60,12 +69,17 @@ export default function EditPackageClient({
   categories,
 }: Readonly<EditPackageClientProps>) {
   const hookResult = usePackageForm(toFormValues(pkg));
-  const { isSubmitting, handleEdit, handleDelete } = usePackageSubmit();
+  const { isSubmitting, handleEdit, saveDraft, handleDelete } =
+    usePackageSubmit();
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleValidSubmit = async (data: PackageFormValues) => {
     await handleEdit(pkg.id, data);
+  };
+
+  const handleSaveDraft = async (data: PackageFormValues) => {
+    await saveDraft(data, pkg.id);
   };
 
   const handleDeleteConfirm = async () => {
@@ -85,16 +99,10 @@ export default function EditPackageClient({
               Edit Package
             </h1>
             <Badge
-              variant={
-                hookResult.step1Form.watch("status") === "active"
-                  ? "success"
-                  : "outline"
-              }
+              variant={PACKAGE_STATUS_BADGE[hookResult.step1Form.watch("status")]}
               size="md"
             >
-              {hookResult.step1Form.watch("status") === "active"
-                ? "Active"
-                : "Inactive"}
+              {PACKAGE_STATUS_LABEL[hookResult.step1Form.watch("status")]}
             </Badge>
           </div>
           <p className="text-sm text-brand-muted-600">{pkg.name}</p>
@@ -135,6 +143,7 @@ export default function EditPackageClient({
         {...hookResult}
         destinations={destinations}
         categories={categories}
+        onSaveDraft={pkg.status === "draft" ? handleSaveDraft : undefined}
         submitLabel="Save Changes"
         onValidSubmit={handleValidSubmit}
         isSubmitting={isSubmitting}

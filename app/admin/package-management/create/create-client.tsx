@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import PackageForm from "@/components/admin/PackageForm";
@@ -18,14 +19,29 @@ export default function CreatePackageClient({
   categories: Category[];
 }>) {
   const hookResult = usePackageForm();
-  const { isSubmitting, handleCreate } = usePackageSubmit();
+  const { isSubmitting, handleCreate, handleEdit, saveDraft } =
+    usePackageSubmit();
+  // Set after the first "Save draft"; later saves update this package instead
+  // of creating a copy.
+  const [savedId, setSavedId] = useState<string | null>(null);
+
+  const finishOptions = {
+    onSuccess: () => hookResult.resetAll(),
+    shouldRedirect: true,
+    redirectPath: "/admin/package-management",
+  };
 
   const handleValidSubmit = async (data: PackageFormValues) => {
-    await handleCreate(data, {
-      onSuccess: () => hookResult.resetAll(),
-      shouldRedirect: true,
-      redirectPath: "/admin/package-management",
-    });
+    if (savedId) {
+      await handleEdit(savedId, data, finishOptions);
+    } else {
+      await handleCreate(data, finishOptions);
+    }
+  };
+
+  const handleSaveDraft = async (data: PackageFormValues) => {
+    const id = await saveDraft(data, savedId);
+    if (id) setSavedId(id);
   };
 
   return (
@@ -38,6 +54,12 @@ export default function CreatePackageClient({
           <p className="text-sm text-brand-muted-600">
             Add a new travel package to the public catalog.
           </p>
+          {savedId && (
+            <p className="text-xs font-medium text-brand-green-700">
+              Draft saved. You can leave and finish it later from the package
+              list.
+            </p>
+          )}
         </div>
         <Link href="/admin/package-management">
           <Button variant="outline">
@@ -51,6 +73,7 @@ export default function CreatePackageClient({
         {...hookResult}
         destinations={destinations}
         categories={categories}
+        onSaveDraft={handleSaveDraft}
         submitLabel="Create Package"
         onValidSubmit={handleValidSubmit}
         isSubmitting={isSubmitting}

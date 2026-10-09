@@ -10,26 +10,46 @@ import {
   validateVariants,
 } from "@/services/package-variant-service";
 import { packageFormSchema, type PackageFormValues } from "@/schemas/package";
+import { normalizeDraft } from "@/schemas/package-draft";
 import type { ApiResponse } from "@/types/api-response";
 
 const UNAUTHORIZED = "You must be signed in as an admin.";
+
+/**
+ * Drafts only need a name (the rest is cleaned up, not enforced). Anything else
+ * must pass the full rules, which is what stops half-finished packages going live.
+ */
+function parsePackageInput(
+  input: PackageFormValues,
+): { error: string } | { data: PackageFormValues } {
+  if (input?.status === "draft") return normalizeDraft(input);
+
+  const parsed = packageFormSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      error:
+        parsed.error.issues[0]?.message ??
+        "Please check the package details and try again.",
+    };
+  }
+  return { data: parsed.data };
+}
 
 export async function createPackage(
   input: PackageFormValues,
 ): Promise<ApiResponse<{ id: string; slug: string }>> {
   if (!(await verifySession())) return { success: false, error: UNAUTHORIZED };
 
-  const parsed = packageFormSchema.safeParse(input);
-  if (!parsed.success) {
-    return {
-      success: false,
-      error: parsed.error.issues[0]?.message ?? "Please check the package details and try again.",
-    };
-  }
+  const parsed = parsePackageInput(input);
+  if ("error" in parsed) return { success: false, error: parsed.error };
   const data = parsed.data;
 
   try {
-    const variantError = await validateVariants(data.variants, data.durationNights);
+    const variantError = await validateVariants(
+      data.variants,
+      data.durationNights,
+      { checkNights: data.status !== "draft" },
+    );
     if (variantError) return { success: false, error: variantError };
     const links = await resolvePackageLinks(data.destinationIds, data.categoryIds);
     if ("error" in links) return { success: false, error: links.error };
@@ -110,17 +130,16 @@ export async function editPackage(
 ): Promise<ApiResponse<{ id: string; slug: string }>> {
   if (!(await verifySession())) return { success: false, error: UNAUTHORIZED };
 
-  const parsed = packageFormSchema.safeParse(input);
-  if (!parsed.success) {
-    return {
-      success: false,
-      error: parsed.error.issues[0]?.message ?? "Please check the package details and try again.",
-    };
-  }
+  const parsed = parsePackageInput(input);
+  if ("error" in parsed) return { success: false, error: parsed.error };
   const data = parsed.data;
 
   try {
-    const variantError = await validateVariants(data.variants, data.durationNights);
+    const variantError = await validateVariants(
+      data.variants,
+      data.durationNights,
+      { checkNights: data.status !== "draft" },
+    );
     if (variantError) return { success: false, error: variantError };
     const links = await resolvePackageLinks(data.destinationIds, data.categoryIds);
     if ("error" in links) return { success: false, error: links.error };
@@ -256,5 +275,53 @@ export async function deletePackage(
       success: false,
       error: "Failed to delete package. Please try again.",
     };
+  }
+}
+
+/**
+ * Quick Active / Inactive switch from the package list. Drafts can't be
+ * switched here: publishing a draft needs the full checks in the edit form.
+ */
+export async function setPackageStatus(
+  packageId: string,
+  status: "active" | "inactive",
+): Promise<ApiResponse<{ status: "active" | "inactive" }>> {
+  if (!(await verifySession())) return { success: false, error: UNAUTHORIZED };
+
+  if (status !== "active" && status !== "inactive") {
+    return { success: false, error: "Invalid status." };
+  }
+
+  try {
+    const pkg = await prismaClient.package.findUnique({
+      where: { id: packageId },
+      select: { slug: true, status: true },
+    });
+    if (!pkg) return { success: false, error: "Package not found." };
+    if (pkg.status === "draft") {
+      return {
+        success: false,
+        error: "Drafts must be published from the edit page.",
+      };
+    }
+
+    await prismaClient.package.update({
+      where: { id: packageId },
+      data: { status },
+    });
+
+    revalidatePath("/admin/package-management");
+    revalidatePath("/packages");
+    revalidatePath(`/packages/${pkg.slug}`);
+    revalidatePath("/");
+
+    return {
+      success: true,
+      data: { status },
+      message: `Package is now ${status}`,
+    };
+  } catch (error) {
+    console.error("Failed to change package status:", error);
+    return { success: false, error: "Failed to change status. Please try again." };
   }
 }

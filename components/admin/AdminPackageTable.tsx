@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import {
-  Badge,
   Button,
   Table,
   TableHead,
@@ -11,6 +10,7 @@ import {
   TableCell,
 } from "@/components/ui";
 import DeletePackageButton from "./DeletePackageButton";
+import PackageStatusSwitch from "./PackageStatusSwitch";
 import type { PackageWithItinerary } from "@/types/package";
 
 interface AdminPackageTableProps {
@@ -39,7 +39,6 @@ export default function AdminPackageTable({
           <TableHeader className="w-10">#</TableHeader>
           <TableHeader>Name</TableHeader>
           <TableHeader>Destination</TableHeader>
-          <TableHeader>Category</TableHeader>
           <TableHeader>Status</TableHeader>
           <TableHeader>Duration</TableHeader>
           <TableHeader>Price</TableHeader>
@@ -61,26 +60,22 @@ export default function AdminPackageTable({
               </span>
             </TableCell>
             <TableCell className="text-brand-muted-600">
-              {pkg.destination}
+              {pkg.destination || "—"}
             </TableCell>
             <TableCell>
-              <Badge variant="brand" size="sm">
-                {pkg.category}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <Badge
-                variant={pkg.status === "active" ? "success" : "outline"}
-                size="sm"
-              >
-                {pkg.status === "active" ? "Active" : "Inactive"}
-              </Badge>
+              <PackageStatusSwitch
+                packageId={pkg.id}
+                packageName={pkg.name}
+                status={pkg.status}
+              />
             </TableCell>
             <TableCell className="whitespace-nowrap text-brand-muted-600">
               {pkg.durationDays}D / {pkg.durationNights}N
             </TableCell>
             <TableCell className="whitespace-nowrap font-medium">
-              ₹{pkg.pricePerPerson.toLocaleString("en-IN")}
+              {pkg.startingPrice > 0
+                ? `₹${pkg.startingPrice.toLocaleString("en-IN")}`
+                : "—"}
             </TableCell>
             <TableCell className="text-right">
               <div className="flex items-center justify-end gap-2">

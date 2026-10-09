@@ -18,6 +18,8 @@ interface PackageFormProps extends UsePackageFormReturn {
   submitLabel: string;
   onValidSubmit: (data: PackageFormValues) => void;
   isSubmitting?: boolean;
+  /** When set, a "Save draft" button is shown on every step. */
+  onSaveDraft?: (data: PackageFormValues) => void;
   destinations: DestinationWithHotels[];
   categories: Category[];
 }
@@ -26,6 +28,7 @@ export default function PackageForm({
   submitLabel,
   onValidSubmit,
   isSubmitting = false,
+  onSaveDraft,
   destinations,
   categories,
   ...hook
@@ -42,6 +45,8 @@ export default function PackageForm({
   } = hook;
 
   // Order must match PACKAGE_FORM_STEPS.
+  const isDraftStatus = hook.step1Form.watch("status") === "draft";
+
   const stepPanels = [
     <Step1BasicDetails
       key="basic"
@@ -88,7 +93,24 @@ export default function PackageForm({
             </Button>
           )}
         </div>
-        <div>
+        <div className="flex items-center gap-3">
+          {onSaveDraft && !(isLastStep && isDraftStatus) && (
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              disabled={isSubmitting}
+              onClick={() => {
+                // A draft is always saved as a draft, even if the status
+                // dropdown was changed, so incomplete data can't go live.
+                hook.step1Form.setValue("status", "draft");
+                onSaveDraft(getCombinedData());
+              }}
+              title="Save what you have so far; finish it later"
+            >
+              Save draft
+            </Button>
+          )}
           {isLastStep ? (
             <Button
               type="button"
@@ -97,7 +119,11 @@ export default function PackageForm({
               disabled={isSubmitting}
               onClick={() => onValidSubmit(getCombinedData())}
             >
-              {isSubmitting ? "Creating..." : submitLabel}
+              {isSubmitting
+                ? "Saving..."
+                : isDraftStatus
+                  ? "Save as draft"
+                  : submitLabel}
             </Button>
           ) : (
             <Button

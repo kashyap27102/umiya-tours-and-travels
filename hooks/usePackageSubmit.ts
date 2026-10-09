@@ -23,8 +23,8 @@ export function usePackageSubmit() {
   const handleCreate = async (
     data: PackageFormValues,
     options: UsePackageSubmitOptions = {}
-  ) => {
-    if (isSubmitting) return;
+  ): Promise<{ id: string; slug: string } | null> => {
+    if (isSubmitting) return null;
     setIsSubmitting(true);
 
     const normalized = {
@@ -47,16 +47,18 @@ export function usePackageSubmit() {
             1000
           );
         }
-      } else {
-        notify.error("Failed to create package", result.error);
-        setIsSubmitting(false);
+        return result.data;
       }
+      notify.error("Failed to create package", result.error);
+      setIsSubmitting(false);
+      return null;
     } catch (error) {
       notify.error(
         "Error creating package",
         error instanceof Error ? error.message : "An unexpected error occurred"
       );
       setIsSubmitting(false);
+      return null;
     }
   };
 
@@ -79,7 +81,15 @@ export function usePackageSubmit() {
       if (result.success) {
         notify.success(`Package "${data.name}" updated successfully!`);
         options.onSuccess?.();
-        setIsSubmitting(false);
+        if (options.shouldRedirect) {
+          // Keep the button disabled while we navigate away.
+          setTimeout(
+            () => router.push(options.redirectPath || "/admin/package-management"),
+            1000
+          );
+        } else {
+          setIsSubmitting(false);
+        }
       } else {
         notify.error("Failed to update package", result.error);
         setIsSubmitting(false);
@@ -89,6 +99,46 @@ export function usePackageSubmit() {
         "Error updating package",
         error instanceof Error ? error.message : "An unexpected error occurred"
       );
+      setIsSubmitting(false);
+    }
+  };
+
+  /**
+   * Saves the form as a draft. Creates the package the first time and updates
+   * the same one afterwards (pass the id it returned). Never redirects, so the
+   * user can keep working.
+   */
+  const saveDraft = async (
+    data: PackageFormValues,
+    existingId?: string | null
+  ): Promise<string | null> => {
+    if (isSubmitting) return null;
+    setIsSubmitting(true);
+
+    const payload: PackageFormValues = {
+      ...data,
+      status: "draft",
+      itinerary: data.itinerary.map((item, i) => ({ ...item, day: i + 1 })),
+    };
+
+    try {
+      const result = existingId
+        ? await editPackage(existingId, payload)
+        : await createPackage(payload);
+
+      if (result.success) {
+        notify.success("Draft saved", "You can come back and finish it any time.");
+        return result.data.id;
+      }
+      notify.error("Could not save draft", result.error);
+      return null;
+    } catch (error) {
+      notify.error(
+        "Error saving draft",
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
+      return null;
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -129,6 +179,7 @@ export function usePackageSubmit() {
     setIsSubmitting,
     handleCreate,
     handleEdit,
+    saveDraft,
     handleDelete,
   };
 }

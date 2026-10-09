@@ -28,7 +28,7 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
       name: defaultValues?.name ?? "",
       destinationIds: defaultValues?.destinationIds ?? [],
       categoryIds: defaultValues?.categoryIds ?? [],
-      status: defaultValues?.status ?? "active",
+      status: defaultValues?.status ?? "draft",
       durationDays: defaultValues?.durationDays ?? 1,
       durationNights: defaultValues?.durationNights ?? 0,
     },

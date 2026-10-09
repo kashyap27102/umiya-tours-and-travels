@@ -10,9 +10,13 @@ import type { Prisma } from "@/app/generated/prisma/client";
 export async function validateVariants(
   variants: VariantFormValues[],
   durationNights: number,
+  { checkNights = true }: { checkNights?: boolean } = {},
 ): Promise<string | null> {
-  const mismatch = findStayNightsMismatch(variants, durationNights);
-  if (mismatch) return mismatch.message;
+  // Drafts skip the nights check: the stays and the total are often still changing.
+  if (checkNights) {
+    const mismatch = findStayNightsMismatch(variants, durationNights);
+    if (mismatch) return mismatch.message;
+  }
 
   const hotelIds = [
     ...new Set(variants.flatMap((v) => v.stays.map((s) => s.hotelId))),

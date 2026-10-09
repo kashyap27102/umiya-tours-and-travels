@@ -7,9 +7,13 @@ import type {
 } from "@/app/generated/prisma/client";
 
 const DEFAULT_PAGE_SIZE = 10;
+const MAX_PAGE_SIZE = 100;
 
 export interface PackageFilters {
   search?: string;
+  /** Destination slug. */
+  destination?: string;
+  /** Category slug. */
   category?: string;
   status?: string;
   page?: number;
@@ -167,12 +171,16 @@ export class PackageService {
   ): Promise<ApiResponse<PaginatedPackages>> {
     try {
       const {
-        search,
+        destination,
         category,
         status,
         page = 1,
-        pageSize = DEFAULT_PAGE_SIZE,
       } = filters;
+      const search = filters.search?.trim();
+      const pageSize = Math.min(
+        Math.max(1, filters.pageSize ?? DEFAULT_PAGE_SIZE),
+        MAX_PAGE_SIZE,
+      );
 
       const where = {
         ...(search && {
@@ -181,31 +189,53 @@ export class PackageService {
             { destination: { contains: search, mode: "insensitive" as const } },
           ],
         }),
-        ...(category && { category: category as PackageCategory }),
+        ...(destination && {
+          destinations: {
+            some: { destination: { slug: destination.toLowerCase() } },
+          },
+        }),
+        ...(category && {
+          categories: {
+            some: { category: { slug: category.toLowerCase() } },
+          },
+        }),
         ...(status && { status: status as PackageStatus }),
       };
 
-      const [packages, total] = await Promise.all([
+      const fetchPage = (pageNumber: number) =>
         prismaClient.package.findMany({
           where,
           include: {
             itinerary: { orderBy: { day: "asc" } },
           },
-          skip: (page - 1) * pageSize,
+          skip: (pageNumber - 1) * pageSize,
           take: pageSize,
           orderBy: { createdAt: "desc" },
-        }),
+        });
+
+      const [firstFetch, total] = await Promise.all([
+        fetchPage(page),
         prismaClient.package.count({ where }),
       ]);
+      let packages = firstFetch;
+
+      // A page past the end (e.g. the last row of the last page was deleted)
+      // falls back to the last page that exists instead of showing nothing.
+      const totalPages = Math.ceil(total / pageSize);
+      let currentPage = page;
+      if (total > 0 && page > totalPages) {
+        currentPage = totalPages;
+        packages = await fetchPage(currentPage);
+      }
 
       return {
         success: true,
         data: {
           packages,
           total,
-          page,
+          page: currentPage,
           pageSize,
-          totalPages: Math.ceil(total / pageSize),
+          totalPages,
         },
         message: "Packages fetched successfully",
       };

@@ -35,7 +35,9 @@ enum PackageCategory {
   Family
 }
 
+// draft = work in progress, never shown on the public site.
 enum PackageStatus {
+  draft
   active
   inactive
 }
@@ -119,7 +121,7 @@ model Package {
   category        PackageCategory?
   destinations    PackageDestination[]
   categories      PackageCategoryLink[]
-  status          PackageStatus   @default(active)
+  status          PackageStatus   @default(draft)
   durationDays    Int
   durationNights  Int
   pricePerPerson  Int
