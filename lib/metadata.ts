@@ -134,7 +134,12 @@ type ProductJsonLdInput = {
   images: string[];
   sku: string;
   category: string;
+  /** Lowest per-person price. */
   price: number;
+  /** Highest per-person price, when prices vary by stay or group size. */
+  highPrice?: number;
+  /** How many stay options there are (for a price range). */
+  offerCount?: number;
   url: string;
   ratingValue: number;
   ratingCount: number;
@@ -148,6 +153,8 @@ export const productJsonLd = ({
   sku,
   category,
   price,
+  highPrice,
+  offerCount,
   url,
   ratingValue,
   ratingCount,
@@ -164,17 +171,33 @@ export const productJsonLd = ({
     "@type": "Brand",
     name: SITE_NAME,
   },
-  offers: {
-    "@type": "Offer",
-    url,
-    priceCurrency: "INR",
-    price,
-    availability: "https://schema.org/InStock",
-    seller: {
-      "@type": "TravelAgency",
-      name: SITE_NAME,
-    },
-  },
+  offers:
+    // Several stay levels / group sizes at different prices: a price range.
+    highPrice !== undefined && highPrice > price
+      ? {
+          "@type": "AggregateOffer",
+          url,
+          priceCurrency: "INR",
+          lowPrice: price,
+          highPrice,
+          offerCount: offerCount ?? 1,
+          availability: "https://schema.org/InStock",
+          seller: {
+            "@type": "TravelAgency",
+            name: SITE_NAME,
+          },
+        }
+      : {
+          "@type": "Offer",
+          url,
+          priceCurrency: "INR",
+          price,
+          availability: "https://schema.org/InStock",
+          seller: {
+            "@type": "TravelAgency",
+            name: SITE_NAME,
+          },
+        },
   aggregateRating: {
     "@type": "AggregateRating",
     ratingValue,

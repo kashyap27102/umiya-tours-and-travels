@@ -7,6 +7,8 @@ export type {
   PackageWithItinerary,
   PackageForEdit,
   PublicPackage,
+  PublicVariant,
+  PublicStay,
   VariantWithDetails,
 } from "./package";
 export type { SiteSettingsData, StatItem, Testimonial } from "./settings";

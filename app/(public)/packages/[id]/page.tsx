@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import PackageCard from "@/components/PackageCard";
 import PackageGallery from "@/components/PackageGallery";
 import PackageItinerary from "@/components/PackageItinerary";
-import PackageEnquiryTrigger from "@/components/PackageEnquiryTrigger";
+import PackagePricing from "@/components/PackagePricing";
+import PackagePriceCard from "@/components/PackagePriceCard";
+import { PackageOptionsProvider } from "@/components/PackageOptionsProvider";
 import PackageShareButton from "@/components/PackageShareButton";
 import { Badge, Card, CardTitle } from "@/components/ui";
 import {
@@ -14,6 +16,7 @@ import {
 } from "@/lib/metadata";
 import { appConfig } from "@/lib/config";
 import { formatCurrency } from "@/lib/format";
+import { computePriceRange } from "@/lib/package-pricing";
 import { formatDurationLabel } from "@/lib/packages-constants";
 import { PackageService } from "@/services";
 
@@ -93,6 +96,23 @@ export default async function PackageDetailPage({
     activePackagesResult.success ? activePackagesResult.data : []
   ).map(({ slug, name }) => ({ slug, name }));
 
+  // Lowest / highest per-person price across the stay levels and group sizes.
+  const priceRange = computePriceRange(
+    travelPackage.variants.map((v) => ({
+      pricingMode: v.pricingMode,
+      flatPrice: v.flatPrice,
+      prices: v.prices,
+    })),
+  );
+  const startingPrice = priceRange?.low ?? travelPackage.pricePerPerson;
+  const pricesVary = !!priceRange && priceRange.high > priceRange.low;
+  // Only show the options section when there is something to choose or see.
+  const showOptions =
+    travelPackage.variants.length > 1 ||
+    travelPackage.variants.some(
+      (v) => v.stays.length > 0 || v.pricingMode === "group_size",
+    );
+
   // Alt text for each gallery photo, matched by URL so a mismatch can't
   // attach the wrong text to a picture.
   const altByUrl = new Map(
@@ -124,7 +144,9 @@ export default async function PackageDetailPage({
     category: travelPackage.category
       ? `${travelPackage.category} Travel Package`
       : "Travel Package",
-    price: travelPackage.pricePerPerson,
+    price: startingPrice,
+    highPrice: priceRange?.high,
+    offerCount: travelPackage.variants.length,
     url: canonicalUrl,
     ratingValue: derivedRatingValue,
     ratingCount: derivedRatingCount,
@@ -155,6 +177,7 @@ export default async function PackageDetailPage({
         />
       </section>
 
+      <PackageOptionsProvider variants={travelPackage.variants}>
       <section className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-6">
           <Card variant="elevated" padding="lg" className="space-y-2">
@@ -164,7 +187,7 @@ export default async function PackageDetailPage({
                 packageName={travelPackage.name}
                 destination={travelPackage.destination}
                 durationLabel={durationLabel}
-                priceLabel={`${formatCurrency(travelPackage.pricePerPerson)} per person`}
+                priceLabel={`${pricesVary ? "From " : ""}${formatCurrency(startingPrice)} per person`}
                 image={travelPackage.images[0] ?? "/logo.png"}
                 url={canonicalUrl}
               />
@@ -178,6 +201,13 @@ export default async function PackageDetailPage({
             </Badge>
           </Card>
 
+          {showOptions && (
+            <PackagePricing
+              packageSlug={travelPackage.slug}
+              packages={enquiryPackages}
+            />
+          )}
+
           <PackageItinerary
             itinerary={travelPackage.itinerary.map(({ image, ...day }) => ({
               ...day,
@@ -187,25 +217,13 @@ export default async function PackageDetailPage({
         </div>
 
         <div className="space-y-6 lg:sticky lg:top-6">
-          <Card variant="tinted" padding="lg" className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted-600">
-              Starting Price
-            </p>
-            <p className="text-3xl font-bold text-brand-ink-900">
-              {formatCurrency(travelPackage.pricePerPerson)}
-            </p>
-            <p className="text-sm text-brand-muted-600">
-              per person · {durationLabel}
-            </p>
-            <PackageEnquiryTrigger
-              packageSlug={travelPackage.slug}
-              packages={enquiryPackages}
-              label="Enquire Now"
-              variant="primary"
-              size="md"
-              className="mt-2 w-full"
-            />
-          </Card>
+          <PackagePriceCard
+            packageSlug={travelPackage.slug}
+            packages={enquiryPackages}
+            durationLabel={durationLabel}
+            startingPrice={startingPrice}
+            pricesVary={pricesVary}
+          />
 
           <Card variant="default" padding="lg" className="space-y-4">
             <CardTitle className="text-xl">Inclusions</CardTitle>
@@ -238,6 +256,7 @@ export default async function PackageDetailPage({
           </Card>
         </div>
       </section>
+      </PackageOptionsProvider>
 
       {relatedPackages.length > 0 && (
         <section className="space-y-5">

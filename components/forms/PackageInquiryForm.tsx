@@ -22,29 +22,39 @@ type PackageInquiryFormValues = {
 const makeInitialValues = (
   packages: { slug: string; name: string }[],
   packageSlug?: string,
+  initial?: { message?: string; travelers?: number },
 ): PackageInquiryFormValues => ({
   packageSlug: packageSlug ?? packages[0]?.slug ?? "",
   travelDate: "",
-  travelers: "",
+  travelers: initial?.travelers ? String(initial.travelers) : "",
   name: "",
   email: "",
   phone: "",
-  message: "",
+  message: initial?.message ?? "",
 });
 
 interface PackageInquiryFormProps {
   preselectedPackageSlug?: string;
   packages: { slug: string; name: string }[];
+  /** Starting text for the message box (e.g. the chosen stay level). */
+  initialMessage?: string;
+  /** Starting value for the travellers field (e.g. the chosen group size). */
+  initialTravelers?: number;
   onSuccess?: () => void;
 }
 
 export default function PackageInquiryForm({
   preselectedPackageSlug,
   packages,
+  initialMessage,
+  initialTravelers,
   onSuccess,
 }: PackageInquiryFormProps) {
   const [values, setValues] = useState<PackageInquiryFormValues>(() =>
-    makeInitialValues(packages, preselectedPackageSlug),
+    makeInitialValues(packages, preselectedPackageSlug, {
+      message: initialMessage,
+      travelers: initialTravelers,
+    }),
   );
   const [honeypot, setHoneypot] = useState("");
   const [isPending, startTransition] = useTransition();

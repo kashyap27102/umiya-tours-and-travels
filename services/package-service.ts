@@ -115,6 +115,19 @@ export class PackageService {
             orderBy: { sortOrder: "asc" },
             select: { image: { select: { url: true, alt: true } } },
           },
+          variants: {
+            orderBy: { sortOrder: "asc" },
+            include: {
+              prices: { orderBy: { persons: "asc" } },
+              stays: {
+                orderBy: { sortOrder: "asc" },
+                include: {
+                  hotel: { select: { name: true, starRating: true } },
+                  destination: { select: { name: true } },
+                },
+              },
+            },
+          },
         },
       });
 
@@ -125,9 +138,31 @@ export class PackageService {
         };
       }
 
+      // Only what customers need; ids and internal fields stay on the server.
+      const { variants, ...rest } = packageData;
       return {
         success: true,
-        data: packageData,
+        data: {
+          ...rest,
+          variants: variants.map((variant) => ({
+            id: variant.id,
+            name: variant.name,
+            pricingMode: variant.pricingMode,
+            flatPrice: variant.flatPrice,
+            prices: variant.prices.map(({ persons, pricePerPerson }) => ({
+              persons,
+              pricePerPerson,
+            })),
+            stays: variant.stays.map((stay) => ({
+              id: stay.id,
+              nights: stay.nights,
+              roomType: stay.roomType,
+              destinationName: stay.destination.name,
+              hotelName: stay.hotel.name,
+              hotelStars: stay.hotel.starRating,
+            })),
+          })),
+        },
         message: "Package fetched successfully",
       };
     } catch (error) {
