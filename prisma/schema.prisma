@@ -40,6 +40,27 @@ enum PackageStatus {
   inactive
 }
 
+// ── Destination / Category lookup tables ─────────────────────────────────────
+// Step 1 of the package redesign. Standalone for now; linking them to Package
+// happens later, once Package itself is changed.
+
+model Destination {
+  id      String  @id @default(cuid())
+  slug    String  @unique
+  name    String
+  state   String?
+  country String
+
+  @@index([country])
+}
+
+model Category {
+  id        String @id @default(cuid())
+  slug      String @unique
+  name      String
+  sortOrder Int    @default(0)
+}
+
 // ── Package ───────────────────────────────────────────────────────────────────
 
 model Package {
