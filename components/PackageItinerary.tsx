@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
 import { cn } from "@/components/ui/cn";
@@ -8,6 +9,9 @@ import { cn } from "@/components/ui/cn";
 type ItineraryItem = {
   day: number;
   title: string;
+  /** Ordered bullet points. Older days may only have `description`. */
+  points?: string[];
+  imageUrl?: string | null;
   description: string;
 };
 
@@ -96,9 +100,30 @@ export default function PackageItinerary({
                 )}
               >
                 <div className="overflow-hidden">
-                  <p className="px-4 pb-4 text-sm text-brand-muted-600">
-                    {item.description}
-                  </p>
+                  <div className="space-y-3 px-4 pb-4">
+                    {item.points && item.points.length > 0 ? (
+                      <ul className="list-disc space-y-1.5 pl-5 text-sm text-brand-muted-600 marker:text-brand-blue-700">
+                        {item.points.map((point, index) => (
+                          <li key={index}>{point}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-brand-muted-600">
+                        {item.description}
+                      </p>
+                    )}
+                    {item.imageUrl && (
+                      <div className="relative aspect-video w-full max-w-md overflow-hidden rounded-xl">
+                        <Image
+                          src={item.imageUrl}
+                          alt={`Day ${item.day}: ${item.title}`}
+                          fill
+                          sizes="(min-width: 768px) 448px, 100vw"
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

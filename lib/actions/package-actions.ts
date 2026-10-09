@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prismaClient } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
+import { toItineraryRow } from "@/lib/itinerary";
 import {
   resolveInclusions,
   resolvePackageLinks,
@@ -107,11 +108,7 @@ export async function createPackage(
         exclusions: inclusionData.exclusions,
         inclusionLinks: { create: inclusionData.links },
         itinerary: {
-          create: data.itinerary.map((item) => ({
-            day: item.day,
-            title: item.title,
-            description: item.description,
-          })),
+          create: data.itinerary.map(toItineraryRow),
         },
       },
     });
@@ -205,9 +202,7 @@ export async function editPackage(
       await tx.itineraryItem.deleteMany({ where: { packageId } });
       await tx.itineraryItem.createMany({
         data: data.itinerary.map((item) => ({
-          day: item.day,
-          title: item.title,
-          description: item.description,
+          ...toItineraryRow(item),
           packageId,
         })),
       });

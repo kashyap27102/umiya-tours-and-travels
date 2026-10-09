@@ -63,8 +63,15 @@ function toFormValues(pkg: PackageForEdit): Partial<PackageFormValues> {
       .map((l) => l.inclusionId),
     itinerary:
       pkg.itinerary.length > 0
-        ? pkg.itinerary
-        : [{ day: 1, title: "", description: "" }],
+        ? pkg.itinerary.map((item) => ({
+            day: item.day,
+            title: item.title,
+            // Days saved before bullet points existed have only a paragraph.
+            points:
+              item.points.length > 0 ? item.points : [item.description.trim()],
+            imageUrl: item.imageUrl,
+          }))
+        : [{ day: 1, title: "", points: [""], imageUrl: null }],
   };
 }
 

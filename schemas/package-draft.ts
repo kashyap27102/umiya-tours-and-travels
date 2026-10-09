@@ -72,8 +72,15 @@ export function normalizeDraft(
   if (!name) return { error: "Give the draft a name before saving it." };
 
   const itinerary = objList(input.itinerary)
-    .map((item) => ({ title: str(item.title), description: str(item.description) }))
-    .filter((item) => item.title || item.description)
+    .map((item) => {
+      const imageUrl = str(item.imageUrl);
+      return {
+        title: str(item.title),
+        points: strList(item.points),
+        imageUrl: /^https?:\/\/.+/.test(imageUrl) ? imageUrl : null,
+      };
+    })
+    .filter((item) => item.title || item.points.length > 0 || item.imageUrl)
     .map((item, index) => ({ day: index + 1, ...item }));
 
   // An item is included or excluded, never both; included wins.

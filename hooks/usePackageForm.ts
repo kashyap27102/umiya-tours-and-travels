@@ -74,7 +74,7 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
     resolver: zodResolver(step4Schema),
     defaultValues: {
       itinerary: defaultValues?.itinerary ?? [
-        { day: 1, title: "", description: "" },
+        { day: 1, title: "", points: [""], imageUrl: null },
       ],
     },
     mode: "onTouched",
@@ -151,7 +151,8 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
     itineraryArray.append({
       day: itineraryArray.fields.length + 1,
       title: "",
-      description: "",
+      points: [""],
+      imageUrl: null,
     });
   };
 

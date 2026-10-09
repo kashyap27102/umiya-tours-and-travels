@@ -311,10 +311,19 @@ export function ReviewPanel({
                       </span>
                     )}
                   </p>
-                  {day.description && (
-                    <p className="mt-1 text-sm text-brand-muted-600 line-clamp-3">
-                      {day.description}
-                    </p>
+                  {day.points.filter(Boolean).length > 0 && (
+                    <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-brand-muted-600">
+                      {day.points.filter(Boolean).map((point, p) => (
+                        <li key={p}>{point}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {day.imageUrl && (
+                    <img
+                      src={day.imageUrl}
+                      alt={`Day ${i + 1}`}
+                      className="mt-2 h-20 w-32 rounded-lg object-cover"
+                    />
                   )}
                 </div>
               </li>

@@ -7,8 +7,18 @@ import {
 const itineraryItemSchema = z.object({
   day: z.number(),
   title: z.string().min(1, "Day title is required"),
-  description: z.string().min(1, "Description is required"),
+  // Ordered bullet points for the day.
+  points: z
+    .array(z.string().trim().min(1, "Cannot be empty"))
+    .min(1, "Add at least one point"),
+  // Optional photo for the day.
+  imageUrl: z
+    .string()
+    .regex(/^https?:\/\/.+/, "Invalid image URL")
+    .nullable(),
 });
+
+export type ItineraryDayValues = z.infer<typeof itineraryItemSchema>;
 
 export const step1Schema = z.object({
   name: z.string().min(1, "Package name is required"),

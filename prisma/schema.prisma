@@ -237,6 +237,10 @@ model ItineraryItem {
   id          Int     @id @default(autoincrement())
   day         Int
   title       String
+  // Ordered bullet points for the day. `description` is the legacy single
+  // paragraph, kept filled (points joined by new lines) until cleanup.
+  points      String[] @default([])
+  imageUrl    String? // optional photo for the day
   description String
   package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId   String

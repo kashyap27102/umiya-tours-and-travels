@@ -34,42 +34,54 @@ const defaultExclusions = [
 
 /* ── Itinerary builder ───────────────────────────────────────────────────── */
 
-type ItineraryDay = { day: number; title: string; description: string };
+type ItineraryDay = {
+  day: number;
+  title: string;
+  description: string;
+  points: string[];
+};
 
 function buildItinerary(
   destination: string,
   days: number,
   highlights: string[],
 ): ItineraryDay[] {
+  const day = (
+    number: number,
+    title: string,
+    points: string[],
+  ): ItineraryDay => ({
+    day: number,
+    title,
+    points,
+    description: points.join("\n"),
+  });
+
   return Array.from({ length: days }, (_, index) => {
-    const day = index + 1;
+    const number = index + 1;
     const feature =
       highlights[index % highlights.length] ?? "Local exploration";
 
-    if (day === 1) {
-      return {
-        day,
-        title: `Arrival in ${destination}`,
-        description:
-          "Check in, freshen up, and enjoy a relaxed evening with a short orientation and local walk.",
-      };
+    if (number === 1) {
+      return day(number, `Arrival in ${destination}`, [
+        "Check in and freshen up",
+        "Short orientation with your trip coordinator",
+        "Relaxed evening walk and local dinner",
+      ]);
     }
 
-    if (day === days) {
-      return {
-        day,
-        title: "Departure",
-        description:
-          "After breakfast, check out and transfer for your onward journey with memorable travel moments.",
-      };
+    if (number === days) {
+      return day(number, "Departure", [
+        "Breakfast and hotel check-out",
+        "Transfer for your onward journey",
+      ]);
     }
 
-    return {
-      day,
-      title: feature,
-      description:
-        "Enjoy planned activities with adequate leisure time, guided support, and comfortable transport.",
-    };
+    return day(number, feature, [
+      `Visit ${feature}`,
+      "Guided support with comfortable transport",
+      "Leisure time in the afternoon",
+    ]);
   });
 }
 
