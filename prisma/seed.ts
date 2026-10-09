@@ -2,6 +2,7 @@ import { PrismaClient } from "../app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
+import { syncPackageTaxonomy } from "./package-taxonomy";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -460,7 +461,7 @@ async function main() {
   console.log("🗑️  Cleared existing packages");
 
   for (const seed of packageSeeds) {
-    await prisma.package.create({
+    const created = await prisma.package.create({
       data: {
         slug: seed.slug,
         name: seed.name,
@@ -485,6 +486,7 @@ async function main() {
         },
       },
     });
+    await syncPackageTaxonomy(prisma, created);
     console.log(`   📦 ${seed.name}`);
   }
 

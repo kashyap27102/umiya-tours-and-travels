@@ -7,6 +7,8 @@ import {
   LayoutDashboard,
   Boxes,
   PackagePlus,
+  MapPin,
+  Tags,
   SlidersHorizontal,
   ShieldCheck,
   LogOut,
@@ -31,6 +33,16 @@ const ADMIN_NAV_ITEMS = [
     href: "/admin/create-client-package",
     label: "Create Package",
     icon: PackagePlus,
+  },
+  {
+    href: "/admin/destinations",
+    label: "Destinations",
+    icon: MapPin,
+  },
+  {
+    href: "/admin/categories",
+    label: "Categories",
+    icon: Tags,
   },
   {
     href: "/admin/settings",
