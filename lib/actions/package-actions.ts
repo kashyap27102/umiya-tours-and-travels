@@ -6,6 +6,7 @@ import { verifySession } from "@/lib/session";
 import { toItineraryRow } from "@/lib/itinerary";
 import {
   resolveInclusions,
+  resolveMedia,
   resolvePackageLinks,
 } from "@/services/package-links-service";
 import {
@@ -18,6 +19,24 @@ import { normalizeDraft } from "@/schemas/package-draft";
 import type { ApiResponse } from "@/types/api-response";
 
 const UNAUTHORIZED = "You must be signed in as an admin.";
+
+/** Itinerary days with each photo's url replaced by the gallery's own url. */
+function withGalleryUrls(
+  itinerary: PackageFormValues["itinerary"],
+  urlById: Map<string, string>,
+): PackageFormValues["itinerary"] {
+  return itinerary.map((day) =>
+    day.image
+      ? {
+          ...day,
+          image: {
+            ...day.image,
+            url: urlById.get(day.image.id) ?? day.image.url,
+          },
+        }
+      : day,
+  );
+}
 
 /**
  * Drafts only need a name (the rest is cleaned up, not enforced). Anything else
@@ -64,6 +83,13 @@ export async function createPackage(
     if ("error" in inclusionData) {
       return { success: false, error: inclusionData.error };
     }
+    const media = await resolveMedia([
+      ...data.images.map((i) => i.id),
+      ...data.itinerary.flatMap((d) => (d.image ? [d.image.id] : [])),
+    ]);
+    if ("error" in media) return { success: false, error: media.error };
+    const imageUrls = data.images.map((i) => media.urlById.get(i.id) ?? i.url);
+    const itinerary = withGalleryUrls(data.itinerary, media.urlById);
     const startingPrice = startingPriceOf(data.variants);
 
     // Generate slug from package name
@@ -101,14 +127,20 @@ export async function createPackage(
         pricePerPerson: startingPrice,
         startingPrice,
         variants: { create: toVariantCreateInput(data.variants) },
-        images: data.images,
+        images: imageUrls,
+        imageLinks: {
+          create: data.images.map((img, sortOrder) => ({
+            imageId: img.id,
+            sortOrder,
+          })),
+        },
         summary: data.summary,
         highlights: data.highlights.filter(Boolean),
         inclusions: inclusionData.inclusions,
         exclusions: inclusionData.exclusions,
         inclusionLinks: { create: inclusionData.links },
         itinerary: {
-          create: data.itinerary.map(toItineraryRow),
+          create: itinerary.map(toItineraryRow),
         },
       },
     });
@@ -158,6 +190,13 @@ export async function editPackage(
     if ("error" in inclusionData) {
       return { success: false, error: inclusionData.error };
     }
+    const media = await resolveMedia([
+      ...data.images.map((i) => i.id),
+      ...data.itinerary.flatMap((d) => (d.image ? [d.image.id] : [])),
+    ]);
+    if ("error" in media) return { success: false, error: media.error };
+    const imageUrls = data.images.map((i) => media.urlById.get(i.id) ?? i.url);
+    const itinerary = withGalleryUrls(data.itinerary, media.urlById);
     const startingPrice = startingPriceOf(data.variants);
 
     const existingPackage = await prismaClient.package.findUnique({
@@ -186,12 +225,21 @@ export async function editPackage(
           // Legacy column the public pages still read; mirrors the lowest variant price.
           pricePerPerson: startingPrice,
           startingPrice,
-          images: data.images,
+          images: imageUrls,
           summary: data.summary,
           highlights: data.highlights.filter(Boolean),
           inclusions: inclusionData.inclusions,
           exclusions: inclusionData.exclusions,
         },
+      });
+
+      await tx.packageImage.deleteMany({ where: { packageId } });
+      await tx.packageImage.createMany({
+        data: data.images.map((img, sortOrder) => ({
+          packageId,
+          imageId: img.id,
+          sortOrder,
+        })),
       });
 
       await tx.packageInclusion.deleteMany({ where: { packageId } });
@@ -201,7 +249,7 @@ export async function editPackage(
 
       await tx.itineraryItem.deleteMany({ where: { packageId } });
       await tx.itineraryItem.createMany({
-        data: data.itinerary.map((item) => ({
+        data: itinerary.map((item) => ({
           ...toItineraryRow(item),
           packageId,
         })),

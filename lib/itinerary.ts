@@ -11,7 +11,8 @@ export function toItineraryRow(item: ItineraryDayValues) {
     day: item.day,
     title: item.title,
     points,
-    imageUrl: item.imageUrl,
+    imageId: item.image?.id ?? null,
+    imageUrl: item.image?.url ?? null,
     description: points.join("\n"),
   };
 }

@@ -1,6 +1,11 @@
 import { cache } from "react";
 import { prismaClient } from "@/lib/prisma";
-import { PackageWithItinerary, PackageForEdit, ApiResponse } from "../types";
+import {
+  PackageWithItinerary,
+  PackageForEdit,
+  PublicPackage,
+  ApiResponse,
+} from "../types";
 import type {
   PackageCategory,
   PackageStatus,
@@ -95,7 +100,7 @@ export class PackageService {
 
   static async getPackageBySlug(
     slug: string,
-  ): Promise<ApiResponse<PackageWithItinerary | null>> {
+  ): Promise<ApiResponse<PublicPackage | null>> {
     try {
       const packageData = await prismaClient.package.findUnique({
         where: { slug },
@@ -104,6 +109,11 @@ export class PackageService {
             orderBy: {
               day: "asc",
             },
+            include: { image: { select: { alt: true } } },
+          },
+          imageLinks: {
+            orderBy: { sortOrder: "asc" },
+            select: { image: { select: { url: true, alt: true } } },
           },
         },
       });
@@ -137,7 +147,11 @@ export class PackageService {
       const packageData = await prismaClient.package.findUnique({
         where: { slug },
         include: {
-          itinerary: { orderBy: { day: "asc" } },
+          itinerary: { orderBy: { day: "asc" }, include: { image: true } },
+          imageLinks: {
+            orderBy: { sortOrder: "asc" },
+            include: { image: true },
+          },
           destinations: { orderBy: { sortOrder: "asc" } },
           categories: { orderBy: { sortOrder: "asc" } },
           inclusionLinks: { orderBy: { sortOrder: "asc" } },

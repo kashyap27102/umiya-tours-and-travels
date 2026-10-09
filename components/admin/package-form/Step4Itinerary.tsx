@@ -5,7 +5,8 @@ import { Controller } from "react-hook-form";
 import { ImagePlus, Trash2, X } from "lucide-react";
 import { Badge, Button, Card, CardTitle, Input, Label } from "@/components/ui";
 import { PointsEditor } from "./PointsEditor";
-import ImageUploadModal from "./ImageUploadModal";
+import { ImagePickerDialog } from "@/components/admin/gallery/ImagePickerDialog";
+import { MediaThumb } from "@/components/admin/gallery/MediaThumb";
 import type { UsePackageFormReturn } from "@/hooks/usePackageForm";
 
 interface Props {
@@ -21,8 +22,8 @@ export function Step4Itinerary({ hook }: Readonly<Props>) {
     formState: { errors },
   } = step4Form;
 
-  // Which day the upload dialog is currently adding a photo to.
-  const [uploadDay, setUploadDay] = useState<number | null>(null);
+  // Which day the picker is currently choosing a photo for.
+  const [pickerDay, setPickerDay] = useState<number | null>(null);
   const itinerary = watch("itinerary");
 
   return (
@@ -41,7 +42,7 @@ export function Step4Itinerary({ hook }: Readonly<Props>) {
             const pointErrors = Array.isArray(dayErrors?.points)
               ? dayErrors.points.map((e) => e?.message)
               : [];
-            const imageUrl = itinerary?.[index]?.imageUrl ?? null;
+            const image = itinerary?.[index]?.image ?? null;
 
             return (
               <div
@@ -99,17 +100,18 @@ export function Step4Itinerary({ hook }: Readonly<Props>) {
 
                   <div className="space-y-2">
                     <Label>Photo (optional)</Label>
-                    {imageUrl ? (
+                    {image ? (
                       <div className="relative inline-block">
-                        <img
-                          src={imageUrl}
-                          alt={`Day ${index + 1} preview`}
-                          className="h-28 w-44 rounded-xl border border-brand-blue-900/10 object-cover"
-                        />
+                        <div className="h-28 w-44 overflow-hidden rounded-xl border border-brand-blue-900/10">
+                          <MediaThumb
+                            src={image.url}
+                            alt={image.alt || `Day ${index + 1} preview`}
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() =>
-                            setValue(`itinerary.${index}.imageUrl`, null, {
+                            setValue(`itinerary.${index}.image`, null, {
                               shouldDirty: true,
                             })
                           }
@@ -125,16 +127,16 @@ export function Step4Itinerary({ hook }: Readonly<Props>) {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => setUploadDay(index)}
+                          onClick={() => setPickerDay(index)}
                         >
                           <ImagePlus className="h-4 w-4" />
                           <span>Add photo</span>
                         </Button>
                       </div>
                     )}
-                    {dayErrors?.imageUrl && (
+                    {dayErrors?.image && (
                       <p role="alert" className="text-xs text-red-500">
-                        {dayErrors.imageUrl.message}
+                        {dayErrors.image.message ?? "Invalid photo"}
                       </p>
                     )}
                   </div>
@@ -145,17 +147,19 @@ export function Step4Itinerary({ hook }: Readonly<Props>) {
         </div>
       </Card>
 
-      <ImageUploadModal
-        open={uploadDay !== null}
-        onClose={() => setUploadDay(null)}
-        onUploadComplete={(url) => {
-          if (uploadDay !== null) {
-            setValue(`itinerary.${uploadDay}.imageUrl`, url, {
-              shouldDirty: true,
-              shouldValidate: true,
-            });
+      <ImagePickerDialog
+        open={pickerDay !== null}
+        onClose={() => setPickerDay(null)}
+        mode="single"
+        title="Choose a photo for this day"
+        onSelect={([item]) => {
+          if (pickerDay !== null && item) {
+            setValue(
+              `itinerary.${pickerDay}.image`,
+              { id: item.id, url: item.url, title: item.title, alt: item.alt },
+              { shouldDirty: true, shouldValidate: true },
+            );
           }
-          setUploadDay(null);
         }}
       />
     </div>

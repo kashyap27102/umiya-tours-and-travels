@@ -10,6 +10,7 @@ import {
   MapPin,
   Tags,
   ListChecks,
+  Images,
   SlidersHorizontal,
   ShieldCheck,
   LogOut,
@@ -49,6 +50,11 @@ const ADMIN_NAV_ITEMS = [
     href: "/admin/inclusions",
     label: "Inclusions",
     icon: ListChecks,
+  },
+  {
+    href: "/admin/gallery",
+    label: "Gallery",
+    icon: Images,
   },
   {
     href: "/admin/settings",

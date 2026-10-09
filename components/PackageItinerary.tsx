@@ -12,6 +12,8 @@ type ItineraryItem = {
   /** Ordered bullet points. Older days may only have `description`. */
   points?: string[];
   imageUrl?: string | null;
+  /** Alt text for the day's photo. */
+  imageAlt?: string;
   description: string;
 };
 
@@ -116,7 +118,7 @@ export default function PackageItinerary({
                       <div className="relative aspect-video w-full max-w-md overflow-hidden rounded-xl">
                         <Image
                           src={item.imageUrl}
-                          alt={`Day ${item.day}: ${item.title}`}
+                          alt={item.imageAlt?.trim() || `Day ${item.day}: ${item.title}`}
                           fill
                           sizes="(min-width: 768px) 448px, 100vw"
                           className="object-cover"

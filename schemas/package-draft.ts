@@ -9,6 +9,19 @@ const strList = (v: unknown) =>
   Array.isArray(v) ? v.map(str).filter(Boolean) : [];
 const objList = (v: unknown): Loose[] =>
   Array.isArray(v) ? v.filter(isObject) : [];
+/** A gallery image reference from the form; null if it isn't usable. */
+function mediaRef(v: unknown): {
+  id: string;
+  url: string;
+  title: string;
+  alt: string;
+} | null {
+  if (!isObject(v)) return null;
+  const id = str(v.id);
+  const url = str(v.url);
+  if (!id || !/^https?:\/\/.+/.test(url)) return null;
+  return { id, url, title: str(v.title), alt: str(v.alt) };
+}
 const wholeNumber = (v: unknown, fallback: number, min: number) =>
   typeof v === "number" && Number.isFinite(v)
     ? Math.max(min, Math.trunc(v))
@@ -63,6 +76,11 @@ function normalizeVariants(raw: unknown): VariantFormValues[] {
  * object. Nothing here enforces "complete" rules (those apply when publishing);
  * it only drops unusable fragments so the draft can be stored safely.
  */
+function uniqueById<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => !seen.has(item.id) && !!seen.add(item.id));
+}
+
 export function normalizeDraft(
   input: unknown,
 ): { error: string } | { data: PackageFormValues } {
@@ -73,14 +91,13 @@ export function normalizeDraft(
 
   const itinerary = objList(input.itinerary)
     .map((item) => {
-      const imageUrl = str(item.imageUrl);
       return {
         title: str(item.title),
         points: strList(item.points),
-        imageUrl: /^https?:\/\/.+/.test(imageUrl) ? imageUrl : null,
+        image: mediaRef(item.image),
       };
     })
-    .filter((item) => item.title || item.points.length > 0 || item.imageUrl)
+    .filter((item) => item.title || item.points.length > 0 || item.image)
     .map((item, index) => ({ day: index + 1, ...item }));
 
   // An item is included or excluded, never both; included wins.
@@ -97,7 +114,11 @@ export function normalizeDraft(
       categoryIds: [...new Set(strList(input.categoryIds))],
       durationDays: wholeNumber(input.durationDays, 1, 1),
       durationNights: wholeNumber(input.durationNights, 0, 0),
-      images: strList(input.images).filter((url) => /^https?:\/\/.+/.test(url)),
+      images: uniqueById(
+        (Array.isArray(input.images) ? input.images : [])
+          .map(mediaRef)
+          .filter((ref): ref is NonNullable<typeof ref> => ref !== null),
+      ),
       summary: str(input.summary),
       highlights: strList(input.highlights),
       inclusionIds,

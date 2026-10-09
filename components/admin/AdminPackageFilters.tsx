@@ -6,9 +6,9 @@ import { Input, Select } from "@/components/ui";
 import type { SelectOption } from "@/components/ui";
 import { PACKAGE_STATUS_OPTIONS } from "@/lib/packages-constants";
 import { PACKAGE_STATUS_LABEL } from "@/lib/package-status";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
 
 const ALL = "all";
-const SEARCH_DEBOUNCE_MS = 350;
 
 const statusOptions: SelectOption[] = [
   { label: "All Statuses", value: ALL },
@@ -43,30 +43,14 @@ export default function AdminPackageFilters({
     ...categories.map((c) => ({ label: c.name, value: c.slug })),
   ];
 
-  const search = searchParams.get("search") ?? "";
-
-  // The box keeps its own text so typing is instant; the URL (and the server
-  // query) only updates once typing pauses.
-  const [query, setQuery] = React.useState(search);
-  const lastPushedSearch = React.useRef(search);
-
-  // Follow the URL when it changes from outside (Back button, shared link).
-  React.useEffect(() => {
-    if (search !== lastPushedSearch.current) {
-      lastPushedSearch.current = search;
-      setQuery(search);
-    }
-  }, [search]);
+  const [query, setQuery] = useUrlSearch("search");
 
   const destination = searchParams.get("destination") ?? ALL;
   // Slugs are lowercase; older links used names like "Beach".
   const category = (searchParams.get("category") ?? ALL).toLowerCase();
   const status = searchParams.get("status") ?? ALL;
 
-  function pushParams(
-    updates: Record<string, string>,
-    { replace = false }: { replace?: boolean } = {},
-  ) {
+  function pushParams(updates: Record<string, string>) {
     // Read the live URL so a pending search update can't overwrite a filter
     // that was changed in the meantime.
     const params = new URLSearchParams(window.location.search);
@@ -79,24 +63,8 @@ export default function AdminPackageFilters({
     }
     // Reset to page 1 on filter change
     params.delete("page");
-    const url = `${pathname}?${params.toString()}`;
-    if (replace) router.replace(url);
-    else router.push(url);
+    router.push(`${pathname}?${params.toString()}`);
   }
-
-  React.useEffect(() => {
-    const trimmed = query.trim();
-    if (trimmed === lastPushedSearch.current.trim()) return;
-
-    const timer = setTimeout(() => {
-      lastPushedSearch.current = trimmed;
-      // replace, so Back doesn't step through every search the user typed
-      pushParams({ search: trimmed }, { replace: true });
-    }, SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-    // pushParams only reads the live URL, so it is safe to leave out.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

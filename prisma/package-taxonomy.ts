@@ -180,3 +180,35 @@ export async function linkPackageInclusions(
     });
   }
 }
+
+/**
+ * Registers a package's legacy image URLs in the shared library (one row per
+ * distinct URL, reused if it already exists) and links them to the package in
+ * order. Skips packages that already have image links. Idempotent.
+ */
+export async function linkPackageImages(
+  prisma: PrismaClient,
+  pkg: { id: string; name: string; images: string[] },
+): Promise<void> {
+  const existing = await prisma.packageImage.count({
+    where: { packageId: pkg.id },
+  });
+  if (existing > 0) return;
+
+  const urls = [...new Set(pkg.images.map((u) => u.trim()).filter(Boolean))];
+  for (const [sortOrder, url] of urls.entries()) {
+    const image = await prisma.mediaImage.upsert({
+      where: { url },
+      update: {},
+      create: {
+        url,
+        title: urls.length > 1 ? `${pkg.name} ${sortOrder + 1}` : pkg.name,
+        alt: pkg.name,
+        source: "legacy_link",
+      },
+    });
+    await prisma.packageImage.create({
+      data: { packageId: pkg.id, imageId: image.id, sortOrder },
+    });
+  }
+}

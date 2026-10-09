@@ -6,6 +6,8 @@ const MAX_VISIBLE_IMAGES = 5;
 type PackageGalleryProps = {
   images: string[];
   alt: string;
+  /** Alt text per image, matching `images` by position; falls back to `alt`. */
+  alts?: string[];
   className?: string;
 };
 
@@ -54,8 +56,11 @@ function Tile({
 export default function PackageGallery({
   images,
   alt,
+  alts,
   className,
 }: Readonly<PackageGalleryProps>) {
+  const altFor = (index: number) =>
+    alts?.[index]?.trim() || `${alt} photo ${index + 1}`;
   const visibleImages = images.slice(0, MAX_VISIBLE_IMAGES);
   const remainingCount = images.length - visibleImages.length;
   const count = visibleImages.length;
@@ -74,7 +79,7 @@ export default function PackageGallery({
       >
         <Image
           src={visibleImages[0]}
-          alt={alt}
+          alt={alts?.[0]?.trim() || alt}
           fill
           className="object-cover"
           sizes="100vw"
@@ -106,7 +111,7 @@ export default function PackageGallery({
     >
       <Tile
         src={visibleImages[0]}
-        alt={`${alt} photo 1`}
+        alt={altFor(0)}
         sizes={bigSizes}
         priority
         className={cn(
@@ -122,7 +127,7 @@ export default function PackageGallery({
             <Tile
               key={src}
               src={src}
-              alt={`${alt} photo ${i + 2}`}
+              alt={altFor(i + 1)}
               sizes={smallSizes}
               overlayCount={i === 3 ? remainingCount : 0}
             />
@@ -135,7 +140,7 @@ export default function PackageGallery({
             <Tile
               key={src}
               src={src}
-              alt={`${alt} photo ${i + 2}`}
+              alt={altFor(i + 1)}
               sizes={smallSizes}
             />
           ))

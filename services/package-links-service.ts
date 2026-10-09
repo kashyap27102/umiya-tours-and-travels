@@ -70,6 +70,29 @@ export async function resolvePackageLinks(
   };
 }
 
+/**
+ * Confirms every picked gallery image still exists and returns the real URL of
+ * each (so a URL sent by the browser is never trusted).
+ */
+export async function resolveMedia(
+  imageIds: string[],
+): Promise<{ error: string } | { urlById: Map<string, string> }> {
+  const ids = [...new Set(imageIds)];
+  if (ids.length === 0) return { urlById: new Map() };
+
+  const rows = await prismaClient.mediaImage.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, url: true },
+  });
+  if (rows.length !== ids.length) {
+    return {
+      error:
+        "An image you picked is no longer in the gallery. Please choose it again.",
+    };
+  }
+  return { urlById: new Map(rows.map((r) => [r.id, r.url])) };
+}
+
 export interface ResolvedInclusions {
   /** Legacy text lists the public page still reads, in pick order. */
   inclusions: string[];

@@ -52,7 +52,12 @@ function toFormValues(pkg: PackageForEdit): Partial<PackageFormValues> {
               roomType: s.roomType ?? "",
             })),
           })),
-    images: pkg.images,
+    images: pkg.imageLinks.map((link) => ({
+      id: link.image.id,
+      url: link.image.url,
+      title: link.image.title,
+      alt: link.image.alt,
+    })),
     summary: pkg.summary,
     highlights: pkg.highlights.length > 0 ? pkg.highlights : [""],
     inclusionIds: pkg.inclusionLinks
@@ -69,9 +74,16 @@ function toFormValues(pkg: PackageForEdit): Partial<PackageFormValues> {
             // Days saved before bullet points existed have only a paragraph.
             points:
               item.points.length > 0 ? item.points : [item.description.trim()],
-            imageUrl: item.imageUrl,
+            image: item.image
+              ? {
+                  id: item.image.id,
+                  url: item.image.url,
+                  title: item.image.title,
+                  alt: item.image.alt,
+                }
+              : null,
           }))
-        : [{ day: 1, title: "", points: [""], imageUrl: null }],
+        : [{ day: 1, title: "", points: [""], image: null }],
   };
 }
 

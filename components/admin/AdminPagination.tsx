@@ -11,24 +11,30 @@ interface AdminPaginationProps {
   totalPages: number;
   total: number;
   pageSize: number;
+  /** What is being listed, for "Showing 1–10 of 21 packages". */
+  itemLabel?: string;
+  /** The page-size choices offered. */
+  pageSizes?: readonly number[];
 }
-
-const PAGE_SIZE_OPTIONS: SelectOption[] = ADMIN_PACKAGE_PAGE_SIZES.map((n) => ({
-  label: `${n} per page`,
-  value: String(n),
-}));
 
 export default function AdminPagination({
   page,
   totalPages,
   total,
   pageSize,
+  itemLabel = "packages",
+  pageSizes = ADMIN_PACKAGE_PAGE_SIZES,
 }: Readonly<AdminPaginationProps>) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   if (total === 0) return null;
+
+  const pageSizeOptions: SelectOption[] = pageSizes.map((n) => ({
+    label: `${n} per page`,
+    value: String(n),
+  }));
 
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
@@ -51,13 +57,13 @@ export default function AdminPagination({
     <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-wrap items-center gap-3">
         <Select
-          options={PAGE_SIZE_OPTIONS}
+          options={pageSizeOptions}
           value={String(pageSize)}
           onChange={changePageSize}
           className="w-36"
         />
         <p className="text-xs text-brand-muted-600">
-          Showing {from}–{to} of {total} packages
+          Showing {from}–{to} of {total} {itemLabel}
         </p>
       </div>
 

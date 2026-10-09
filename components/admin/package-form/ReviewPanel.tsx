@@ -318,9 +318,9 @@ export function ReviewPanel({
                       ))}
                     </ul>
                   )}
-                  {day.imageUrl && (
+                  {day.image && (
                     <img
-                      src={day.imageUrl}
+                      src={day.image.url}
                       alt={`Day ${i + 1}`}
                       className="mt-2 h-20 w-32 rounded-lg object-cover"
                     />

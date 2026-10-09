@@ -4,6 +4,27 @@ import {
   PACKAGE_STATUS_OPTIONS,
 } from "@/lib/packages-constants";
 
+/**
+ * A gallery image as the form holds it. The server re-reads the url from the
+ * gallery, so only the id is trusted.
+ */
+export const mediaRefSchema = z.object({
+  id: z.string().min(1),
+  url: z.string().regex(/^https?:\/\/.+/, "Invalid image URL"),
+  title: z.string(),
+  alt: z.string(),
+});
+export type MediaRef = z.infer<typeof mediaRefSchema>;
+
+const packageImagesSchema = z
+  .array(mediaRefSchema)
+  .min(1, "At least one image is required")
+  .max(MAX_PACKAGE_IMAGES, `Maximum ${MAX_PACKAGE_IMAGES} images allowed`)
+  .refine(
+    (images) => new Set(images.map((i) => i.id)).size === images.length,
+    "Each image can only be added once",
+  );
+
 const itineraryItemSchema = z.object({
   day: z.number(),
   title: z.string().min(1, "Day title is required"),
@@ -11,11 +32,8 @@ const itineraryItemSchema = z.object({
   points: z
     .array(z.string().trim().min(1, "Cannot be empty"))
     .min(1, "Add at least one point"),
-  // Optional photo for the day.
-  imageUrl: z
-    .string()
-    .regex(/^https?:\/\/.+/, "Invalid image URL")
-    .nullable(),
+  // Optional photo for the day, picked from the gallery.
+  image: mediaRefSchema.nullable(),
 });
 
 export type ItineraryDayValues = z.infer<typeof itineraryItemSchema>;
@@ -111,10 +129,7 @@ export function findStayNightsMismatch(
 }
 
 export const step2Schema = z.object({
-  images: z
-    .array(z.string().refine((val) => /^https?:\/\/.+/.test(val), "Invalid image URL"))
-    .min(1, "At least one image is required")
-    .max(MAX_PACKAGE_IMAGES, `Maximum ${MAX_PACKAGE_IMAGES} images allowed`),
+  images: packageImagesSchema,
   summary: z.string().min(10, "At least 10 characters"),
 });
 
@@ -157,10 +172,7 @@ export const packageFormSchema = z
   status: z.enum(PACKAGE_STATUS_OPTIONS),
   durationDays: z.number().min(1, "Min 1 day"),
   durationNights: z.number().min(0, "Min 0 nights"),
-  images: z
-    .array(z.string().refine((val) => /^https?:\/\/.+/.test(val), "Invalid image URL"))
-    .min(1, "At least one image is required")
-    .max(MAX_PACKAGE_IMAGES, `Maximum ${MAX_PACKAGE_IMAGES} images allowed`),
+  images: packageImagesSchema,
   summary: z.string().min(10, "At least 10 characters"),
   highlights: z.array(z.string().min(1, "Cannot be empty")).min(1),
   ...inclusionIdFields,

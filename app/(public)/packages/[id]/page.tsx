@@ -93,6 +93,13 @@ export default async function PackageDetailPage({
     activePackagesResult.success ? activePackagesResult.data : []
   ).map(({ slug, name }) => ({ slug, name }));
 
+  // Alt text for each gallery photo, matched by URL so a mismatch can't
+  // attach the wrong text to a picture.
+  const altByUrl = new Map(
+    travelPackage.imageLinks.map((link) => [link.image.url, link.image.alt]),
+  );
+  const imageAlts = travelPackage.images.map((url) => altByUrl.get(url) ?? "");
+
   const canonicalUrl = `${appConfig.siteUrl}/packages/${travelPackage.slug}`;
   const derivedRatingValue = Math.max(
     4,
@@ -141,7 +148,11 @@ export default async function PackageDetailPage({
       />
 
       <section>
-        <PackageGallery images={travelPackage.images} alt={travelPackage.name} />
+        <PackageGallery
+          images={travelPackage.images}
+          alts={imageAlts}
+          alt={travelPackage.name}
+        />
       </section>
 
       <section className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
@@ -167,7 +178,12 @@ export default async function PackageDetailPage({
             </Badge>
           </Card>
 
-          <PackageItinerary itinerary={travelPackage.itinerary} />
+          <PackageItinerary
+            itinerary={travelPackage.itinerary.map(({ image, ...day }) => ({
+              ...day,
+              imageAlt: image?.alt ?? "",
+            }))}
+          />
         </div>
 
         <div className="space-y-6 lg:sticky lg:top-6">

@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
 import {
+  linkPackageImages,
   linkPackageInclusions,
   linkPackageTaxonomy,
   syncPackageTaxonomy,
@@ -513,6 +514,7 @@ async function main() {
     await syncPackageTaxonomy(prisma, created);
     await linkPackageTaxonomy(prisma, created);
     await linkPackageInclusions(prisma, created);
+    await linkPackageImages(prisma, created);
     console.log(`   📦 ${seed.name}`);
   }
 

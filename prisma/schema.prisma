@@ -110,6 +110,42 @@ model PackageInclusion {
   @@index([packageId, type, sortOrder])
 }
 
+// Shared image library. Packages and itinerary days pick from it.
+enum MediaSource {
+  uploaded // uploaded from the admin
+  link_copy // downloaded from a pasted link into our own storage
+  legacy_link // pre-existing external URL (e.g. Unsplash), not copied
+}
+
+model MediaImage {
+  id        String      @id @default(cuid())
+  url       String      @unique // where it is served from
+  title     String
+  alt       String      @default("")
+  tags      String[]    @default([]) // lowercase, trimmed
+  source    MediaSource
+  sourceUrl String? // the original link, for link_copy
+  sizeBytes Int?
+  createdAt DateTime    @default(now())
+
+  packageLinks  PackageImage[]
+  itineraryDays ItineraryItem[]
+
+  @@index([createdAt])
+}
+
+// Ordered images of a package; sortOrder 0 is the cover.
+model PackageImage {
+  package   Package    @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String
+  image     MediaImage @relation(fields: [imageId], references: [id])
+  imageId   String
+  sortOrder Int        @default(0)
+
+  @@id([packageId, imageId])
+  @@index([imageId])
+}
+
 // A package can cover several destinations and belong to several categories.
 // The first destination (sortOrder 0) is the primary one.
 model PackageDestination {
@@ -157,7 +193,10 @@ model Package {
   // Used for sorting/filtering; pricePerPerson is retired in the cleanup step.
   startingPrice   Int             @default(0)
   variants        PackageVariant[]
+  // Legacy URL list, kept in sync from imageLinks so the public pages keep
+  // working; retired in the cleanup step.
   images         String[]        @default([])
+  imageLinks     PackageImage[]
   summary         String
   highlights      String[]
   // Legacy text lists, kept in sync from inclusionLinks so the public page
@@ -240,13 +279,16 @@ model ItineraryItem {
   // Ordered bullet points for the day. `description` is the legacy single
   // paragraph, kept filled (points joined by new lines) until cleanup.
   points      String[] @default([])
-  imageUrl    String? // optional photo for the day
+  imageUrl    String? // optional photo for the day (kept in sync from `image`)
+  image       MediaImage? @relation(fields: [imageId], references: [id])
+  imageId     String?
   description String
   package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId   String
 
   @@unique([packageId, day])
   @@index([packageId])
+  @@index([imageId])
 }
 
 // ── SiteSettings ──────────────────────────────────────────────────────────────
