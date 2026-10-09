@@ -4,30 +4,30 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui";
 import { StepIndicator } from "./package-form/StepIndicator";
 import { Step1BasicDetails } from "./package-form/Step1BasicDetails";
+import { StepVariantsPricing } from "./package-form/StepVariantsPricing";
 import { Step2MediaSummary } from "./package-form/Step2MediaSummary";
 import { Step3Features } from "./package-form/Step3Features";
 import { Step4Itinerary } from "./package-form/Step4Itinerary";
 import { Step5Review } from "./package-form/Step5Review";
 import type { UsePackageFormReturn } from "@/hooks/usePackageForm";
 import type { PackageFormValues } from "@/schemas/package";
+import type { DestinationWithHotels } from "@/services/taxonomy-service";
+import type { Category } from "@/app/generated/prisma/client";
 
 interface PackageFormProps extends UsePackageFormReturn {
   submitLabel: string;
   onValidSubmit: (data: PackageFormValues) => void;
   isSubmitting?: boolean;
+  destinations: DestinationWithHotels[];
+  categories: Category[];
 }
-
-const STEP_PANELS = [
-  Step1BasicDetails,
-  Step2MediaSummary,
-  Step3Features,
-  Step4Itinerary,
-];
 
 export default function PackageForm({
   submitLabel,
   onValidSubmit,
   isSubmitting = false,
+  destinations,
+  categories,
   ...hook
 }: Readonly<PackageFormProps>) {
   const {
@@ -41,7 +41,19 @@ export default function PackageForm({
     getCombinedData,
   } = hook;
 
-  const StepPanel = STEP_PANELS[currentStep];
+  // Order must match PACKAGE_FORM_STEPS.
+  const stepPanels = [
+    <Step1BasicDetails
+      key="basic"
+      hook={hook}
+      destinations={destinations}
+      categories={categories}
+    />,
+    <StepVariantsPricing key="variants" hook={hook} destinations={destinations} />,
+    <Step2MediaSummary key="media" hook={hook} />,
+    <Step3Features key="features" hook={hook} />,
+    <Step4Itinerary key="itinerary" hook={hook} />,
+  ];
 
   return (
     <div className="space-y-6">
@@ -52,9 +64,13 @@ export default function PackageForm({
       />
 
       {isLastStep ? (
-        <Step5Review data={getCombinedData()} />
+        <Step5Review
+          data={getCombinedData()}
+          destinations={destinations}
+          categories={categories}
+        />
       ) : (
-        <StepPanel hook={hook} />
+        stepPanels[currentStep]
       )}
 
       <div className="flex items-center justify-between">

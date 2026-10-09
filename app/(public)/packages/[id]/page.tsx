@@ -56,7 +56,9 @@ export async function generateMetadata({
     image: travelPackage.images[0],
     keywords: [
       travelPackage.destination.toLowerCase(),
-      `${travelPackage.category.toLowerCase()} travel package`,
+      travelPackage.category
+        ? `${travelPackage.category.toLowerCase()} travel package`
+        : "travel package",
       `${durationLabel.toLowerCase()} package`,
       "travel itinerary",
       "holiday package booking",
@@ -112,7 +114,9 @@ export default async function PackageDetailPage({
     description: travelPackage.summary,
     images: travelPackage.images,
     sku: travelPackage.slug,
-    category: `${travelPackage.category} Travel Package`,
+    category: travelPackage.category
+      ? `${travelPackage.category} Travel Package`
+      : "Travel Package",
     price: travelPackage.pricePerPerson,
     url: canonicalUrl,
     ratingValue: derivedRatingValue,

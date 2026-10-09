@@ -1,5 +1,6 @@
 export const PACKAGE_FORM_STEPS = [
   "Basic Details",
+  "Variants & Pricing",
   "Media & Summary",
   "Package Features",
   "Itinerary",

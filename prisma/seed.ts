@@ -2,7 +2,7 @@ import { PrismaClient } from "../app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
-import { syncPackageTaxonomy } from "./package-taxonomy";
+import { linkPackageTaxonomy, syncPackageTaxonomy } from "./package-taxonomy";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -495,6 +495,7 @@ async function main() {
       },
     });
     await syncPackageTaxonomy(prisma, created);
+    await linkPackageTaxonomy(prisma, created);
     console.log(`   📦 ${seed.name}`);
   }
 

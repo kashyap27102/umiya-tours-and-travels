@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { prismaClient } from "@/lib/prisma";
-import { PackageWithItinerary, ApiResponse } from "../types";
+import { PackageWithItinerary, PackageForEdit, ApiResponse } from "../types";
 import type {
   PackageCategory,
   PackageStatus,
@@ -126,6 +126,42 @@ export class PackageService {
     }
   }
 
+  static async getPackageForEdit(
+    slug: string,
+  ): Promise<ApiResponse<PackageForEdit>> {
+    try {
+      const packageData = await prismaClient.package.findUnique({
+        where: { slug },
+        include: {
+          itinerary: { orderBy: { day: "asc" } },
+          destinations: { orderBy: { sortOrder: "asc" } },
+          categories: { orderBy: { sortOrder: "asc" } },
+          variants: {
+            orderBy: { sortOrder: "asc" },
+            include: {
+              prices: { orderBy: { persons: "asc" } },
+              stays: { orderBy: { sortOrder: "asc" } },
+            },
+          },
+        },
+      });
+
+      if (!packageData) {
+        return { success: false, error: "Package not found" };
+      }
+
+      return {
+        success: true,
+        data: packageData,
+        message: "Package fetched successfully",
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch package";
+      return { success: false, error: errorMessage };
+    }
+  }
+
   static async getPackages(
     filters: PackageFilters = {},
   ): Promise<ApiResponse<PaginatedPackages>> {
@@ -221,14 +257,15 @@ export class PackageService {
   );
 
   static async getRelatedPackages(
-    category: PackageCategory,
+    category: PackageCategory | null,
     excludeSlug: string,
     limit = 3,
   ): Promise<ApiResponse<PackageWithItinerary[]>> {
     try {
       const packages = await prismaClient.package.findMany({
         where: {
-          category,
+          // Packages without a legacy category fall back to any other active package.
+          ...(category && { category }),
           status: "active",
           slug: { not: excludeSlug },
         },

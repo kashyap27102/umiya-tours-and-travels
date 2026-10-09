@@ -9,21 +9,39 @@ import PackageForm from "@/components/admin/PackageForm";
 import { usePackageForm } from "@/hooks/usePackageForm";
 import { usePackageSubmit } from "@/hooks/usePackageSubmit";
 import type { PackageFormValues } from "@/schemas/package";
-import type { PackageWithItinerary } from "@/types/package";
+import type { PackageForEdit } from "@/types/package";
+import type { DestinationWithHotels } from "@/services/taxonomy-service";
+import type { Category } from "@/app/generated/prisma/client";
 
 interface EditPackageClientProps {
-  package: PackageWithItinerary;
+  package: PackageForEdit;
+  destinations: DestinationWithHotels[];
+  categories: Category[];
 }
 
-function toFormValues(pkg: PackageWithItinerary): Partial<PackageFormValues> {
+function toFormValues(pkg: PackageForEdit): Partial<PackageFormValues> {
   return {
     name: pkg.name,
-    destination: pkg.destination,
-    category: pkg.category,
+    destinationIds: pkg.destinations.map((d) => d.destinationId),
+    categoryIds: pkg.categories.map((c) => c.categoryId),
     status: pkg.status,
     durationDays: pkg.durationDays,
     durationNights: pkg.durationNights,
-    pricePerPerson: pkg.pricePerPerson,
+    variants: pkg.variants.map((v) => ({
+      name: v.name,
+      pricingMode: v.pricingMode,
+      flatPrice: v.flatPrice,
+      prices: v.prices.map((p) => ({
+        persons: p.persons,
+        pricePerPerson: p.pricePerPerson,
+      })),
+      stays: v.stays.map((s) => ({
+        destinationId: s.destinationId,
+        hotelId: s.hotelId,
+        nights: s.nights,
+        roomType: s.roomType ?? "",
+      })),
+    })),
     images: pkg.images,
     summary: pkg.summary,
     highlights: pkg.highlights.length > 0 ? pkg.highlights : [""],
@@ -38,6 +56,8 @@ function toFormValues(pkg: PackageWithItinerary): Partial<PackageFormValues> {
 
 export default function EditPackageClient({
   package: pkg,
+  destinations,
+  categories,
 }: Readonly<EditPackageClientProps>) {
   const hookResult = usePackageForm(toFormValues(pkg));
   const { isSubmitting, handleEdit, handleDelete } = usePackageSubmit();
@@ -113,6 +133,8 @@ export default function EditPackageClient({
 
       <PackageForm
         {...hookResult}
+        destinations={destinations}
+        categories={categories}
         submitLabel="Save Changes"
         onValidSubmit={handleValidSubmit}
         isSubmitting={isSubmitting}

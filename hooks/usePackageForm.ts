@@ -5,10 +5,13 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   step1Schema,
+  variantsStepSchema,
+  findStayNightsMismatch,
   step2Schema,
   step3Schema,
   step4Schema,
   type Step1Values,
+  type VariantsStepValues,
   type Step2Values,
   type Step3Values,
   type Step4Values,
@@ -23,12 +26,27 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
     resolver: zodResolver(step1Schema),
     defaultValues: {
       name: defaultValues?.name ?? "",
-      destination: defaultValues?.destination ?? "",
+      destinationIds: defaultValues?.destinationIds ?? [],
+      categoryIds: defaultValues?.categoryIds ?? [],
       status: defaultValues?.status ?? "active",
       durationDays: defaultValues?.durationDays ?? 1,
       durationNights: defaultValues?.durationNights ?? 0,
-      pricePerPerson: defaultValues?.pricePerPerson ?? 0,
-      ...(defaultValues?.category ? { category: defaultValues.category } : {}),
+    },
+    mode: "onTouched",
+  });
+
+  const variantsForm = useForm<VariantsStepValues>({
+    resolver: zodResolver(variantsStepSchema),
+    defaultValues: {
+      variants: defaultValues?.variants ?? [
+        {
+          name: "Standard",
+          pricingMode: "flat",
+          flatPrice: null,
+          prices: [],
+          stays: [],
+        },
+      ],
     },
     mode: "onTouched",
   });
@@ -62,7 +80,14 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
     mode: "onTouched",
   });
 
-  const stepForms = [step1Form, step2Form, step3Form, step4Form] as const;
+  // Order must match PACKAGE_FORM_STEPS (the last step, Review, has no form).
+  const stepForms = [
+    step1Form,
+    variantsForm,
+    step2Form,
+    step3Form,
+    step4Form,
+  ] as const;
 
   const itineraryArray = useFieldArray({
     control: step4Form.control,
@@ -70,11 +95,27 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
   });
 
   const goToNext = async () => {
-    if (currentStep < 4) {
-      const currentForm = stepForms[currentStep as 0 | 1 | 2 | 3];
+    if (currentStep < stepForms.length) {
+      const currentForm = stepForms[currentStep];
       const valid = await currentForm.trigger();
-      if (valid)
-        setCurrentStep((s) => Math.min(s + 1, PACKAGE_FORM_STEPS.length - 1));
+      if (!valid) return;
+
+      // Stay nights live on this step but are checked against the nights from step 1.
+      if (currentForm === variantsForm) {
+        const mismatch = findStayNightsMismatch(
+          variantsForm.getValues("variants"),
+          step1Form.getValues("durationNights"),
+        );
+        if (mismatch) {
+          variantsForm.setError(`variants.${mismatch.index}.stays`, {
+            type: "custom",
+            message: mismatch.message,
+          });
+          return;
+        }
+      }
+
+      setCurrentStep((s) => Math.min(s + 1, PACKAGE_FORM_STEPS.length - 1));
     }
   };
 
@@ -127,6 +168,7 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
 
   const getCombinedData = (): PackageFormValues => ({
     ...step1Form.getValues(),
+    ...variantsForm.getValues(),
     ...step2Form.getValues(),
     ...step3Form.getValues(),
     ...step4Form.getValues(),
@@ -134,6 +176,7 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
 
   const resetAll = () => {
     step1Form.reset();
+    variantsForm.reset();
     step2Form.reset();
     step3Form.reset();
     step4Form.reset();
@@ -142,6 +185,7 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
 
   return {
     step1Form,
+    variantsForm,
     step2Form,
     step3Form,
     step4Form,

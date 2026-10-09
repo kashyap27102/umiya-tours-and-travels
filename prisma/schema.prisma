@@ -41,8 +41,7 @@ enum PackageStatus {
 }
 
 // ── Destination / Category lookup tables ─────────────────────────────────────
-// Step 1 of the package redesign. Standalone for now; linking them to Package
-// happens later, once Package itself is changed.
+// Packages link to these through PackageDestination / PackageCategoryLink below.
 
 model Destination {
   id      String  @id @default(cuid())
@@ -51,8 +50,9 @@ model Destination {
   state   String?
   country String
 
-  stays  PackageStay[]
-  hotels Hotel[]
+  stays    PackageStay[]
+  hotels   Hotel[]
+  packages PackageDestination[]
 
   @@index([country])
 }
@@ -77,6 +77,34 @@ model Category {
   slug      String @unique
   name      String
   sortOrder Int    @default(0)
+
+  packages PackageCategoryLink[]
+}
+
+// A package can cover several destinations and belong to several categories.
+// The first destination (sortOrder 0) is the primary one.
+model PackageDestination {
+  package       Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId     String
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  destinationId String
+  isPrimary     Boolean     @default(false)
+  sortOrder     Int         @default(0)
+
+  @@id([packageId, destinationId])
+  @@index([destinationId])
+}
+
+// Named ...Link because the legacy PackageCategory enum still exists.
+model PackageCategoryLink {
+  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId  String
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  sortOrder  Int      @default(0)
+
+  @@id([packageId, categoryId])
+  @@index([categoryId])
 }
 
 // ── Package ───────────────────────────────────────────────────────────────────
@@ -85,8 +113,12 @@ model Package {
   id              String          @id @default(cuid())
   slug            String          @unique
   name            String
+  // Legacy text/enum kept in sync from destinations/categories below so the
+  // public pages keep working; retired in the cleanup step.
   destination     String
-  category        PackageCategory
+  category        PackageCategory?
+  destinations    PackageDestination[]
+  categories      PackageCategoryLink[]
   status          PackageStatus   @default(active)
   durationDays    Int
   durationNights  Int

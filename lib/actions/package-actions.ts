@@ -2,22 +2,39 @@
 
 import { revalidatePath } from "next/cache";
 import { prismaClient } from "@/lib/prisma";
+import { verifySession } from "@/lib/session";
+import { resolvePackageLinks } from "@/services/package-links-service";
+import {
+  startingPriceOf,
+  toVariantCreateInput,
+  validateVariants,
+} from "@/services/package-variant-service";
 import { packageFormSchema, type PackageFormValues } from "@/schemas/package";
 import type { ApiResponse } from "@/types/api-response";
+
+const UNAUTHORIZED = "You must be signed in as an admin.";
 
 export async function createPackage(
   input: PackageFormValues,
 ): Promise<ApiResponse<{ id: string; slug: string }>> {
+  if (!(await verifySession())) return { success: false, error: UNAUTHORIZED };
+
   const parsed = packageFormSchema.safeParse(input);
   if (!parsed.success) {
     return {
       success: false,
-      error: "Please check the package details and try again.",
+      error: parsed.error.issues[0]?.message ?? "Please check the package details and try again.",
     };
   }
   const data = parsed.data;
 
   try {
+    const variantError = await validateVariants(data.variants, data.durationNights);
+    if (variantError) return { success: false, error: variantError };
+    const links = await resolvePackageLinks(data.destinationIds, data.categoryIds);
+    if ("error" in links) return { success: false, error: links.error };
+    const startingPrice = startingPriceOf(data.variants);
+
     // Generate slug from package name
     const slug = data.name
       .toLowerCase()
@@ -41,12 +58,18 @@ export async function createPackage(
       data: {
         name: data.name,
         slug,
-        destination: data.destination,
-        category: data.category,
+        destination: links.destination,
+        category: links.category,
+        destinations: { create: links.destinationLinks },
+        categories: { create: links.categoryLinks },
         status: data.status,
         durationDays: data.durationDays,
         durationNights: data.durationNights,
-        pricePerPerson: data.pricePerPerson,
+        // pricePerPerson is the legacy column the public pages still read;
+        // keep it equal to the lowest variant price until they are switched over.
+        pricePerPerson: startingPrice,
+        startingPrice,
+        variants: { create: toVariantCreateInput(data.variants) },
         images: data.images,
         summary: data.summary,
         highlights: data.highlights.filter(Boolean),
@@ -85,16 +108,24 @@ export async function editPackage(
   packageId: string,
   input: PackageFormValues,
 ): Promise<ApiResponse<{ id: string; slug: string }>> {
+  if (!(await verifySession())) return { success: false, error: UNAUTHORIZED };
+
   const parsed = packageFormSchema.safeParse(input);
   if (!parsed.success) {
     return {
       success: false,
-      error: "Please check the package details and try again.",
+      error: parsed.error.issues[0]?.message ?? "Please check the package details and try again.",
     };
   }
   const data = parsed.data;
 
   try {
+    const variantError = await validateVariants(data.variants, data.durationNights);
+    if (variantError) return { success: false, error: variantError };
+    const links = await resolvePackageLinks(data.destinationIds, data.categoryIds);
+    if ("error" in links) return { success: false, error: links.error };
+    const startingPrice = startingPriceOf(data.variants);
+
     const existingPackage = await prismaClient.package.findUnique({
       where: { id: packageId },
     });
@@ -106,38 +137,58 @@ export async function editPackage(
       };
     }
 
-    // Update package
-    const updatedPackage = await prismaClient.package.update({
-      where: { id: packageId },
-      data: {
-        name: data.name,
-        destination: data.destination,
-        category: data.category,
-        status: data.status,
-        durationDays: data.durationDays,
-        durationNights: data.durationNights,
-        pricePerPerson: data.pricePerPerson,
-        images: data.images,
-        summary: data.summary,
-        highlights: data.highlights.filter(Boolean),
-        inclusions: data.inclusions.filter(Boolean),
-        exclusions: data.exclusions.filter(Boolean),
-      },
-    });
+    // Update the package, itinerary and variants together so a failure part-way
+    // can't leave a half-saved package.
+    const updatedPackage = await prismaClient.$transaction(async (tx) => {
+      const updated = await tx.package.update({
+        where: { id: packageId },
+        data: {
+          name: data.name,
+          destination: links.destination,
+          category: links.category,
+          status: data.status,
+          durationDays: data.durationDays,
+          durationNights: data.durationNights,
+          // Legacy column the public pages still read; mirrors the lowest variant price.
+          pricePerPerson: startingPrice,
+          startingPrice,
+          images: data.images,
+          summary: data.summary,
+          highlights: data.highlights.filter(Boolean),
+          inclusions: data.inclusions.filter(Boolean),
+          exclusions: data.exclusions.filter(Boolean),
+        },
+      });
 
-    // Remove old itinerary items
-    await prismaClient.itineraryItem.deleteMany({
-      where: { packageId },
-    });
+      await tx.itineraryItem.deleteMany({ where: { packageId } });
+      await tx.itineraryItem.createMany({
+        data: data.itinerary.map((item) => ({
+          day: item.day,
+          title: item.title,
+          description: item.description,
+          packageId,
+        })),
+      });
 
-    // Create new itinerary items
-    await prismaClient.itineraryItem.createMany({
-      data: data.itinerary.map((item) => ({
-        day: item.day,
-        title: item.title,
-        description: item.description,
-        packageId,
-      })),
+      // Destination and category links are replaced wholesale too.
+      await tx.packageDestination.deleteMany({ where: { packageId } });
+      await tx.packageDestination.createMany({
+        data: links.destinationLinks.map((l) => ({ ...l, packageId })),
+      });
+      await tx.packageCategoryLink.deleteMany({ where: { packageId } });
+      await tx.packageCategoryLink.createMany({
+        data: links.categoryLinks.map((l) => ({ ...l, packageId })),
+      });
+
+      // Variants are replaced wholesale; stays and prices cascade with them.
+      await tx.packageVariant.deleteMany({ where: { packageId } });
+      for (const variant of toVariantCreateInput(data.variants)) {
+        await tx.packageVariant.create({
+          data: { ...variant, package: { connect: { id: packageId } } },
+        });
+      }
+
+      return updated;
     });
 
     // Revalidate both the listing and the detail page
@@ -164,6 +215,8 @@ export async function editPackage(
 export async function deletePackage(
   packageId: string,
 ): Promise<ApiResponse<null>> {
+  if (!(await verifySession())) return { success: false, error: UNAUTHORIZED };
+
   try {
     const pkg = await prismaClient.package.findUnique({
       where: { id: packageId },
