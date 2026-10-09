@@ -51,6 +51,8 @@ model Destination {
   state   String?
   country String
 
+  stays PackageStay[]
+
   @@index([country])
 }
 
@@ -73,7 +75,11 @@ model Package {
   durationDays    Int
   durationNights  Int
   pricePerPerson  Int
-  images          String[]        @default([])
+  // Lowest variant price per person, kept in sync when prices change.
+  // Used for sorting/filtering; pricePerPerson is retired in the cleanup step.
+  startingPrice   Int             @default(0)
+  variants        PackageVariant[]
+  images         String[]        @default([])
   summary         String
   highlights      String[]
   inclusions      String[]
@@ -86,6 +92,60 @@ model Package {
   @@index([category])
   @@index([status])
   @@index([destination])
+}
+
+// ── Variants, stays and pricing ───────────────────────────────────────────────
+// A package has one or more variants (Standard / Deluxe / Premium). Each variant
+// is priced either as one flat per-person price, or per group size (2, 4, 6...).
+// App-level rules: flat -> flatPrice required; group_size -> at least one
+// VariantPrice; stay nights per variant sum to Package.durationNights.
+
+enum PricingMode {
+  flat
+  group_size
+}
+
+model PackageVariant {
+  id          String      @id @default(cuid())
+  package     Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId   String
+  name        String
+  sortOrder   Int         @default(0)
+  pricingMode PricingMode @default(flat)
+  flatPrice   Int?
+
+  stays  PackageStay[]
+  prices VariantPrice[]
+
+  @@unique([packageId, name])
+}
+
+// Price per person when travelling in a group of `persons`.
+model VariantPrice {
+  id             String         @id @default(cuid())
+  variant        PackageVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId      String
+  persons        Int
+  pricePerPerson Int
+
+  @@unique([variantId, persons])
+}
+
+// One stop in a variant's route: "2N Shimla", "3N Manali".
+model PackageStay {
+  id            String         @id @default(cuid())
+  variant       PackageVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId     String
+  destination   Destination    @relation(fields: [destinationId], references: [id])
+  destinationId String
+  nights        Int
+  hotelName     String
+  hotelCategory String?
+  roomType      String?
+  sortOrder     Int            @default(0)
+
+  @@index([variantId, sortOrder])
+  @@index([destinationId])
 }
 
 // ── ItineraryItem ─────────────────────────────────────────────────────────────

@@ -471,6 +471,14 @@ async function main() {
         durationDays: seed.durationDays,
         durationNights: seed.durationNights,
         pricePerPerson: seed.pricePerPerson,
+        startingPrice: seed.pricePerPerson,
+        variants: {
+          create: {
+            name: "Standard",
+            pricingMode: "flat",
+            flatPrice: seed.pricePerPerson,
+          },
+        },
         popularityScore: seed.popularityScore,
         images: [seed.image],
         summary: seed.summary,
