@@ -1,11 +1,20 @@
 import { prismaClient } from "@/lib/prisma";
 import type { ApiResponse } from "../types";
-import type { Category, Destination } from "@/app/generated/prisma/client";
+import type {
+  Category,
+  Destination,
+  Hotel,
+} from "@/app/generated/prisma/client";
+
+export type DestinationWithHotels = Destination & { hotels: Hotel[] };
 
 export class TaxonomyService {
-  static async getDestinations(): Promise<ApiResponse<Destination[]>> {
+  static async getDestinations(): Promise<
+    ApiResponse<DestinationWithHotels[]>
+  > {
     try {
       const data = await prismaClient.destination.findMany({
+        include: { hotels: { orderBy: { name: "asc" } } },
         orderBy: { name: "asc" },
       });
       return { success: true, data, message: "Destinations fetched" };

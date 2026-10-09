@@ -2,7 +2,7 @@
 
 import { Fragment, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Hotel, Pencil, Plus, Trash2 } from "lucide-react";
 import {
   Button,
   Input,
@@ -21,7 +21,8 @@ import {
   updateDestination,
 } from "@/lib/actions/taxonomy-actions";
 import { notify } from "@/lib/notifications";
-import type { Destination } from "@/app/generated/prisma/client";
+import type { DestinationWithHotels as Destination } from "@/services/taxonomy-service";
+import HotelManagerModal from "./HotelManagerModal";
 
 interface FormState {
   name: string;
@@ -60,6 +61,9 @@ export default function DestinationManager({
   const [editing, setEditing] = useState<Destination | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [deleting, setDeleting] = useState<Destination | null>(null);
+  // Stored by id so the modal shows fresh hotels after router.refresh().
+  const [hotelsForId, setHotelsForId] = useState<string | null>(null);
+  const hotelsFor = destinations.find((d) => d.id === hotelsForId) ?? null;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -153,6 +157,7 @@ export default function DestinationManager({
               <TableHeader>Country</TableHeader>
               <TableHeader>Name</TableHeader>
               <TableHeader>State</TableHeader>
+              <TableHeader>Hotels</TableHeader>
               <TableHeader className="text-right">Actions</TableHeader>
             </TableRow>
           </TableHead>
@@ -175,6 +180,17 @@ export default function DestinationManager({
                     <TableCell className="font-medium">{d.name}</TableCell>
                     <TableCell className="text-brand-muted-600">
                       {d.state ?? "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        title="Manage hotels"
+                        onClick={() => setHotelsForId(d.id)}
+                      >
+                        <Hotel className="h-4 w-4" />
+                        {d.hotels.length}
+                      </Button>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -261,6 +277,11 @@ export default function DestinationManager({
           />
         </form>
       </Modal>
+
+      <HotelManagerModal
+        destination={hotelsFor}
+        onClose={() => setHotelsForId(null)}
+      />
 
       <AlertDialog
         open={deleting !== null}

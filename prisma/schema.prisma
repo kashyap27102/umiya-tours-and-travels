@@ -51,9 +51,25 @@ model Destination {
   state   String?
   country String
 
-  stays PackageStay[]
+  stays  PackageStay[]
+  hotels Hotel[]
 
   @@index([country])
+}
+
+// Hotels available in a destination; packages pick from these for each stay.
+model Hotel {
+  id            String      @id @default(cuid())
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  destinationId String
+  name          String
+  starRating    Int? // 1-5
+  address       String?
+  isActive      Boolean     @default(true) // inactive hotels are hidden from package forms
+
+  stays PackageStay[]
+
+  @@unique([destinationId, name])
 }
 
 model Category {
@@ -138,14 +154,15 @@ model PackageStay {
   variantId     String
   destination   Destination    @relation(fields: [destinationId], references: [id])
   destinationId String
+  hotel         Hotel          @relation(fields: [hotelId], references: [id])
+  hotelId       String
   nights        Int
-  hotelName     String
-  hotelCategory String?
-  roomType      String?
+  roomType      String? // varies per package, so it lives here and not on Hotel
   sortOrder     Int            @default(0)
 
   @@index([variantId, sortOrder])
   @@index([destinationId])
+  @@index([hotelId])
 }
 
 // ── ItineraryItem ─────────────────────────────────────────────────────────────
