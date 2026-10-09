@@ -24,6 +24,7 @@ interface ReviewPanelProps {
   data: PackageFormValues;
   destinations: DestinationWithHotels[];
   categories: Category[];
+  inclusions: { id: string; text: string }[];
 }
 
 interface DetailItemProps {
@@ -64,7 +65,14 @@ export function ReviewPanel({
   data: v,
   destinations,
   categories,
+  inclusions,
 }: Readonly<ReviewPanelProps>) {
+  const textsFor = (ids: string[]) =>
+    ids
+      .map((id) => inclusions.find((i) => i.id === id)?.text)
+      .filter((text): text is string => Boolean(text));
+  const includedTexts = textsFor(v.inclusionIds);
+  const excludedTexts = textsFor(v.exclusionIds);
   const destinationNames = v.destinationIds
     .map((id) => destinations.find((d) => d.id === id)?.name)
     .filter(Boolean)
@@ -239,7 +247,7 @@ export function ReviewPanel({
               </h4>
             </div>
             <ul className="space-y-2">
-              {v.inclusions?.filter(Boolean).map((item) => (
+              {includedTexts.map((item) => (
                 <li
                   key={item}
                   className="flex gap-2 text-sm text-brand-ink-900"
@@ -260,7 +268,7 @@ export function ReviewPanel({
               </h4>
             </div>
             <ul className="space-y-2">
-              {v.exclusions?.filter(Boolean).map((item) => (
+              {excludedTexts.map((item) => (
                 <li
                   key={item}
                   className="flex gap-2 text-sm text-brand-ink-900"

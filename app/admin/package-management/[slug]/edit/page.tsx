@@ -9,10 +9,11 @@ export default async function EditPackagePage({
 }>) {
   const { slug } = await params;
 
-  const [response, destinations, categories] = await Promise.all([
+  const [response, destinations, categories, inclusions] = await Promise.all([
     PackageService.getPackageForEdit(slug),
     TaxonomyService.getDestinations(),
     TaxonomyService.getCategories(),
+    TaxonomyService.getInclusions(),
   ]);
 
   if (!response.success) {
@@ -24,6 +25,11 @@ export default async function EditPackagePage({
       package={response.data}
       destinations={destinations.success ? destinations.data : []}
       categories={categories.success ? categories.data : []}
+      inclusions={
+        inclusions.success
+          ? inclusions.data.map(({ id, text }) => ({ id, text }))
+          : []
+      }
     />
   );
 }

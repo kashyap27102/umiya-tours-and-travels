@@ -21,6 +21,7 @@ interface EditPackageClientProps {
   package: PackageForEdit;
   destinations: DestinationWithHotels[];
   categories: Category[];
+  inclusions: { id: string; text: string }[];
 }
 
 function toFormValues(pkg: PackageForEdit): Partial<PackageFormValues> {
@@ -54,8 +55,12 @@ function toFormValues(pkg: PackageForEdit): Partial<PackageFormValues> {
     images: pkg.images,
     summary: pkg.summary,
     highlights: pkg.highlights.length > 0 ? pkg.highlights : [""],
-    inclusions: pkg.inclusions.length > 0 ? pkg.inclusions : [""],
-    exclusions: pkg.exclusions.length > 0 ? pkg.exclusions : [""],
+    inclusionIds: pkg.inclusionLinks
+      .filter((l) => l.type === "included")
+      .map((l) => l.inclusionId),
+    exclusionIds: pkg.inclusionLinks
+      .filter((l) => l.type === "excluded")
+      .map((l) => l.inclusionId),
     itinerary:
       pkg.itinerary.length > 0
         ? pkg.itinerary
@@ -67,6 +72,7 @@ export default function EditPackageClient({
   package: pkg,
   destinations,
   categories,
+  inclusions,
 }: Readonly<EditPackageClientProps>) {
   const hookResult = usePackageForm(toFormValues(pkg));
   const { isSubmitting, handleEdit, saveDraft, handleDelete } =
@@ -143,6 +149,7 @@ export default function EditPackageClient({
         {...hookResult}
         destinations={destinations}
         categories={categories}
+        inclusions={inclusions}
         onSaveDraft={pkg.status === "draft" ? handleSaveDraft : undefined}
         submitLabel="Save Changes"
         onValidSubmit={handleValidSubmit}

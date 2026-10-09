@@ -108,17 +108,39 @@ export const step2Schema = z.object({
   summary: z.string().min(10, "At least 10 characters"),
 });
 
-export const step3Schema = z.object({
-  highlights: z.array(z.string().min(1, "Cannot be empty")).min(1),
-  inclusions: z.array(z.string().min(1, "Cannot be empty")).min(1),
-  exclusions: z.array(z.string().min(1, "Cannot be empty")).min(1),
-});
+/** An item can be included or excluded in a package, never both. */
+function rejectOverlap(
+  data: { inclusionIds: string[]; exclusionIds: string[] },
+  ctx: z.RefinementCtx,
+) {
+  const included = new Set(data.inclusionIds);
+  if (data.exclusionIds.some((id) => included.has(id))) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["exclusionIds"],
+      message: "An item can't be both included and excluded",
+    });
+  }
+}
+
+const inclusionIdFields = {
+  inclusionIds: z.array(z.string().min(1)).min(1, "Pick at least one inclusion"),
+  exclusionIds: z.array(z.string().min(1)).min(1, "Pick at least one exclusion"),
+};
+
+export const step3Schema = z
+  .object({
+    highlights: z.array(z.string().min(1, "Cannot be empty")).min(1),
+    ...inclusionIdFields,
+  })
+  .superRefine(rejectOverlap);
 
 export const step4Schema = z.object({
   itinerary: z.array(itineraryItemSchema).min(1),
 });
 
-export const packageFormSchema = z.object({
+export const packageFormSchema = z
+  .object({
   name: z.string().min(1, "Package name is required"),
   destinationIds: z.array(z.string().min(1)).min(1, "Select at least one destination"),
   categoryIds: z.array(z.string().min(1)).min(1, "Select at least one category"),
@@ -131,11 +153,11 @@ export const packageFormSchema = z.object({
     .max(MAX_PACKAGE_IMAGES, `Maximum ${MAX_PACKAGE_IMAGES} images allowed`),
   summary: z.string().min(10, "At least 10 characters"),
   highlights: z.array(z.string().min(1, "Cannot be empty")).min(1),
-  inclusions: z.array(z.string().min(1, "Cannot be empty")).min(1),
-  exclusions: z.array(z.string().min(1, "Cannot be empty")).min(1),
+  ...inclusionIdFields,
   itinerary: z.array(itineraryItemSchema).min(1),
   variants: variantsListSchema,
-});
+  })
+  .superRefine(rejectOverlap);
 
 export type Step1Values = z.infer<typeof step1Schema>;
 export type VariantsStepValues = z.infer<typeof variantsStepSchema>;

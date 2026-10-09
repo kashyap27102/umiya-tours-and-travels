@@ -4,9 +4,11 @@ import type {
   Category,
   Destination,
   Hotel,
+  Inclusion,
 } from "@/app/generated/prisma/client";
 
 export type DestinationWithHotels = Destination & { hotels: Hotel[] };
+export type InclusionWithUsage = Inclusion & { packageCount: number };
 
 export class TaxonomyService {
   static async getDestinations(): Promise<
@@ -21,6 +23,23 @@ export class TaxonomyService {
     } catch (error) {
       console.error("Failed to fetch destinations:", error);
       return { success: false, error: "Failed to load destinations." };
+    }
+  }
+
+  static async getInclusions(): Promise<ApiResponse<InclusionWithUsage[]>> {
+    try {
+      const rows = await prismaClient.inclusion.findMany({
+        include: { _count: { select: { packages: true } } },
+        orderBy: { text: "asc" },
+      });
+      const data = rows.map(({ _count, ...inclusion }) => ({
+        ...inclusion,
+        packageCount: _count.packages,
+      }));
+      return { success: true, data, message: "Inclusions fetched" };
+    } catch (error) {
+      console.error("Failed to fetch inclusions:", error);
+      return { success: false, error: "Failed to load the list." };
     }
   }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui";
 import { StepIndicator } from "./package-form/StepIndicator";
@@ -9,6 +10,7 @@ import { Step2MediaSummary } from "./package-form/Step2MediaSummary";
 import { Step3Features } from "./package-form/Step3Features";
 import { Step4Itinerary } from "./package-form/Step4Itinerary";
 import { Step5Review } from "./package-form/Step5Review";
+import type { InclusionOption } from "./package-form/InclusionPicker";
 import type { UsePackageFormReturn } from "@/hooks/usePackageForm";
 import type { PackageFormValues } from "@/schemas/package";
 import type { DestinationWithHotels } from "@/services/taxonomy-service";
@@ -22,6 +24,8 @@ interface PackageFormProps extends UsePackageFormReturn {
   onSaveDraft?: (data: PackageFormValues) => void;
   destinations: DestinationWithHotels[];
   categories: Category[];
+  /** The shared inclusion / exclusion list. */
+  inclusions: InclusionOption[];
 }
 
 export default function PackageForm({
@@ -31,6 +35,7 @@ export default function PackageForm({
   onSaveDraft,
   destinations,
   categories,
+  inclusions,
   ...hook
 }: Readonly<PackageFormProps>) {
   const {
@@ -45,6 +50,14 @@ export default function PackageForm({
   } = hook;
 
   // Order must match PACKAGE_FORM_STEPS.
+  // Items typed into the "add new" box are kept here, above the steps, so they
+  // survive moving between steps without waiting for a page refresh.
+  const [createdItems, setCreatedItems] = useState<InclusionOption[]>([]);
+  const allInclusions = [
+    ...inclusions,
+    ...createdItems.filter((c) => !inclusions.some((i) => i.id === c.id)),
+  ];
+
   const isDraftStatus = hook.step1Form.watch("status") === "draft";
 
   const stepPanels = [
@@ -56,7 +69,12 @@ export default function PackageForm({
     />,
     <StepVariantsPricing key="variants" hook={hook} destinations={destinations} />,
     <Step2MediaSummary key="media" hook={hook} />,
-    <Step3Features key="features" hook={hook} />,
+    <Step3Features
+      key="features"
+      hook={hook}
+      inclusions={allInclusions}
+      onInclusionCreated={(item) => setCreatedItems((prev) => [...prev, item])}
+    />,
     <Step4Itinerary key="itinerary" hook={hook} />,
   ];
 
@@ -73,6 +91,7 @@ export default function PackageForm({
           data={getCombinedData()}
           destinations={destinations}
           categories={categories}
+          inclusions={allInclusions}
         />
       ) : (
         stepPanels[currentStep]

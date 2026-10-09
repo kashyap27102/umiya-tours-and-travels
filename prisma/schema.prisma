@@ -83,6 +83,33 @@ model Category {
   packages PackageCategoryLink[]
 }
 
+// Reusable inclusion / exclusion wording, shared across packages. Whether an
+// item is included or excluded is decided per package on PackageInclusion.
+model Inclusion {
+  id   String @id @default(cuid())
+  text String @unique
+
+  packages PackageInclusion[]
+}
+
+enum InclusionType {
+  included
+  excluded
+}
+
+model PackageInclusion {
+  package     Package       @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId   String
+  inclusion   Inclusion     @relation(fields: [inclusionId], references: [id])
+  inclusionId String
+  type        InclusionType
+  sortOrder   Int           @default(0)
+
+  @@id([packageId, inclusionId])
+  @@index([inclusionId])
+  @@index([packageId, type, sortOrder])
+}
+
 // A package can cover several destinations and belong to several categories.
 // The first destination (sortOrder 0) is the primary one.
 model PackageDestination {
@@ -121,6 +148,7 @@ model Package {
   category        PackageCategory?
   destinations    PackageDestination[]
   categories      PackageCategoryLink[]
+  inclusionLinks  PackageInclusion[]
   status          PackageStatus   @default(draft)
   durationDays    Int
   durationNights  Int
@@ -132,6 +160,8 @@ model Package {
   images         String[]        @default([])
   summary         String
   highlights      String[]
+  // Legacy text lists, kept in sync from inclusionLinks so the public page
+  // keeps working; retired in the cleanup step.
   inclusions      String[]
   exclusions      String[]
   popularityScore Int             @default(0)

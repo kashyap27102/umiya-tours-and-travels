@@ -64,8 +64,8 @@ export function usePackageForm(defaultValues?: Partial<PackageFormValues>) {
     resolver: zodResolver(step3Schema),
     defaultValues: {
       highlights: defaultValues?.highlights ?? [""],
-      inclusions: defaultValues?.inclusions ?? [""],
-      exclusions: defaultValues?.exclusions ?? [""],
+      inclusionIds: defaultValues?.inclusionIds ?? [],
+      exclusionIds: defaultValues?.exclusionIds ?? [],
     },
     mode: "onTouched",
   });

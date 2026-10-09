@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { prismaClient } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
-import { resolvePackageLinks } from "@/services/package-links-service";
+import {
+  resolveInclusions,
+  resolvePackageLinks,
+} from "@/services/package-links-service";
 import {
   startingPriceOf,
   toVariantCreateInput,
@@ -53,6 +56,13 @@ export async function createPackage(
     if (variantError) return { success: false, error: variantError };
     const links = await resolvePackageLinks(data.destinationIds, data.categoryIds);
     if ("error" in links) return { success: false, error: links.error };
+    const inclusionData = await resolveInclusions(
+      data.inclusionIds,
+      data.exclusionIds,
+    );
+    if ("error" in inclusionData) {
+      return { success: false, error: inclusionData.error };
+    }
     const startingPrice = startingPriceOf(data.variants);
 
     // Generate slug from package name
@@ -93,8 +103,9 @@ export async function createPackage(
         images: data.images,
         summary: data.summary,
         highlights: data.highlights.filter(Boolean),
-        inclusions: data.inclusions.filter(Boolean),
-        exclusions: data.exclusions.filter(Boolean),
+        inclusions: inclusionData.inclusions,
+        exclusions: inclusionData.exclusions,
+        inclusionLinks: { create: inclusionData.links },
         itinerary: {
           create: data.itinerary.map((item) => ({
             day: item.day,
@@ -143,6 +154,13 @@ export async function editPackage(
     if (variantError) return { success: false, error: variantError };
     const links = await resolvePackageLinks(data.destinationIds, data.categoryIds);
     if ("error" in links) return { success: false, error: links.error };
+    const inclusionData = await resolveInclusions(
+      data.inclusionIds,
+      data.exclusionIds,
+    );
+    if ("error" in inclusionData) {
+      return { success: false, error: inclusionData.error };
+    }
     const startingPrice = startingPriceOf(data.variants);
 
     const existingPackage = await prismaClient.package.findUnique({
@@ -174,9 +192,14 @@ export async function editPackage(
           images: data.images,
           summary: data.summary,
           highlights: data.highlights.filter(Boolean),
-          inclusions: data.inclusions.filter(Boolean),
-          exclusions: data.exclusions.filter(Boolean),
+          inclusions: inclusionData.inclusions,
+          exclusions: inclusionData.exclusions,
         },
+      });
+
+      await tx.packageInclusion.deleteMany({ where: { packageId } });
+      await tx.packageInclusion.createMany({
+        data: inclusionData.links.map((l) => ({ ...l, packageId })),
       });
 
       await tx.itineraryItem.deleteMany({ where: { packageId } });

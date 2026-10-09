@@ -76,6 +76,12 @@ export function normalizeDraft(
     .filter((item) => item.title || item.description)
     .map((item, index) => ({ day: index + 1, ...item }));
 
+  // An item is included or excluded, never both; included wins.
+  const inclusionIds = [...new Set(strList(input.inclusionIds))];
+  const exclusionIds = [...new Set(strList(input.exclusionIds))].filter(
+    (id) => !inclusionIds.includes(id),
+  );
+
   return {
     data: {
       name,
@@ -87,8 +93,8 @@ export function normalizeDraft(
       images: strList(input.images).filter((url) => /^https?:\/\/.+/.test(url)),
       summary: str(input.summary),
       highlights: strList(input.highlights),
-      inclusions: strList(input.inclusions),
-      exclusions: strList(input.exclusions),
+      inclusionIds,
+      exclusionIds,
       itinerary,
       variants: normalizeVariants(input.variants),
     },

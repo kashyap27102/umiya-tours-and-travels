@@ -44,6 +44,15 @@ export const hotelSchema = z.object({
   isActive: z.boolean(),
 });
 
+export const inclusionSchema = z.object({
+  text: z
+    .string()
+    .trim()
+    .min(2, "Enter the wording")
+    .max(160, "Max 160 characters"),
+});
+
+export type InclusionFormInput = z.input<typeof inclusionSchema>;
 export type HotelFormInput = z.input<typeof hotelSchema>;
 export type DestinationFormInput = z.input<typeof destinationSchema>;
 export type CategoryFormInput = z.input<typeof categorySchema>;

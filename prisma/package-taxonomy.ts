@@ -136,3 +136,47 @@ export async function linkPackageTaxonomy(
 
   return missing;
 }
+
+/**
+ * Turns a package's legacy `inclusions` / `exclusions` text lists into shared
+ * Inclusion rows (matched by text, ignoring case) and links them to the
+ * package. Skips packages that already have links. Idempotent.
+ */
+export async function linkPackageInclusions(
+  prisma: PrismaClient,
+  pkg: { id: string; inclusions: string[]; exclusions: string[] },
+): Promise<void> {
+  const existing = await prisma.packageInclusion.count({
+    where: { packageId: pkg.id },
+  });
+  if (existing > 0) return;
+
+  const used = new Set<string>();
+  const entries: { text: string; type: "included" | "excluded" }[] = [
+    ...pkg.inclusions.map((text) => ({ text, type: "included" as const })),
+    ...pkg.exclusions.map((text) => ({ text, type: "excluded" as const })),
+  ];
+
+  let included = 0;
+  let excluded = 0;
+  for (const entry of entries) {
+    const text = entry.text.trim();
+    // An item can be on one side only, and only once per package.
+    if (!text || used.has(text.toLowerCase())) continue;
+    used.add(text.toLowerCase());
+
+    const inclusion =
+      (await prisma.inclusion.findFirst({
+        where: { text: { equals: text, mode: "insensitive" } },
+      })) ?? (await prisma.inclusion.create({ data: { text } }));
+
+    await prisma.packageInclusion.create({
+      data: {
+        packageId: pkg.id,
+        inclusionId: inclusion.id,
+        type: entry.type,
+        sortOrder: entry.type === "included" ? included++ : excluded++,
+      },
+    });
+  }
+}

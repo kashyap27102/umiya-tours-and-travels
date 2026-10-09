@@ -140,6 +140,7 @@ export class PackageService {
           itinerary: { orderBy: { day: "asc" } },
           destinations: { orderBy: { sortOrder: "asc" } },
           categories: { orderBy: { sortOrder: "asc" } },
+          inclusionLinks: { orderBy: { sortOrder: "asc" } },
           variants: {
             orderBy: { sortOrder: "asc" },
             include: {

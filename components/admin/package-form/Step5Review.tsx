@@ -10,12 +10,14 @@ interface Step5ReviewProps {
   data: PackageFormValues;
   destinations: DestinationWithHotels[];
   categories: Category[];
+  inclusions: { id: string; text: string }[];
 }
 
 export function Step5Review({
   data,
   destinations,
   categories,
+  inclusions,
 }: Step5ReviewProps) {
   return (
     <div className="space-y-6">
@@ -30,6 +32,7 @@ export function Step5Review({
         data={data}
         destinations={destinations}
         categories={categories}
+        inclusions={inclusions}
       />
     </div>
   );

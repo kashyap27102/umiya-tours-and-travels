@@ -14,9 +14,11 @@ import type { Category } from "@/app/generated/prisma/client";
 export default function CreatePackageClient({
   destinations,
   categories,
+  inclusions,
 }: Readonly<{
   destinations: DestinationWithHotels[];
   categories: Category[];
+  inclusions: { id: string; text: string }[];
 }>) {
   const hookResult = usePackageForm();
   const { isSubmitting, handleCreate, handleEdit, saveDraft } =
@@ -73,6 +75,7 @@ export default function CreatePackageClient({
         {...hookResult}
         destinations={destinations}
         categories={categories}
+        inclusions={inclusions}
         onSaveDraft={handleSaveDraft}
         submitLabel="Create Package"
         onValidSubmit={handleValidSubmit}

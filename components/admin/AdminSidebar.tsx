@@ -9,6 +9,7 @@ import {
   PackagePlus,
   MapPin,
   Tags,
+  ListChecks,
   SlidersHorizontal,
   ShieldCheck,
   LogOut,
@@ -43,6 +44,11 @@ const ADMIN_NAV_ITEMS = [
     href: "/admin/categories",
     label: "Categories",
     icon: Tags,
+  },
+  {
+    href: "/admin/inclusions",
+    label: "Inclusions",
+    icon: ListChecks,
   },
   {
     href: "/admin/settings",

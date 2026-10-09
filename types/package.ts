@@ -6,6 +6,7 @@ import type {
   PackageStay,
   PackageDestination,
   PackageCategoryLink,
+  PackageInclusion,
 } from "@/app/generated/prisma/client";
 
 export type PackageWithItinerary = Package & {
@@ -22,4 +23,5 @@ export type PackageForEdit = PackageWithItinerary & {
   variants: VariantWithDetails[];
   destinations: PackageDestination[];
   categories: PackageCategoryLink[];
+  inclusionLinks: PackageInclusion[];
 };
