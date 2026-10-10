@@ -1,23 +1,98 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 import { prismaClient } from "@/lib/prisma";
+import { verifySession } from "@/lib/session";
+import { toItineraryRow } from "@/lib/itinerary";
+import {
+  resolveInclusions,
+  resolveMedia,
+  resolvePackageLinks,
+} from "@/services/package-links-service";
+import {
+  startingPriceOf,
+  toVariantCreateInput,
+  validateVariants,
+} from "@/services/package-variant-service";
 import { packageFormSchema, type PackageFormValues } from "@/schemas/package";
+import { normalizeDraft } from "@/schemas/package-draft";
 import type { ApiResponse } from "@/types/api-response";
+
+const UNAUTHORIZED = "You must be signed in as an admin.";
+
+/** Itinerary days with each photo's url replaced by the gallery's own url. */
+function withGalleryUrls(
+  itinerary: PackageFormValues["itinerary"],
+  urlById: Map<string, string>,
+): PackageFormValues["itinerary"] {
+  return itinerary.map((day) =>
+    day.image
+      ? {
+          ...day,
+          image: {
+            ...day.image,
+            url: urlById.get(day.image.id) ?? day.image.url,
+          },
+        }
+      : day,
+  );
+}
+
+/**
+ * Drafts only need a name (the rest is cleaned up, not enforced). Anything else
+ * must pass the full rules, which is what stops half-finished packages going live.
+ */
+function parsePackageInput(
+  input: PackageFormValues,
+): { error: string } | { data: PackageFormValues } {
+  if (input?.status === "draft") return normalizeDraft(input);
+
+  const parsed = packageFormSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      error:
+        parsed.error.issues[0]?.message ??
+        "Please check the package details and try again.",
+    };
+  }
+  return { data: parsed.data };
+}
 
 export async function createPackage(
   input: PackageFormValues,
 ): Promise<ApiResponse<{ id: string; slug: string }>> {
-  const parsed = packageFormSchema.safeParse(input);
-  if (!parsed.success) {
-    return {
-      success: false,
-      error: "Please check the package details and try again.",
-    };
-  }
+  if (!(await verifySession())) return { success: false, error: UNAUTHORIZED };
+
+  const parsed = parsePackageInput(input);
+  if ("error" in parsed) return { success: false, error: parsed.error };
   const data = parsed.data;
 
   try {
+    const variantError = await validateVariants(
+      data.variants,
+      data.durationNights,
+      { checkNights: data.status !== "draft" },
+    );
+    if (variantError) return { success: false, error: variantError };
+    const links = await resolvePackageLinks(data.destinationIds, data.categoryIds);
+    if ("error" in links) return { success: false, error: links.error };
+    const inclusionData = await resolveInclusions(
+      data.inclusionIds,
+      data.exclusionIds,
+    );
+    if ("error" in inclusionData) {
+      return { success: false, error: inclusionData.error };
+    }
+    const media = await resolveMedia([
+      ...data.images.map((i) => i.id),
+      ...data.itinerary.flatMap((d) => (d.image ? [d.image.id] : [])),
+    ]);
+    if ("error" in media) return { success: false, error: media.error };
+    const imageUrls = data.images.map((i) => media.urlById.get(i.id) ?? i.url);
+    const itinerary = withGalleryUrls(data.itinerary, media.urlById);
+    const startingPrice = startingPriceOf(data.variants);
+
     // Generate slug from package name
     const slug = data.name
       .toLowerCase()
@@ -41,29 +116,39 @@ export async function createPackage(
       data: {
         name: data.name,
         slug,
-        destination: data.destination,
-        category: data.category,
+        destination: links.destination,
+        category: links.category,
+        destinations: { create: links.destinationLinks },
+        categories: { create: links.categoryLinks },
         status: data.status,
         durationDays: data.durationDays,
         durationNights: data.durationNights,
-        pricePerPerson: data.pricePerPerson,
-        images: data.images,
+        // pricePerPerson is the legacy column the public pages still read;
+        // keep it equal to the lowest variant price until they are switched over.
+        pricePerPerson: startingPrice,
+        startingPrice,
+        variants: { create: toVariantCreateInput(data.variants) },
+        images: imageUrls,
+        imageLinks: {
+          create: data.images.map((img, sortOrder) => ({
+            imageId: img.id,
+            sortOrder,
+          })),
+        },
         summary: data.summary,
         highlights: data.highlights.filter(Boolean),
-        inclusions: data.inclusions.filter(Boolean),
-        exclusions: data.exclusions.filter(Boolean),
+        inclusions: inclusionData.inclusions,
+        exclusions: inclusionData.exclusions,
+        inclusionLinks: { create: inclusionData.links },
         itinerary: {
-          create: data.itinerary.map((item) => ({
-            day: item.day,
-            title: item.title,
-            description: item.description,
-          })),
+          create: itinerary.map(toItineraryRow),
         },
       },
     });
 
     // Revalidate the package listing page
     revalidatePath("/admin/package-management");
+    revalidateCatalog();
     revalidatePath("/packages");
     revalidatePath("/");
 
@@ -85,16 +170,37 @@ export async function editPackage(
   packageId: string,
   input: PackageFormValues,
 ): Promise<ApiResponse<{ id: string; slug: string }>> {
-  const parsed = packageFormSchema.safeParse(input);
-  if (!parsed.success) {
-    return {
-      success: false,
-      error: "Please check the package details and try again.",
-    };
-  }
+  if (!(await verifySession())) return { success: false, error: UNAUTHORIZED };
+
+  const parsed = parsePackageInput(input);
+  if ("error" in parsed) return { success: false, error: parsed.error };
   const data = parsed.data;
 
   try {
+    const variantError = await validateVariants(
+      data.variants,
+      data.durationNights,
+      { checkNights: data.status !== "draft" },
+    );
+    if (variantError) return { success: false, error: variantError };
+    const links = await resolvePackageLinks(data.destinationIds, data.categoryIds);
+    if ("error" in links) return { success: false, error: links.error };
+    const inclusionData = await resolveInclusions(
+      data.inclusionIds,
+      data.exclusionIds,
+    );
+    if ("error" in inclusionData) {
+      return { success: false, error: inclusionData.error };
+    }
+    const media = await resolveMedia([
+      ...data.images.map((i) => i.id),
+      ...data.itinerary.flatMap((d) => (d.image ? [d.image.id] : [])),
+    ]);
+    if ("error" in media) return { success: false, error: media.error };
+    const imageUrls = data.images.map((i) => media.urlById.get(i.id) ?? i.url);
+    const itinerary = withGalleryUrls(data.itinerary, media.urlById);
+    const startingPrice = startingPriceOf(data.variants);
+
     const existingPackage = await prismaClient.package.findUnique({
       where: { id: packageId },
     });
@@ -106,43 +212,76 @@ export async function editPackage(
       };
     }
 
-    // Update package
-    const updatedPackage = await prismaClient.package.update({
-      where: { id: packageId },
-      data: {
-        name: data.name,
-        destination: data.destination,
-        category: data.category,
-        status: data.status,
-        durationDays: data.durationDays,
-        durationNights: data.durationNights,
-        pricePerPerson: data.pricePerPerson,
-        images: data.images,
-        summary: data.summary,
-        highlights: data.highlights.filter(Boolean),
-        inclusions: data.inclusions.filter(Boolean),
-        exclusions: data.exclusions.filter(Boolean),
-      },
-    });
+    // Update the package, itinerary and variants together so a failure part-way
+    // can't leave a half-saved package.
+    const updatedPackage = await prismaClient.$transaction(async (tx) => {
+      const updated = await tx.package.update({
+        where: { id: packageId },
+        data: {
+          name: data.name,
+          destination: links.destination,
+          category: links.category,
+          status: data.status,
+          durationDays: data.durationDays,
+          durationNights: data.durationNights,
+          // Legacy column the public pages still read; mirrors the lowest variant price.
+          pricePerPerson: startingPrice,
+          startingPrice,
+          images: imageUrls,
+          summary: data.summary,
+          highlights: data.highlights.filter(Boolean),
+          inclusions: inclusionData.inclusions,
+          exclusions: inclusionData.exclusions,
+        },
+      });
 
-    // Remove old itinerary items
-    await prismaClient.itineraryItem.deleteMany({
-      where: { packageId },
-    });
+      await tx.packageImage.deleteMany({ where: { packageId } });
+      await tx.packageImage.createMany({
+        data: data.images.map((img, sortOrder) => ({
+          packageId,
+          imageId: img.id,
+          sortOrder,
+        })),
+      });
 
-    // Create new itinerary items
-    await prismaClient.itineraryItem.createMany({
-      data: data.itinerary.map((item) => ({
-        day: item.day,
-        title: item.title,
-        description: item.description,
-        packageId,
-      })),
+      await tx.packageInclusion.deleteMany({ where: { packageId } });
+      await tx.packageInclusion.createMany({
+        data: inclusionData.links.map((l) => ({ ...l, packageId })),
+      });
+
+      await tx.itineraryItem.deleteMany({ where: { packageId } });
+      await tx.itineraryItem.createMany({
+        data: itinerary.map((item) => ({
+          ...toItineraryRow(item),
+          packageId,
+        })),
+      });
+
+      // Destination and category links are replaced wholesale too.
+      await tx.packageDestination.deleteMany({ where: { packageId } });
+      await tx.packageDestination.createMany({
+        data: links.destinationLinks.map((l) => ({ ...l, packageId })),
+      });
+      await tx.packageCategoryLink.deleteMany({ where: { packageId } });
+      await tx.packageCategoryLink.createMany({
+        data: links.categoryLinks.map((l) => ({ ...l, packageId })),
+      });
+
+      // Variants are replaced wholesale; stays and prices cascade with them.
+      await tx.packageVariant.deleteMany({ where: { packageId } });
+      for (const variant of toVariantCreateInput(data.variants)) {
+        await tx.packageVariant.create({
+          data: { ...variant, package: { connect: { id: packageId } } },
+        });
+      }
+
+      return updated;
     });
 
     // Revalidate both the listing and the detail page
     revalidatePath("/admin/package-management");
     revalidatePath(`/admin/package-management/${updatedPackage.slug}/edit`);
+    revalidateCatalog();
     revalidatePath("/packages");
     revalidatePath(`/packages/${updatedPackage.slug}`);
     revalidatePath("/");
@@ -164,6 +303,8 @@ export async function editPackage(
 export async function deletePackage(
   packageId: string,
 ): Promise<ApiResponse<null>> {
+  if (!(await verifySession())) return { success: false, error: UNAUTHORIZED };
+
   try {
     const pkg = await prismaClient.package.findUnique({
       where: { id: packageId },
@@ -188,6 +329,7 @@ export async function deletePackage(
 
     // Revalidate the listing page
     revalidatePath("/admin/package-management");
+    revalidateCatalog();
     revalidatePath("/packages");
     revalidatePath(`/packages/${pkg.slug}`);
     revalidatePath("/");
@@ -203,5 +345,54 @@ export async function deletePackage(
       success: false,
       error: "Failed to delete package. Please try again.",
     };
+  }
+}
+
+/**
+ * Quick Active / Inactive switch from the package list. Drafts can't be
+ * switched here: publishing a draft needs the full checks in the edit form.
+ */
+export async function setPackageStatus(
+  packageId: string,
+  status: "active" | "inactive",
+): Promise<ApiResponse<{ status: "active" | "inactive" }>> {
+  if (!(await verifySession())) return { success: false, error: UNAUTHORIZED };
+
+  if (status !== "active" && status !== "inactive") {
+    return { success: false, error: "Invalid status." };
+  }
+
+  try {
+    const pkg = await prismaClient.package.findUnique({
+      where: { id: packageId },
+      select: { slug: true, status: true },
+    });
+    if (!pkg) return { success: false, error: "Package not found." };
+    if (pkg.status === "draft") {
+      return {
+        success: false,
+        error: "Drafts must be published from the edit page.",
+      };
+    }
+
+    await prismaClient.package.update({
+      where: { id: packageId },
+      data: { status },
+    });
+
+    revalidatePath("/admin/package-management");
+    revalidateCatalog();
+    revalidatePath("/packages");
+    revalidatePath(`/packages/${pkg.slug}`);
+    revalidatePath("/");
+
+    return {
+      success: true,
+      data: { status },
+      message: `Package is now ${status}`,
+    };
+  } catch (error) {
+    console.error("Failed to change package status:", error);
+    return { success: false, error: "Failed to change status. Please try again." };
   }
 }

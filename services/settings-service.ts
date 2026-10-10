@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { prismaClient } from "@/lib/prisma";
-import type { SiteSettingsData, StatItem, Testimonial } from "@/types";
+import type { SiteSettingsData, StatItem } from "@/types";
 import type { SiteSettingsModel } from "@/app/generated/prisma/models/SiteSettings";
 
 function mapPrismaSettings(raw: SiteSettingsModel): SiteSettingsData {
@@ -18,8 +18,11 @@ function mapPrismaSettings(raw: SiteSettingsModel): SiteSettingsData {
     missionHeading: raw.missionHeading,
     missionDescription: raw.missionDescription,
     stats: raw.stats as unknown as StatItem[],
-    testimonials: raw.testimonials as unknown as Testimonial[],
     footerTagline: raw.footerTagline,
+    instagramUrl: raw.instagramUrl,
+    facebookUrl: raw.facebookUrl,
+    youtubeUrl: raw.youtubeUrl,
+    googleBusinessUrl: raw.googleBusinessUrl,
   };
 }
 

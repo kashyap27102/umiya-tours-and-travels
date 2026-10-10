@@ -5,7 +5,9 @@ import { Menu, X } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 import BrandLogo from "@/components/BrandLogo";
 
-export default function AdminMobileHeader() {
+export default function AdminMobileHeader({
+  newEnquiries = 0,
+}: Readonly<{ newEnquiries?: number }>) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -64,7 +66,10 @@ export default function AdminMobileHeader() {
           isOpen ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
-        <AdminSidebar onNavClick={() => setIsOpen(false)} />
+        <AdminSidebar
+          onNavClick={() => setIsOpen(false)}
+          newEnquiries={newEnquiries}
+        />
       </div>
     </>
   );

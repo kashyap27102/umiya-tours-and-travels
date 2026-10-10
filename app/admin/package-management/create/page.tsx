@@ -1,50 +1,22 @@
-"use client";
+import CreatePackageClient from "./create-client";
+import { TaxonomyService } from "@/services";
 
-import Link from "next/link";
-import { Button } from "@/components/ui";
-import PackageForm from "@/components/admin/PackageForm";
-import { usePackageForm } from "@/hooks/usePackageForm";
-import { usePackageSubmit } from "@/hooks/usePackageSubmit";
-import type { PackageFormValues } from "@/schemas/package";
-import { ChevronLeft } from "lucide-react";
-
-export default function CreatePackagePage() {
-  const hookResult = usePackageForm();
-  const { isSubmitting, handleCreate } = usePackageSubmit();
-
-  const handleValidSubmit = async (data: PackageFormValues) => {
-    await handleCreate(data, {
-      onSuccess: () => hookResult.resetAll(),
-      shouldRedirect: true,
-      redirectPath: "/admin/package-management",
-    });
-  };
+export default async function CreatePackagePage() {
+  const [destinations, categories, inclusions] = await Promise.all([
+    TaxonomyService.getDestinations(),
+    TaxonomyService.getCategories(),
+    TaxonomyService.getInclusions(),
+  ]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-brand-ink-900 md:text-3xl">
-            Create New Package
-          </h1>
-          <p className="text-sm text-brand-muted-600">
-            Add a new travel package to the public catalog.
-          </p>
-        </div>
-        <Link href="/admin/package-management">
-          <Button variant="outline">
-            <ChevronLeft />
-            Back
-          </Button>
-        </Link>
-      </div>
-
-      <PackageForm
-        {...hookResult}
-        submitLabel="Create Package"
-        onValidSubmit={handleValidSubmit}
-        isSubmitting={isSubmitting}
-      />
-    </div>
+    <CreatePackageClient
+      destinations={destinations.success ? destinations.data : []}
+      categories={categories.success ? categories.data : []}
+      inclusions={
+        inclusions.success
+          ? inclusions.data.map(({ id, text }) => ({ id, text }))
+          : []
+      }
+    />
   );
 }

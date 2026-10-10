@@ -5,10 +5,12 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider   = "prisma-client"
-  output     = "../app/generated/prisma"
-  runtime    = "nodejs"
-  engineType = "client"
+  provider        = "prisma-client"
+  output          = "../app/generated/prisma"
+  runtime         = "nodejs"
+  engineType      = "client"
+  // One SQL query instead of one round trip per relation (see relationLoadStrategy).
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -35,36 +37,242 @@ enum PackageCategory {
   Family
 }
 
+// draft = work in progress, never shown on the public site.
 enum PackageStatus {
+  draft
   active
   inactive
+}
+
+// ── Destination / Category lookup tables ─────────────────────────────────────
+// Packages link to these through PackageDestination / PackageCategoryLink below.
+
+model Destination {
+  id      String  @id @default(cuid())
+  slug    String  @unique
+  name    String
+  state   String?
+  country String
+
+  stays        PackageStay[]
+  hotels       Hotel[]
+  packages     PackageDestination[]
+  testimonials Testimonial[]
+
+  @@index([country])
+}
+
+// Hotels available in a destination; packages pick from these for each stay.
+model Hotel {
+  id            String      @id @default(cuid())
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  destinationId String
+  name          String
+  starRating    Int? // 1-5
+  address       String?
+  isActive      Boolean     @default(true) // inactive hotels are hidden from package forms
+
+  stays PackageStay[]
+
+  @@unique([destinationId, name])
+}
+
+model Category {
+  id        String @id @default(cuid())
+  slug      String @unique
+  name      String
+  sortOrder Int    @default(0)
+
+  packages PackageCategoryLink[]
+}
+
+// Reusable inclusion / exclusion wording, shared across packages. Whether an
+// item is included or excluded is decided per package on PackageInclusion.
+model Inclusion {
+  id   String @id @default(cuid())
+  text String @unique
+
+  packages PackageInclusion[]
+}
+
+enum InclusionType {
+  included
+  excluded
+}
+
+model PackageInclusion {
+  package     Package       @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId   String
+  inclusion   Inclusion     @relation(fields: [inclusionId], references: [id])
+  inclusionId String
+  type        InclusionType
+  sortOrder   Int           @default(0)
+
+  @@id([packageId, inclusionId])
+  @@index([inclusionId])
+  @@index([packageId, type, sortOrder])
+}
+
+// Shared image library. Packages and itinerary days pick from it.
+enum MediaSource {
+  uploaded // uploaded from the admin
+  link_copy // downloaded from a pasted link into our own storage
+  legacy_link // pre-existing external URL (e.g. Unsplash), not copied
+}
+
+model MediaImage {
+  id        String      @id @default(cuid())
+  url       String      @unique // where it is served from
+  title     String
+  alt       String      @default("")
+  tags      String[]    @default([]) // lowercase, trimmed
+  source    MediaSource
+  sourceUrl String? // the original link, for link_copy
+  sizeBytes Int?
+  createdAt DateTime    @default(now())
+
+  packageLinks  PackageImage[]
+  itineraryDays ItineraryItem[]
+  testimonials  Testimonial[]
+
+  @@index([createdAt])
+}
+
+// Ordered images of a package; sortOrder 0 is the cover.
+model PackageImage {
+  package   Package    @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String
+  image     MediaImage @relation(fields: [imageId], references: [id])
+  imageId   String
+  sortOrder Int        @default(0)
+
+  @@id([packageId, imageId])
+  @@index([imageId])
+}
+
+// A package can cover several destinations and belong to several categories.
+// The first destination (sortOrder 0) is the primary one.
+model PackageDestination {
+  package       Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId     String
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  destinationId String
+  isPrimary     Boolean     @default(false)
+  sortOrder     Int         @default(0)
+
+  @@id([packageId, destinationId])
+  @@index([destinationId])
+}
+
+// Named ...Link because the legacy PackageCategory enum still exists.
+model PackageCategoryLink {
+  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId  String
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  sortOrder  Int      @default(0)
+
+  @@id([packageId, categoryId])
+  @@index([categoryId])
 }
 
 // ── Package ───────────────────────────────────────────────────────────────────
 
 model Package {
-  id              String          @id @default(cuid())
-  slug            String          @unique
-  name            String
-  destination     String
-  category        PackageCategory
-  status          PackageStatus   @default(active)
-  durationDays    Int
-  durationNights  Int
-  pricePerPerson  Int
-  images          String[]        @default([])
-  summary         String
-  highlights      String[]
-  inclusions      String[]
-  exclusions      String[]
-  popularityScore Int             @default(0)
-  itinerary       ItineraryItem[]
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id               String                @id @default(cuid())
+  slug             String                @unique
+  name             String
+  // Legacy text/enum kept in sync from destinations/categories below so the
+  // public pages keep working; retired in the cleanup step.
+  destination      String
+  category         PackageCategory?
+  destinations     PackageDestination[]
+  categories       PackageCategoryLink[]
+  inclusionLinks   PackageInclusion[]
+  status           PackageStatus         @default(draft)
+  durationDays     Int
+  durationNights   Int
+  pricePerPerson   Int
+  // Lowest variant price per person, kept in sync when prices change.
+  // Used for sorting/filtering; pricePerPerson is retired in the cleanup step.
+  startingPrice    Int                   @default(0)
+  variants         PackageVariant[]
+  // Legacy URL list, kept in sync from imageLinks so the public pages keep
+  // working; retired in the cleanup step.
+  images           String[]              @default([])
+  imageLinks       PackageImage[]
+  summary          String
+  highlights       String[]
+  // Legacy text lists, kept in sync from inclusionLinks so the public page
+  // keeps working; retired in the cleanup step.
+  inclusions       String[]
+  exclusions       String[]
+  popularityScore  Int                   @default(0)
+  itinerary        ItineraryItem[]
+  testimonials     Testimonial[]
+  enquiries        Enquiry[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  trendingPackages TrendingPackage[]
 
   @@index([category])
   @@index([status])
   @@index([destination])
+}
+
+// ── Variants, stays and pricing ───────────────────────────────────────────────
+// A package has one or more variants (Standard / Deluxe / Premium). Each variant
+// is priced either as one flat per-person price, or per group size (2, 4, 6...).
+// App-level rules: flat -> flatPrice required; group_size -> at least one
+// VariantPrice; stay nights per variant sum to Package.durationNights.
+
+enum PricingMode {
+  flat
+  group_size
+}
+
+model PackageVariant {
+  id          String      @id @default(cuid())
+  package     Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId   String
+  name        String
+  sortOrder   Int         @default(0)
+  pricingMode PricingMode @default(flat)
+  flatPrice   Int?
+
+  stays  PackageStay[]
+  prices VariantPrice[]
+
+  @@unique([packageId, name])
+}
+
+// Price per person when travelling in a group of `persons`.
+model VariantPrice {
+  id             String         @id @default(cuid())
+  variant        PackageVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId      String
+  persons        Int
+  pricePerPerson Int
+
+  @@unique([variantId, persons])
+}
+
+// One stop in a variant's route: "2N Shimla", "3N Manali".
+model PackageStay {
+  id            String         @id @default(cuid())
+  variant       PackageVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId     String
+  destination   Destination    @relation(fields: [destinationId], references: [id])
+  destinationId String
+  hotel         Hotel          @relation(fields: [hotelId], references: [id])
+  hotelId       String
+  nights        Int
+  roomType      String? // varies per package, so it lives here and not on Hotel
+  sortOrder     Int            @default(0)
+
+  @@index([variantId, sortOrder])
+  @@index([destinationId])
+  @@index([hotelId])
 }
 
 // ── ItineraryItem ─────────────────────────────────────────────────────────────
@@ -72,15 +280,92 @@ model Package {
 // Stored as a relation so days can be queried, filtered, and updated independently.
 
 model ItineraryItem {
-  id          Int     @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   day         Int
   title       String
+  // Ordered bullet points for the day. `description` is the legacy single
+  // paragraph, kept filled (points joined by new lines) until cleanup.
+  points      String[]    @default([])
+  imageUrl    String? // optional photo for the day (kept in sync from `image`)
+  image       MediaImage? @relation(fields: [imageId], references: [id])
+  imageId     String?
   description String
-  package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  package     Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId   String
 
   @@unique([packageId, day])
   @@index([packageId])
+  @@index([imageId])
+}
+
+// ── Testimonials ──────────────────────────────────────────────────────────────
+// Customer reviews shown on the home page. The photo comes from the shared
+// gallery (restrict: an image in use can't be deleted). Destination and package
+// are optional context; if either is deleted the review stays, without the link.
+
+model Testimonial {
+  id            String       @id @default(cuid())
+  name          String
+  location      String // where the customer is from
+  rating        Int          @default(5) // 1-5
+  review        String
+  image         MediaImage?  @relation(fields: [imageId], references: [id])
+  imageId       String?
+  destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  destinationId String? // where they travelled
+  package       Package?     @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  packageId     String?
+  isActive      Boolean      @default(true) // hidden reviews stay in admin only
+  sortOrder     Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@index([imageId])
+  @@index([destinationId])
+  @@index([packageId])
+}
+
+// ── Enquiries ─────────────────────────────────────────────────────────────────
+// Everything customers send through the public forms. Saved first, then the
+// notification email goes out, so a mail failure never loses an enquiry.
+
+enum EnquiryType {
+  contact
+  package
+  vehicle
+}
+
+enum EnquiryStatus {
+  new
+  contacted
+  quoted
+  booked
+  lost
+}
+
+model Enquiry {
+  id              String        @id @default(cuid())
+  type            EnquiryType
+  status          EnquiryStatus @default(new)
+  name            String // "" when a vehicle request gave no contact details
+  phone           String
+  email           String?
+  message         String        @default("")
+  package         Package?      @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  packageId       String?
+  packageName     String? // kept so the enquiry still reads right if the package is deleted
+  // Type-specific fields: package -> travelDate, travelers; vehicle -> trip details.
+  details         Json          @default("{}")
+  notes           String        @default("") // admin's private notes
+  statusChangedAt DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([type, createdAt])
+  @@index([packageId])
+  @@index([phone, createdAt])
 }
 
 // ── SiteSettings ──────────────────────────────────────────────────────────────
@@ -105,9 +390,31 @@ model SiteSettings {
   missionDescription String
 
   stats        Json
+  // Legacy: reviews now live in the Testimonial table. Kept (unused) until the
+  // cleanup step so nothing is lost; the backfill copies them across.
   testimonials Json
 
   footerTagline String
 
+  // Heading of the "trending" block on the home page; its packages are the
+  // TrendingPackage rows.
+  // Social profiles shown in the footer; blank = not shown.
+  instagramUrl      String @default("")
+  facebookUrl       String @default("")
+  youtubeUrl        String @default("")
+  googleBusinessUrl String @default("")
+
+  trendingTitle    String @default("Trending Now")
+  trendingSubtitle String @default("Top picks for your next holiday")
+
   updatedAt DateTime @updatedAt
+}
+
+// The packages shown in the home page's trending block, in this order.
+model TrendingPackage {
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String  @id
+  sortOrder Int     @default(0)
+
+  @@index([sortOrder])
 }

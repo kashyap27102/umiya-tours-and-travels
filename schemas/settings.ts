@@ -5,13 +5,6 @@ export const statItemSchema = z.object({
   label: z.string().min(1, "Stat label is required"),
 });
 
-export const testimonialSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  location: z.string().min(1, "Location is required"),
-  rating: z.number().min(1).max(5),
-  review: z.string().min(10, "Review must be at least 10 characters"),
-});
-
 export const businessSettingsSchema = z.object({
   siteName: z.string().min(1, "Site name is required"),
   phone: z.string().min(1, "Phone is required"),
@@ -37,19 +30,32 @@ export const statsSettingsSchema = z.object({
   stats: z.array(statItemSchema).min(1, "At least one stat is required"),
 });
 
-export const testimonialsSettingsSchema = z.object({
-  testimonials: z.array(testimonialSchema),
-});
+// A profile link: left blank to hide it, otherwise a full https:// address.
+const socialUrl = (name: string) =>
+  z
+    .string()
+    .trim()
+    .refine((value) => {
+      if (value === "") return true;
+      try {
+        return new URL(value).protocol === "https:";
+      } catch {
+        return false;
+      }
+    }, `${name} must be a full link starting with https://`);
 
 export const footerSettingsSchema = z.object({
   footerTagline: z.string().min(1, "Footer tagline is required"),
+  instagramUrl: socialUrl("Instagram link"),
+  facebookUrl: socialUrl("Facebook link"),
+  youtubeUrl: socialUrl("YouTube link"),
+  googleBusinessUrl: socialUrl("Google Business Profile link"),
 });
 
 export const siteSettingsSchema = businessSettingsSchema
   .merge(heroSettingsSchema)
   .merge(aboutSettingsSchema)
   .merge(statsSettingsSchema)
-  .merge(testimonialsSettingsSchema)
   .merge(footerSettingsSchema);
 
 export type SiteSettingsFormValues = z.infer<typeof siteSettingsSchema>;
@@ -57,5 +63,4 @@ export type BusinessSettingsValues = z.infer<typeof businessSettingsSchema>;
 export type HeroSettingsValues = z.infer<typeof heroSettingsSchema>;
 export type AboutSettingsValues = z.infer<typeof aboutSettingsSchema>;
 export type StatsSettingsValues = z.infer<typeof statsSettingsSchema>;
-export type TestimonialsSettingsValues = z.infer<typeof testimonialsSettingsSchema>;
 export type FooterSettingsValues = z.infer<typeof footerSettingsSchema>;

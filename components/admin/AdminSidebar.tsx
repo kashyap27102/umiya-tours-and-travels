@@ -7,6 +7,13 @@ import {
   LayoutDashboard,
   Boxes,
   PackagePlus,
+  MapPin,
+  Tags,
+  ListChecks,
+  Images,
+  Inbox,
+  MessageSquareQuote,
+  TrendingUp,
   SlidersHorizontal,
   ShieldCheck,
   LogOut,
@@ -23,6 +30,11 @@ const ADMIN_NAV_ITEMS = [
     icon: LayoutDashboard,
   },
   {
+    href: "/admin/enquiries",
+    label: "Enquiries",
+    icon: Inbox,
+  },
+  {
     href: "/admin/package-management",
     label: "Packages",
     icon: Boxes,
@@ -33,6 +45,36 @@ const ADMIN_NAV_ITEMS = [
     icon: PackagePlus,
   },
   {
+    href: "/admin/destinations",
+    label: "Destinations",
+    icon: MapPin,
+  },
+  {
+    href: "/admin/categories",
+    label: "Categories",
+    icon: Tags,
+  },
+  {
+    href: "/admin/inclusions",
+    label: "Inclusions",
+    icon: ListChecks,
+  },
+  {
+    href: "/admin/gallery",
+    label: "Gallery",
+    icon: Images,
+  },
+  {
+    href: "/admin/trending",
+    label: "Trending Section",
+    icon: TrendingUp,
+  },
+  {
+    href: "/admin/testimonials",
+    label: "Testimonials",
+    icon: MessageSquareQuote,
+  },
+  {
     href: "/admin/settings",
     label: "Settings",
     icon: SlidersHorizontal,
@@ -41,9 +83,14 @@ const ADMIN_NAV_ITEMS = [
 
 interface AdminSidebarProps {
   onNavClick?: () => void;
+  /** Enquiries still marked New, shown as a badge. */
+  newEnquiries?: number;
 }
 
-export default function AdminSidebar({ onNavClick }: AdminSidebarProps) {
+export default function AdminSidebar({
+  onNavClick,
+  newEnquiries = 0,
+}: AdminSidebarProps) {
   const pathname = usePathname();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -96,6 +143,14 @@ export default function AdminSidebar({ onNavClick }: AdminSidebarProps) {
                 )}
               />
               <span>{item.label}</span>
+              {item.href === "/admin/enquiries" && newEnquiries > 0 && (
+                <span
+                  className="ml-auto rounded-full bg-brand-lime-400 px-2 py-0.5 text-[11px] font-bold leading-none text-brand-blue-900"
+                  aria-label={`${newEnquiries} new`}
+                >
+                  {newEnquiries > 99 ? "99+" : newEnquiries}
+                </span>
+              )}
             </Link>
           );
         })}

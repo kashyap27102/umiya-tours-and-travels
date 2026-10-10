@@ -8,6 +8,10 @@ interface PackageEnquiryTriggerProps {
   packageSlug: string;
   packages: { slug: string; name: string }[];
   label: string;
+  /** Pre-fills the message box, e.g. the stay level the customer picked. */
+  initialMessage?: string;
+  /** Pre-fills the travellers field, e.g. the group size the customer picked. */
+  initialTravelers?: number;
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
   className?: string;
@@ -17,6 +21,8 @@ export default function PackageEnquiryTrigger({
   packageSlug,
   packages,
   label,
+  initialMessage,
+  initialTravelers,
   variant = "primary",
   size = "md",
   className,
@@ -45,6 +51,8 @@ export default function PackageEnquiryTrigger({
         <PackageInquiryForm
           preselectedPackageSlug={packageSlug}
           packages={packages}
+          initialMessage={initialMessage}
+          initialTravelers={initialTravelers}
         />
       </Modal>
     </>

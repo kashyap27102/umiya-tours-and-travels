@@ -1,5 +1,6 @@
 export const PACKAGE_FORM_STEPS = [
   "Basic Details",
+  "Variants & Pricing",
   "Media & Summary",
   "Package Features",
   "Itinerary",
@@ -8,4 +9,4 @@ export const PACKAGE_FORM_STEPS = [
 
 export type PackageFormStep = (typeof PACKAGE_FORM_STEPS)[number];
 
-export type PackageMetaField = "highlights" | "inclusions" | "exclusions";
+export type PackageMetaField = "highlights";

@@ -2,13 +2,19 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui";
+import { Button, Select } from "@/components/ui";
+import type { SelectOption } from "@/components/ui";
+import { ADMIN_PACKAGE_PAGE_SIZES } from "@/lib/packages-constants";
 
 interface AdminPaginationProps {
   page: number;
   totalPages: number;
   total: number;
   pageSize: number;
+  /** What is being listed, for "Showing 1–10 of 21 packages". */
+  itemLabel?: string;
+  /** The page-size choices offered. */
+  pageSizes?: readonly number[];
 }
 
 export default function AdminPagination({
@@ -16,12 +22,19 @@ export default function AdminPagination({
   totalPages,
   total,
   pageSize,
+  itemLabel = "packages",
+  pageSizes = ADMIN_PACKAGE_PAGE_SIZES,
 }: Readonly<AdminPaginationProps>) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  if (totalPages <= 1) return null;
+  if (total === 0) return null;
+
+  const pageSizeOptions: SelectOption[] = pageSizes.map((n) => ({
+    label: `${n} per page`,
+    value: String(n),
+  }));
 
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
@@ -32,34 +45,53 @@ export default function AdminPagination({
     router.push(`${pathname}?${params.toString()}`);
   }
 
+  function changePageSize(value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("pageSize", value);
+    // The old page number may not exist at the new size.
+    params.delete("page");
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
   return (
-    <div className="flex items-center justify-between pt-2">
-      <p className="text-xs text-brand-muted-600">
-        Showing {from}–{to} of {total} packages
-      </p>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => goToPage(page - 1)}
-          disabled={page <= 1}
-          title="Previous page"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-xs font-medium text-brand-ink-900">
-          {page} / {totalPages}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => goToPage(page + 1)}
-          disabled={page >= totalPages}
-          title="Next page"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+    <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-center gap-3">
+        <Select
+          options={pageSizeOptions}
+          value={String(pageSize)}
+          onChange={changePageSize}
+          className="w-36"
+        />
+        <p className="text-xs text-brand-muted-600">
+          Showing {from}–{to} of {total} {itemLabel}
+        </p>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(page - 1)}
+            disabled={page <= 1}
+            title="Previous page"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-xs font-medium text-brand-ink-900">
+            {page} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(page + 1)}
+            disabled={page >= totalPages}
+            title="Next page"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

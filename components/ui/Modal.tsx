@@ -82,12 +82,15 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           <div
             className={cn(
               "bg-white rounded-2xl shadow-lg overflow-hidden",
+              // A centred dialog never grows past the screen: its body scrolls
+              // while the title and buttons stay in reach.
+              !mobileDrawer && "flex max-h-[90vh] flex-col",
               mobileDrawer &&
                 "rounded-b-none rounded-t-3xl max-h-[85vh] overflow-y-auto md:rounded-2xl md:max-h-[90vh]",
             )}
           >
             {(title || showClose) && (
-              <div className="flex items-start justify-between gap-4 p-6 border-b">
+              <div className="flex shrink-0 items-start justify-between gap-4 p-6 border-b">
                 <div className="text-lg font-semibold text-brand-ink-900">
                   {title}
                 </div>
@@ -103,10 +106,17 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
               </div>
             )}
 
-            <div className="p-6 text-sm text-brand-muted-600">{children}</div>
+            <div
+              className={cn(
+                "p-6 text-sm text-brand-muted-600",
+                !mobileDrawer && "min-h-0 flex-1 overflow-y-auto",
+              )}
+            >
+              {children}
+            </div>
 
             {footer ? (
-              <div className="p-4 border-t bg-gray-50">{footer}</div>
+              <div className="shrink-0 p-4 border-t bg-gray-50">{footer}</div>
             ) : null}
           </div>
         </div>

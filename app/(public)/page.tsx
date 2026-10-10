@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createMetadata } from "@/lib/metadata";
 import HeroBanner from "@/components/HeroBanner";
 import TestimonialCard from "@/components/TestimonialCard";
@@ -5,9 +6,9 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import TrendingPackages from "@/components/TrendingPackages";
 import DomesticDestinations from "@/components/DomesticDestinations";
 import { HorizontalScroller } from "@/components/ui";
-import { PackageService, SettingsService } from "@/services";
+import { TestimonialService } from "@/services/testimonial-service";
+import { TrendingService } from "@/services/trending-service";
 import { DOMESTIC_DESTINATIONS } from "@/lib/destinations";
-import type { Testimonial } from "@/types";
 
 export const metadata = createMetadata({
   title: "Umiya Tours & Travels | Your Journey, Our Passion",
@@ -48,18 +49,6 @@ const HERO_IMAGES = [
   },
 ];
 
-const DOMESTIC_SLUGS = [
-  "kashmir-paradise-5n-6d",
-  "shimla-kufri-leisure-3n-4d",
-  "gujarat-heritage-exploration-4n-5d",
-];
-
-const INTERNATIONAL_SLUGS = [
-  "dubai-city-luxury-4n-5d",
-  "maldives-overwater-retreat-5n-6d",
-  "bali-romantic-hideaway-5n-6d",
-];
-
 const DESTINATION_MOMENTS = [
   {
     src: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1200&q=80",
@@ -88,20 +77,16 @@ const DESTINATION_MOMENTS = [
 ];
 
 export default async function Home() {
-  const [settings, activePackagesResult] = await Promise.all([
-    SettingsService.getCachedSettings(),
-    PackageService.getCachedActivePackages(),
+  const [testimonials, trending] = await Promise.all([
+    TestimonialService.getPublic().catch((error) => {
+      console.error("Failed to load testimonials:", error);
+      return [];
+    }),
+    TrendingService.getSection().catch((error) => {
+      console.error("Failed to load trending section:", error);
+      return null;
+    }),
   ]);
-  const activePackages = activePackagesResult.success
-    ? activePackagesResult.data
-    : [];
-
-  const domesticPackages = DOMESTIC_SLUGS.map((slug) =>
-    activePackages.find((p) => p.slug === slug),
-  ).filter((p) => p !== undefined);
-  const internationalPackages = INTERNATIONAL_SLUGS.map((slug) =>
-    activePackages.find((p) => p.slug === slug),
-  ).filter((p) => p !== undefined);
 
   return (
     <main className="flex flex-col">
@@ -113,10 +98,7 @@ export default async function Home() {
       />
 
       {/* Trending packages */}
-      <TrendingPackages
-        domestic={domesticPackages}
-        international={internationalPackages}
-      />
+      {trending && <TrendingPackages section={trending} />}
 
       {/* Domestic destinations */}
       <DomesticDestinations destinations={DOMESTIC_DESTINATIONS} />
@@ -125,29 +107,42 @@ export default async function Home() {
       <WhyChooseUs />
 
       {/* Testimonials */}
-      <section className="bg-white py-14 md:py-16">
-        <div className="travel-shell">
-          <HorizontalScroller
-            eyebrow="Traveller Stories"
-            title="Happy Faces, Real Journeys"
-            itemLabel="testimonials"
-          >
-            {(settings?.testimonials ?? []).map((t: Testimonial) => (
-              <div
-                key={t.name}
-                className="mx-1 w-72 flex-none snap-start sm:w-80"
+      {testimonials.length > 0 && (
+        <section className="bg-white py-14 md:py-16">
+          <div className="travel-shell">
+            <HorizontalScroller
+              eyebrow="Traveller Stories"
+              title="Happy Faces, Real Journeys"
+              itemLabel="testimonials"
+            >
+              {testimonials.map((t) => (
+                <div
+                  key={t.id}
+                  className="mx-1 w-72 flex-none snap-start sm:w-80"
+                >
+                  <TestimonialCard
+                    name={t.name}
+                    location={t.location}
+                    rating={t.rating}
+                    review={t.review}
+                    image={t.image}
+                    destination={t.destinationName}
+                    packageLink={t.packageLink}
+                  />
+                </div>
+              ))}
+            </HorizontalScroller>
+            <div className="mt-2 text-center">
+              <Link
+                href="/reviews"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-brand-blue-700! hover:underline"
               >
-                <TestimonialCard
-                  name={t.name}
-                  location={t.location}
-                  rating={t.rating as 1 | 2 | 3 | 4 | 5}
-                  review={t.review}
-                />
-              </div>
-            ))}
-          </HorizontalScroller>
-        </div>
-      </section>
+                Read all traveller stories →
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

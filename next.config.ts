@@ -41,8 +41,11 @@ const nextConfig: NextConfig = {
           },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           {
-            // TODO: switch to "Content-Security-Policy" once production
-            // console reports show zero violations across all pages.
+            // Do NOT enforce this as-is: the pages are static and Next.js
+            // emits ~26 inline bootstrap scripts without a nonce, so
+            // `script-src 'self'` would stop the site from hydrating.
+            // Enforcing needs nonces (which makes pages dynamic) or
+            // 'unsafe-inline' for scripts.
             key: "Content-Security-Policy-Report-Only",
             value: cspDirectives,
           },

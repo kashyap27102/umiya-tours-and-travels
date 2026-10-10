@@ -11,10 +11,20 @@ import {
   FileText,
 } from "lucide-react";
 import { Badge, Card } from "@/components/ui";
+import { computeStartingPrice } from "@/lib/package-pricing";
+import {
+  PACKAGE_STATUS_BADGE,
+  PACKAGE_STATUS_LABEL,
+} from "@/lib/package-status";
 import type { PackageFormValues } from "@/schemas/package";
+import type { DestinationWithHotels } from "@/services/taxonomy-service";
+import type { Category } from "@/app/generated/prisma/client";
 
 interface ReviewPanelProps {
   data: PackageFormValues;
+  destinations: DestinationWithHotels[];
+  categories: Category[];
+  inclusions: { id: string; text: string }[];
 }
 
 interface DetailItemProps {
@@ -51,13 +61,40 @@ function DetailItem({
   );
 }
 
-export function ReviewPanel({ data: v }: Readonly<ReviewPanelProps>) {
+export function ReviewPanel({
+  data: v,
+  destinations,
+  categories,
+  inclusions,
+}: Readonly<ReviewPanelProps>) {
+  const textsFor = (ids: string[]) =>
+    ids
+      .map((id) => inclusions.find((i) => i.id === id)?.text)
+      .filter((text): text is string => Boolean(text));
+  const includedTexts = textsFor(v.inclusionIds);
+  const excludedTexts = textsFor(v.exclusionIds);
+  const destinationNames = v.destinationIds
+    .map((id) => destinations.find((d) => d.id === id)?.name)
+    .filter(Boolean)
+    .join(" - ");
+  const categoryNames = v.categoryIds
+    .map((id) => categories.find((c) => c.id === id)?.name)
+    .filter((name): name is string => Boolean(name));
+
+  const startingPrice = computeStartingPrice(
+    v.variants.map((variant) => ({
+      pricingMode: variant.pricingMode,
+      flatPrice: variant.flatPrice,
+      prices: variant.pricingMode === "group_size" ? variant.prices : [],
+    })),
+  );
+
   return (
     <Card variant="elevated" padding="lg" className="space-y-6">
       {/* Header */}
       <div className="rounded-xl bg-linear-to-br bg-brand-blue-500 px-6 py-6 text-white">
         <h2 className="text-2xl font-bold">{v.name || "Package Name"}</h2>
-        <p className="mt-1 text-blue-100">{v.destination || "Destination"}</p>
+        <p className="mt-1 text-blue-100">{destinationNames || "Destination"}</p>
       </div>
 
       {/* Core Details */}
@@ -71,24 +108,31 @@ export function ReviewPanel({ data: v }: Readonly<ReviewPanelProps>) {
         <div className="grid gap-4 sm:grid-cols-2">
           <DetailItem
             icon={<Tag className="h-4 w-4" />}
-            label="Category"
+            label="Categories"
             value={
-              <Badge variant="brand" size="sm">
-                {v.category}
-              </Badge>
+              <span className="flex flex-wrap gap-1.5">
+                {categoryNames.map((name) => (
+                  <Badge key={name} variant="brand" size="sm">
+                    {name}
+                  </Badge>
+                ))}
+              </span>
             }
           />
           <DetailItem
             icon={
-              <Badge
-                variant={v.status === "active" ? "success" : "outline"}
-                size="md"
-              >
-                {v.status?.toUpperCase()}
+              <Badge variant={PACKAGE_STATUS_BADGE[v.status]} size="md">
+                {PACKAGE_STATUS_LABEL[v.status].toUpperCase()}
               </Badge>
             }
             label="Status"
-            value={v.status === "active" ? "Published" : "Draft"}
+            value={
+              v.status === "active"
+                ? "Published"
+                : v.status === "draft"
+                  ? "Draft - not on the website"
+                  : "Hidden from the website"
+            }
           />
           <DetailItem
             icon={<Calendar className="h-4 w-4" />}
@@ -98,10 +142,57 @@ export function ReviewPanel({ data: v }: Readonly<ReviewPanelProps>) {
           />
           <DetailItem
             icon={<IndianRupee className="h-4 w-4" />}
-            label="Price Per Person"
-            value={`₹${Number(v.pricePerPerson).toLocaleString("en-IN")}`}
+            label="Starting Price Per Person"
+            value={startingPrice > 0 ? `₹${startingPrice.toLocaleString("en-IN")}` : "—"}
             highlight
           />
+        </div>
+      </div>
+
+      {/* Variants */}
+      <div className="space-y-4 border-t border-brand-blue-900/10 pt-4">
+        <div className="flex items-center gap-2">
+          <IndianRupee className="h-5 w-5 text-brand-blue-600" />
+          <h3 className="text-sm font-semibold text-brand-ink-900">
+            Variants & Pricing
+          </h3>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-2">
+          {v.variants.map((variant, i) => (
+            <div
+              key={i}
+              className="space-y-2 rounded-lg bg-brand-mist-200/40 p-3"
+            >
+              <p className="font-semibold text-brand-ink-900">
+                {variant.name || "Unnamed variant"}
+              </p>
+              {variant.pricingMode === "flat" ? (
+                <p className="text-sm text-brand-ink-900">
+                  {variant.flatPrice
+                    ? `₹${variant.flatPrice.toLocaleString("en-IN")} per person`
+                    : "—"}
+                </p>
+              ) : (
+                <ul className="space-y-0.5 text-sm text-brand-ink-900">
+                  {[...variant.prices]
+                    .sort((a, b) => a.persons - b.persons)
+                    .map((tier) => (
+                      <li key={tier.persons}>
+                        {tier.persons} persons: ₹
+                        {tier.pricePerPerson.toLocaleString("en-IN")} per person
+                      </li>
+                    ))}
+                </ul>
+              )}
+              {variant.stays.length > 0 && (
+                <p className="text-xs text-brand-muted-600">
+                  {variant.stays.reduce((n, s) => n + s.nights, 0)} nights across{" "}
+                  {variant.stays.length} stay
+                  {variant.stays.length === 1 ? "" : "s"}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -156,7 +247,7 @@ export function ReviewPanel({ data: v }: Readonly<ReviewPanelProps>) {
               </h4>
             </div>
             <ul className="space-y-2">
-              {v.inclusions?.filter(Boolean).map((item) => (
+              {includedTexts.map((item) => (
                 <li
                   key={item}
                   className="flex gap-2 text-sm text-brand-ink-900"
@@ -177,7 +268,7 @@ export function ReviewPanel({ data: v }: Readonly<ReviewPanelProps>) {
               </h4>
             </div>
             <ul className="space-y-2">
-              {v.exclusions?.filter(Boolean).map((item) => (
+              {excludedTexts.map((item) => (
                 <li
                   key={item}
                   className="flex gap-2 text-sm text-brand-ink-900"
@@ -220,10 +311,19 @@ export function ReviewPanel({ data: v }: Readonly<ReviewPanelProps>) {
                       </span>
                     )}
                   </p>
-                  {day.description && (
-                    <p className="mt-1 text-sm text-brand-muted-600 line-clamp-3">
-                      {day.description}
-                    </p>
+                  {day.points.filter(Boolean).length > 0 && (
+                    <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-brand-muted-600">
+                      {day.points.filter(Boolean).map((point, p) => (
+                        <li key={p}>{point}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {day.image && (
+                    <img
+                      src={day.image.url}
+                      alt={`Day ${i + 1}`}
+                      className="mt-2 h-20 w-32 rounded-lg object-cover"
+                    />
                   )}
                 </div>
               </li>

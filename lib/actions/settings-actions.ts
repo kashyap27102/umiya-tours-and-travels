@@ -7,7 +7,6 @@ import {
   heroSettingsSchema,
   aboutSettingsSchema,
   statsSettingsSchema,
-  testimonialsSettingsSchema,
   footerSettingsSchema,
 } from "@/schemas/settings";
 import type { ApiResponse } from "@/types/api-response";
@@ -94,26 +93,6 @@ export async function updateStatsSettings(
     });
     revalidate();
     return { success: true, data: null, message: "Stats saved" };
-  } catch (error) {
-    console.error("Failed to save settings:", error);
-    return { success: false, error: "Failed to save. Please try again." };
-  }
-}
-
-export async function updateTestimonialsSettings(
-  data: unknown,
-): Promise<ApiResponse<null>> {
-  try {
-    const parsed = testimonialsSettingsSchema.safeParse(data);
-    if (!parsed.success) return { success: false, error: firstError(parsed.error.issues) };
-    const testimonials = parsed.data.testimonials as unknown as object[];
-    await prismaClient.siteSettings.upsert({
-      where: { id: SETTINGS_ID },
-      update: { testimonials },
-      create: { id: SETTINGS_ID, siteName: "", phone: "", email: "", whatsappNumber: "", address: "", heroEyebrow: "", heroHeading: "", heroSubheading: "", aboutHeading: "", aboutDescription: "", missionHeading: "", missionDescription: "", stats: [], testimonials, footerTagline: "" },
-    });
-    revalidate();
-    return { success: true, data: null, message: "Testimonials saved" };
   } catch (error) {
     console.error("Failed to save settings:", error);
     return { success: false, error: "Failed to save. Please try again." };

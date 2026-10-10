@@ -4,7 +4,6 @@ export {
   updateHeroSettings,
   updateAboutSettings,
   updateStatsSettings,
-  updateTestimonialsSettings,
   updateFooterSettings,
 } from "./settings-actions";
 export { submitContactForm } from "./contact-actions";

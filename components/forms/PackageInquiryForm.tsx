@@ -19,32 +19,52 @@ type PackageInquiryFormValues = {
   message: string;
 };
 
+const FIELD_LABELS: Record<string, string> = {
+  packageSlug: "Package",
+  travelers: "Travelers",
+  travelDate: "Travel date",
+  name: "Name",
+  phone: "Phone",
+  email: "Email",
+  message: "Message",
+};
+
 const makeInitialValues = (
   packages: { slug: string; name: string }[],
   packageSlug?: string,
+  initial?: { message?: string; travelers?: number },
 ): PackageInquiryFormValues => ({
   packageSlug: packageSlug ?? packages[0]?.slug ?? "",
   travelDate: "",
-  travelers: "",
+  travelers: initial?.travelers ? String(initial.travelers) : "",
   name: "",
   email: "",
   phone: "",
-  message: "",
+  message: initial?.message ?? "",
 });
 
 interface PackageInquiryFormProps {
   preselectedPackageSlug?: string;
   packages: { slug: string; name: string }[];
+  /** Starting text for the message box (e.g. the chosen stay level). */
+  initialMessage?: string;
+  /** Starting value for the travellers field (e.g. the chosen group size). */
+  initialTravelers?: number;
   onSuccess?: () => void;
 }
 
 export default function PackageInquiryForm({
   preselectedPackageSlug,
   packages,
+  initialMessage,
+  initialTravelers,
   onSuccess,
 }: PackageInquiryFormProps) {
   const [values, setValues] = useState<PackageInquiryFormValues>(() =>
-    makeInitialValues(packages, preselectedPackageSlug),
+    makeInitialValues(packages, preselectedPackageSlug, {
+      message: initialMessage,
+      travelers: initialTravelers,
+    }),
   );
   const [honeypot, setHoneypot] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -86,8 +106,15 @@ export default function PackageInquiryForm({
 
     const parsed = packageInquirySchema.safeParse(rawPayload);
     if (!parsed.success) {
-      setFieldErrors(mapZodFieldErrors(parsed.error));
+      const fieldErrors = mapZodFieldErrors(parsed.error);
+      const names = Object.keys(fieldErrors).map(
+        (key) => FIELD_LABELS[key] ?? key,
+      );
+      setFieldErrors(fieldErrors);
       setStatus("error");
+      setErrorMessage(
+        `Please fix ${names.length === 1 ? "this field" : "these fields"} and submit again: ${names.join(", ")}.`,
+      );
       return;
     }
 
@@ -121,12 +148,15 @@ export default function PackageInquiryForm({
       )}
 
       {status === "error" && errorMessage && (
-        <div className="rounded-xl border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div
+          role="alert"
+          className="rounded-xl border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
           {errorMessage}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form noValidate onSubmit={handleSubmit} className="space-y-6">
         <input
           type="text"
           name="website"

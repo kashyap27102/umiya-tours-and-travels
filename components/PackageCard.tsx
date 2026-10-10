@@ -4,10 +4,11 @@ import { Pencil } from "lucide-react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
 import { formatDurationLabel } from "@/lib/packages-constants";
 import { formatCurrency } from "@/lib/format";
-import type { PackageWithItinerary } from "@/types/package";
+import type { PackageSummary } from "@/types/package";
 
 interface PackageCardProps {
-  item: PackageWithItinerary;
+  /** `badge` is the label on the photo; without it the legacy category shows. */
+  item: PackageSummary & { badge?: string | null };
   compact?: boolean;
 }
 
@@ -31,9 +32,11 @@ export default function PackageCard({
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         <div className="absolute left-4 top-4 flex items-center gap-2">
-          <Badge variant="solid" size="sm">
-            {item.category}
-          </Badge>
+          {(item.badge ?? item.category) && (
+            <Badge variant="solid" size="sm">
+              {item.badge ?? item.category}
+            </Badge>
+          )}
           {compact && (
             <Badge
               variant={item.status === "active" ? "success" : "outline"}
@@ -55,7 +58,9 @@ export default function PackageCard({
             Starting Price
           </p>
           <p className="mt-1 text-2xl font-bold text-brand-ink-900">
-            {formatCurrency(item.pricePerPerson)}
+            {formatCurrency(
+              item.startingPrice > 0 ? item.startingPrice : item.pricePerPerson,
+            )}
           </p>
           <p className="text-xs text-brand-muted-600">
             per person ·{" "}

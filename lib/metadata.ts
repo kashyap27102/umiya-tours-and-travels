@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/constants";
+import { BRAND_LOGO, CONTACT, DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/constants";
 import { appConfig } from "@/lib/config";
 
 const SITE_URL = appConfig.siteUrl;
@@ -82,29 +82,16 @@ export const createMetadata = ({
   };
 };
 
-export const organizationJsonLd = (): JsonLdNode => ({
+/** One TravelAgency entry for the whole business (it is also a local business). */
+export const organizationJsonLd = (sameAs: string[] = []): JsonLdNode => ({
   "@context": "https://schema.org",
   "@type": "TravelAgency",
   name: SITE_NAME,
   url: SITE_URL,
-  telephone: "+91 76006 17936",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "204, Keshav Aaradhyam, Kudasan",
-    addressLocality: "Gandhinagar",
-    addressRegion: "Gujarat",
-    postalCode: "382419",
-    addressCountry: "IN",
-  },
-});
-
-export const localBusinessJsonLd = (): JsonLdNode => ({
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  name: SITE_NAME,
+  logo: toAbsoluteUrl(BRAND_LOGO.color),
   image: toAbsoluteUrl(DEFAULT_OG_IMAGE),
-  url: SITE_URL,
-  telephone: "+91 76006 17936",
+  telephone: CONTACT.phone,
+  email: CONTACT.email,
   address: {
     "@type": "PostalAddress",
     streetAddress: "204, Keshav Aaradhyam, Kudasan",
@@ -113,6 +100,8 @@ export const localBusinessJsonLd = (): JsonLdNode => ({
     postalCode: "382419",
     addressCountry: "IN",
   },
+  areaServed: "IN",
+  ...(sameAs.length > 0 ? { sameAs } : {}),
 });
 
 export const breadcrumbJsonLd = (
@@ -134,10 +123,13 @@ type ProductJsonLdInput = {
   images: string[];
   sku: string;
   category: string;
+  /** Lowest per-person price. */
   price: number;
+  /** Highest per-person price, when prices vary by stay or group size. */
+  highPrice?: number;
+  /** How many stay options there are (for a price range). */
+  offerCount?: number;
   url: string;
-  ratingValue: number;
-  ratingCount: number;
   additionalProperties?: { name: string; value: string }[];
 };
 
@@ -148,9 +140,9 @@ export const productJsonLd = ({
   sku,
   category,
   price,
+  highPrice,
+  offerCount,
   url,
-  ratingValue,
-  ratingCount,
   additionalProperties = [],
 }: ProductJsonLdInput): JsonLdNode => ({
   "@context": "https://schema.org",
@@ -164,24 +156,33 @@ export const productJsonLd = ({
     "@type": "Brand",
     name: SITE_NAME,
   },
-  offers: {
-    "@type": "Offer",
-    url,
-    priceCurrency: "INR",
-    price,
-    availability: "https://schema.org/InStock",
-    seller: {
-      "@type": "TravelAgency",
-      name: SITE_NAME,
-    },
-  },
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue,
-    ratingCount,
-    bestRating: 5,
-    worstRating: 1,
-  },
+  offers:
+    // Several stay levels / group sizes at different prices: a price range.
+    highPrice !== undefined && highPrice > price
+      ? {
+          "@type": "AggregateOffer",
+          url,
+          priceCurrency: "INR",
+          lowPrice: price,
+          highPrice,
+          offerCount: offerCount ?? 1,
+          availability: "https://schema.org/InStock",
+          seller: {
+            "@type": "TravelAgency",
+            name: SITE_NAME,
+          },
+        }
+      : {
+          "@type": "Offer",
+          url,
+          priceCurrency: "INR",
+          price,
+          availability: "https://schema.org/InStock",
+          seller: {
+            "@type": "TravelAgency",
+            name: SITE_NAME,
+          },
+        },
   additionalProperty: additionalProperties.map(({ name: propName, value }) => ({
     "@type": "PropertyValue",
     name: propName,
@@ -191,3 +192,18 @@ export const productJsonLd = ({
 
 export const toJsonLd = (data: JsonLdNode | JsonLdNode[]) =>
   JSON.stringify(data);
+
+/** A list of pages (e.g. the packages on a destination page) for search engines. */
+export const itemListJsonLd = (
+  items: { name: string; url: string }[],
+): JsonLdNode => ({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  numberOfItems: items.length,
+  itemListElement: items.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.name,
+    url: item.url,
+  })),
+});

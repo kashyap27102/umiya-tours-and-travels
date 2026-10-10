@@ -4,14 +4,20 @@ import { Button } from "@/components/ui";
 import AdminPackageTable from "@/components/admin/AdminPackageTable";
 import AdminPackageFilters from "@/components/admin/AdminPackageFilters";
 import AdminPagination from "@/components/admin/AdminPagination";
-import { PackageService } from "@/services";
+import { PackageService, TaxonomyService } from "@/services";
+import {
+  ADMIN_PACKAGE_PAGE_SIZES,
+  DEFAULT_ADMIN_PACKAGE_PAGE_SIZE,
+} from "@/lib/packages-constants";
 
 interface PageProps {
   searchParams: Promise<{
     search?: string;
+    destination?: string;
     category?: string;
     status?: string;
     page?: string;
+    pageSize?: string;
   }>;
 }
 
@@ -20,14 +26,25 @@ export default async function AdminPackageManagementPage({
 }: Readonly<PageProps>) {
   const params = await searchParams;
 
-  const page = Math.max(1, Number(params.page ?? 1));
-  const result = await PackageService.getPackages({
-    search: params.search,
-    category: params.category,
-    status: params.status,
-    page,
-    pageSize: 10,
-  });
+  const page = Math.max(1, Math.trunc(Number(params.page ?? 1)) || 1);
+  const requestedSize = Number(params.pageSize);
+  const pageSize = (ADMIN_PACKAGE_PAGE_SIZES as readonly number[]).includes(
+    requestedSize,
+  )
+    ? requestedSize
+    : DEFAULT_ADMIN_PACKAGE_PAGE_SIZE;
+  const [result, destinations, categories] = await Promise.all([
+    PackageService.getPackages({
+      search: params.search,
+      destination: params.destination,
+      category: params.category,
+      status: params.status,
+      page,
+      pageSize,
+    }),
+    TaxonomyService.getDestinations(),
+    TaxonomyService.getCategories(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -37,7 +54,7 @@ export default async function AdminPackageManagementPage({
             Package Management
           </h1>
           <p className="text-sm text-brand-muted-600">
-            Browse, search, and filter all published travel packages.
+            Browse, search, and filter all travel packages.
           </p>
         </div>
         <Link href="/admin/package-management/create">
@@ -48,7 +65,22 @@ export default async function AdminPackageManagementPage({
       </div>
 
       <Suspense>
-        <AdminPackageFilters />
+        <AdminPackageFilters
+          destinations={
+            destinations.success
+              ? destinations.data.map(({ slug, name, country }) => ({
+                  slug,
+                  name,
+                  country,
+                }))
+              : []
+          }
+          categories={
+            categories.success
+              ? categories.data.map(({ slug, name }) => ({ slug, name }))
+              : []
+          }
+        />
       </Suspense>
 
       {result.success ? (
@@ -59,7 +91,7 @@ export default async function AdminPackageManagementPage({
           </p>
           <AdminPackageTable
             packages={result.data.packages}
-            startIndex={(page - 1) * 10}
+            startIndex={(result.data.page - 1) * result.data.pageSize}
           />
           <Suspense>
             <AdminPagination

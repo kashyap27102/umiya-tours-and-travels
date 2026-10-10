@@ -7,7 +7,6 @@ import { BusinessTab } from "./tabs/BusinessTab";
 import { HeroTab } from "./tabs/HeroTab";
 import { AboutTab } from "./tabs/AboutTab";
 import { StatsTab } from "./tabs/StatsTab";
-import { TestimonialsTab } from "./tabs/TestimonialsTab";
 import { FooterTab } from "./tabs/FooterTab";
 
 const TABS = [
@@ -15,7 +14,6 @@ const TABS = [
   { value: "hero", label: "Hero" },
   { value: "about", label: "About" },
   { value: "stats", label: "Stats" },
-  { value: "testimonials", label: "Testimonials" },
   { value: "footer", label: "Footer" },
 ] as const;
 
@@ -88,12 +86,14 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Sit
           <StatsTab defaults={{ stats: s?.stats ?? [] }} />
         </TabsContent>
 
-        <TabsContent value="testimonials" className="mt-4">
-          <TestimonialsTab defaults={{ testimonials: s?.testimonials ?? [] }} />
-        </TabsContent>
-
         <TabsContent value="footer" className="mt-4">
-          <FooterTab defaults={{ footerTagline: s?.footerTagline ?? "" }} />
+          <FooterTab defaults={{
+            footerTagline: s?.footerTagline ?? "",
+            instagramUrl: s?.instagramUrl ?? "",
+            facebookUrl: s?.facebookUrl ?? "",
+            youtubeUrl: s?.youtubeUrl ?? "",
+            googleBusinessUrl: s?.googleBusinessUrl ?? "",
+          }} />
         </TabsContent>
       </Tabs>
     </div>

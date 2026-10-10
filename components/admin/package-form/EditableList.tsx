@@ -4,10 +4,11 @@ import { Trash2, Plus } from "lucide-react";
 import { Button, Input, Label } from "@/components/ui";
 import type { ReactNode } from "react";
 import type { UsePackageFormReturn } from "@/hooks/usePackageForm";
+import type { PackageMetaField } from "@/constants";
 
 interface EditableListProps {
   label: string;
-  fieldName: "highlights" | "inclusions" | "exclusions";
+  fieldName: PackageMetaField;
   hook: UsePackageFormReturn;
   icon?: ReactNode;
 }

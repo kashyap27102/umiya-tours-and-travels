@@ -4,37 +4,56 @@ import * as React from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Input, Select } from "@/components/ui";
 import type { SelectOption } from "@/components/ui";
-import {
-  PACKAGE_CATEGORIES,
-  PACKAGE_STATUS_OPTIONS,
-} from "@/lib/packages-constants";
+import { PACKAGE_STATUS_OPTIONS } from "@/lib/packages-constants";
+import { PACKAGE_STATUS_LABEL } from "@/lib/package-status";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
 
 const ALL = "all";
-
-const categoryOptions: SelectOption[] = [
-  { label: "All Categories", value: ALL },
-  ...PACKAGE_CATEGORIES.map((c) => ({ label: c, value: c })),
-];
 
 const statusOptions: SelectOption[] = [
   { label: "All Statuses", value: ALL },
   ...PACKAGE_STATUS_OPTIONS.map((s) => ({
-    label: s.charAt(0).toUpperCase() + s.slice(1),
+    label: PACKAGE_STATUS_LABEL[s],
     value: s,
   })),
 ];
 
-export default function AdminPackageFilters() {
+interface AdminPackageFiltersProps {
+  destinations: { slug: string; name: string; country: string }[];
+  categories: { slug: string; name: string }[];
+}
+
+export default function AdminPackageFilters({
+  destinations,
+  categories,
+}: Readonly<AdminPackageFiltersProps>) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const search = searchParams.get("search") ?? "";
-  const category = searchParams.get("category") ?? ALL;
+  const destinationOptions: SelectOption[] = [
+    { label: "All Destinations", value: ALL },
+    ...destinations.map((d) => ({
+      label: `${d.name} (${d.country})`,
+      value: d.slug,
+    })),
+  ];
+  const categoryOptions: SelectOption[] = [
+    { label: "All Categories", value: ALL },
+    ...categories.map((c) => ({ label: c.name, value: c.slug })),
+  ];
+
+  const [query, setQuery] = useUrlSearch("search");
+
+  const destination = searchParams.get("destination") ?? ALL;
+  // Slugs are lowercase; older links used names like "Beach".
+  const category = (searchParams.get("category") ?? ALL).toLowerCase();
   const status = searchParams.get("status") ?? ALL;
 
   function pushParams(updates: Record<string, string>) {
-    const params = new URLSearchParams(searchParams.toString());
+    // Read the live URL so a pending search update can't overwrite a filter
+    // that was changed in the meantime.
+    const params = new URLSearchParams(window.location.search);
     for (const [key, value] of Object.entries(updates)) {
       if (!value || value === ALL) {
         params.delete(key);
@@ -52,8 +71,12 @@ export default function AdminPackageFilters() {
       <div className="flex-1">
         <Input
           placeholder="Search by name or destination…"
-          defaultValue={search}
-          onChange={(e) => pushParams({ search: e.target.value })}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setQuery("");
+          }}
+          aria-label="Search packages"
           leftIcon={
             <svg
               className="h-4 w-4"
@@ -71,6 +94,13 @@ export default function AdminPackageFilters() {
           }
         />
       </div>
+      <Select
+        options={destinationOptions}
+        value={destination}
+        onChange={(val) => pushParams({ destination: val })}
+        placeholder="Destination"
+        className="w-full sm:w-52"
+      />
       <Select
         options={categoryOptions}
         value={category}

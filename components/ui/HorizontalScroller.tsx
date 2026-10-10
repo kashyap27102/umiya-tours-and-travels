@@ -64,7 +64,9 @@ export default function HorizontalScroller({
       <div
         ref={scrollerRef}
         className={cn(
-          "scrollbar-hide flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-2 py-4",
+          // The negative margin and extra padding cancel out, so layout is unchanged,
+          // but cards get room for their shadow instead of it being clipped.
+          "scrollbar-hide -mx-5 -my-6 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth scroll-px-5 px-7 py-10",
           className,
         )}
         style={{
