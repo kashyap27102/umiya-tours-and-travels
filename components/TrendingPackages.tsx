@@ -135,7 +135,7 @@ export default function TrendingPackages({
         {/* See all link */}
         <div className="mt-8 text-center">
           <Link
-            href={`/packages?category=${activeTab === "domestic" ? "" : "International"}`}
+            href={activeTab === "domestic" ? "/packages" : "/categories/international"}
             className="inline-flex items-center gap-2 text-sm font-semibold text-brand-lime-400 hover:text-brand-cream-100 hover:underline"
           >
             See all {activeTab} packages →

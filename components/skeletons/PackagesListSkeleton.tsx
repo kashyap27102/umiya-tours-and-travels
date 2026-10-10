@@ -1,19 +1,22 @@
 import { Card, Skeleton } from "@/components/ui";
 
-/** Placeholder for the search / filter bar above the package grid. */
-function FilterBarSkeleton() {
+/** Placeholder for the "choose your destination" block above the packages. */
+function BrowseNavSkeleton() {
   return (
-    <Card
-      variant="default"
-      padding="md"
-      className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4"
-    >
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="space-y-2">
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-11 w-full" />
-        </div>
-      ))}
+    <Card variant="elevated" padding="md" className="space-y-5">
+      <Skeleton className="h-6 w-56" />
+      <div className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-8 w-24 rounded-full" />
+              <Skeleton className="h-8 w-20 rounded-full" />
+              <Skeleton className="h-8 w-28 rounded-full" />
+            </div>
+          </div>
+        ))}
+      </div>
     </Card>
   );
 }
@@ -35,17 +38,24 @@ function PackageCardSkeleton() {
   );
 }
 
-/** Filter bar + a grid of cards, matching the real catalog's layout. */
+/** A heading and a grid of cards, matching a destination / category page. */
+export function PackageGridSkeleton({ cards = 6 }: { cards?: number }) {
+  return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: cards }).map((_, index) => (
+        <PackageCardSkeleton key={index} />
+      ))}
+    </div>
+  );
+}
+
+/** The packages landing page: browse block, then a section of cards. */
 export function PackagesCatalogSkeleton({ cards = 6 }: { cards?: number }) {
   return (
-    <div className="flex w-full flex-col gap-6">
-      <FilterBarSkeleton />
-      <Skeleton className="h-4 w-44" />
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: cards }).map((_, index) => (
-          <PackageCardSkeleton key={index} />
-        ))}
-      </div>
+    <div className="flex w-full flex-col gap-8">
+      <BrowseNavSkeleton />
+      <Skeleton className="h-8 w-64" />
+      <PackageGridSkeleton cards={cards} />
     </div>
   );
 }

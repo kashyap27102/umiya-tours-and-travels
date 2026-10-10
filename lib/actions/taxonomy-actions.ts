@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 import { prismaClient } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
 import { isForeignKeyError } from "@/lib/db-errors";
@@ -88,6 +89,7 @@ export async function updateDestination(
     // The slug is left unchanged on rename so existing links stay stable.
     await prismaClient.destination.update({ where: { id }, data });
     revalidatePath("/admin/destinations");
+    revalidateCatalog();
     return { success: true, data: { id }, message: "Destination updated" };
   } catch (error) {
     console.error("Failed to update destination:", error);
@@ -103,6 +105,7 @@ export async function deleteDestination(
   try {
     await prismaClient.destination.delete({ where: { id } });
     revalidatePath("/admin/destinations");
+    revalidateCatalog();
     return { success: true, data: null, message: "Destination deleted" };
   } catch (error) {
     if (isForeignKeyError(error)) {
@@ -284,6 +287,7 @@ export async function updateCategory(
 
     await prismaClient.category.update({ where: { id }, data });
     revalidatePath("/admin/categories");
+    revalidateCatalog();
     return { success: true, data: { id }, message: "Category updated" };
   } catch (error) {
     console.error("Failed to update category:", error);
@@ -297,6 +301,7 @@ export async function deleteCategory(id: string): Promise<ApiResponse<null>> {
   try {
     await prismaClient.category.delete({ where: { id } });
     revalidatePath("/admin/categories");
+    revalidateCatalog();
     return { success: true, data: null, message: "Category deleted" };
   } catch (error) {
     if (isForeignKeyError(error)) {

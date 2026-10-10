@@ -2,5 +2,5 @@
 export const PACKAGES_HERO = {
   heading: "Find Your Perfect Travel Package",
   description:
-    "Explore handpicked holiday options and filter by destination style, duration, and budget to book with confidence.",
+    "Pick a destination or a type of trip and see every handpicked holiday we run there, with clear starting prices.",
 } as const;

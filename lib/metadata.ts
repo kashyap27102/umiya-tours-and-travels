@@ -214,3 +214,18 @@ export const productJsonLd = ({
 
 export const toJsonLd = (data: JsonLdNode | JsonLdNode[]) =>
   JSON.stringify(data);
+
+/** A list of pages (e.g. the packages on a destination page) for search engines. */
+export const itemListJsonLd = (
+  items: { name: string; url: string }[],
+): JsonLdNode => ({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  numberOfItems: items.length,
+  itemListElement: items.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.name,
+    url: item.url,
+  })),
+});

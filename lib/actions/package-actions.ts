@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 import { prismaClient } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
 import { toItineraryRow } from "@/lib/itinerary";
@@ -147,6 +148,7 @@ export async function createPackage(
 
     // Revalidate the package listing page
     revalidatePath("/admin/package-management");
+    revalidateCatalog();
     revalidatePath("/packages");
     revalidatePath("/");
 
@@ -279,6 +281,7 @@ export async function editPackage(
     // Revalidate both the listing and the detail page
     revalidatePath("/admin/package-management");
     revalidatePath(`/admin/package-management/${updatedPackage.slug}/edit`);
+    revalidateCatalog();
     revalidatePath("/packages");
     revalidatePath(`/packages/${updatedPackage.slug}`);
     revalidatePath("/");
@@ -326,6 +329,7 @@ export async function deletePackage(
 
     // Revalidate the listing page
     revalidatePath("/admin/package-management");
+    revalidateCatalog();
     revalidatePath("/packages");
     revalidatePath(`/packages/${pkg.slug}`);
     revalidatePath("/");
@@ -377,6 +381,7 @@ export async function setPackageStatus(
     });
 
     revalidatePath("/admin/package-management");
+    revalidateCatalog();
     revalidatePath("/packages");
     revalidatePath(`/packages/${pkg.slug}`);
     revalidatePath("/");
