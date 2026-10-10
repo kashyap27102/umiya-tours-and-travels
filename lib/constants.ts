@@ -1,7 +1,7 @@
 export const SITE_NAME = "Umiya Tours & Travels";
 
 export const DEFAULT_OG_IMAGE =
-  "/destination-poster/kashmir-india-travel-destination.jpg";
+  "/og-default.png";
 
 export const BRAND_LOGO = {
   color: "/colored-logo.png",
