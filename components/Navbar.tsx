@@ -8,6 +8,7 @@ import * as React from "react";
 
 const NAV_LINKS = [
   { href: "/packages", label: "Tour Packages" },
+  { href: "/reviews", label: "Reviews" },
   { href: "/contact", label: "Contact" },
 ] as const;
 

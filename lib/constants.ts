@@ -19,6 +19,7 @@ export const CORE_ROUTES = [
   "/",
   "/about",
   "/packages",
+  "/reviews",
   "/vehicle-booking",
   "/contact",
 ] as const;

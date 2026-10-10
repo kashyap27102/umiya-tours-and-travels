@@ -6,6 +6,7 @@ import { getCachedSettings } from "@/services/settings-service";
 const QUICK_LINKS = [
   { href: "/about", label: "About Us" },
   { href: "/packages", label: "Travel Packages" },
+  { href: "/reviews", label: "Traveller Reviews" },
   { href: "/vehicle-booking", label: "Vehicle Booking" },
   { href: "/contact", label: "Contact Us" },
 ];

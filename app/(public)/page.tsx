@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createMetadata } from "@/lib/metadata";
 import HeroBanner from "@/components/HeroBanner";
 import TestimonialCard from "@/components/TestimonialCard";
@@ -131,6 +132,14 @@ export default async function Home() {
                 </div>
               ))}
             </HorizontalScroller>
+            <div className="mt-2 text-center">
+              <Link
+                href="/reviews"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-brand-blue-700! hover:underline"
+              >
+                Read all traveller stories →
+              </Link>
+            </div>
           </div>
         </section>
       )}
