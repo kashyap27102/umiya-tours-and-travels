@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardBody, Modal } from "@/components/ui";
@@ -19,8 +19,6 @@ interface TestimonialCardProps {
   /** A live package to link to. */
   packageLink?: { slug: string; name: string } | null;
 }
-
-const REVIEW_TRUNCATE_LENGTH = 150;
 
 function Stars({ count, size = 14 }: { count: number; size?: number }) {
   return (
@@ -54,7 +52,7 @@ function PackageLink({ pkg }: { pkg: { slug: string; name: string } }) {
   return (
     <Link
       href={`/packages/${pkg.slug}`}
-      className="inline-flex items-center gap-1 text-xs font-semibold text-brand-blue-700 hover:text-brand-blue-900 hover:underline"
+      className="inline-flex items-center gap-1 text-xs font-semibold text-brand-blue-700! hover:underline"
     >
       View {pkg.name}
       <ArrowRight size={12} aria-hidden />
@@ -98,6 +96,16 @@ export default function TestimonialCard({
   packageLink,
 }: TestimonialCardProps) {
   const [isOpen, setIsOpen] = useState(false);
+  // "See more" only appears when the text is actually cut off, not just long.
+  const [isTruncated, setIsTruncated] = useState(false);
+  const measureReview = useCallback((el: HTMLElement | null) => {
+    if (!el) return;
+    const observer = new ResizeObserver(() =>
+      setIsTruncated(el.scrollHeight - el.clientHeight > 1),
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const avatarInitials =
     initials ??
     name
@@ -106,8 +114,6 @@ export default function TestimonialCard({
       .join("")
       .slice(0, 2)
       .toUpperCase();
-
-  const isTruncated = review.length > REVIEW_TRUNCATE_LENGTH;
 
   return (
     <>
@@ -138,7 +144,13 @@ export default function TestimonialCard({
           )}
 
           <CardBody className="flex-1 italic">
-            <span className="line-clamp-4">&ldquo;{review}&rdquo;</span>
+            {/* A photo uses up room, so a card without one can show more text. */}
+            <span
+              ref={measureReview}
+              className={image ? "line-clamp-4" : "line-clamp-9"}
+            >
+              &ldquo;{review}&rdquo;
+            </span>
             {isTruncated && (
               <button
                 type="button"
