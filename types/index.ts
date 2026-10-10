@@ -4,6 +4,7 @@ export type {
   ApiResponse,
 } from "./api-response";
 export type {
+  PackageSummary,
   PackageWithItinerary,
   PackageForEdit,
   PublicPackage,

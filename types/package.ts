@@ -11,6 +11,12 @@ import type {
   MediaImage,
 } from "@/app/generated/prisma/client";
 
+/**
+ * A package as the public list and cards need it. No itinerary: cards never
+ * show it, and loading it for every package made the list slower.
+ */
+export type PackageSummary = Package;
+
 export type PackageWithItinerary = Package & {
   itinerary: ItineraryItem[];
 };

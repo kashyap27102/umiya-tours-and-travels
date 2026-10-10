@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatDurationLabel } from "@/lib/packages-constants";
-import type { PackageWithItinerary } from "@/types/package";
+import type { PackageSummary } from "@/types/package";
 
 type Tab = "domestic" | "international";
 
@@ -21,8 +21,8 @@ export default function TrendingPackages({
   domestic,
   international,
 }: {
-  domestic: PackageWithItinerary[];
-  international: PackageWithItinerary[];
+  domestic: PackageSummary[];
+  international: PackageSummary[];
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("domestic");
   const packages = activeTab === "domestic" ? domestic : international;

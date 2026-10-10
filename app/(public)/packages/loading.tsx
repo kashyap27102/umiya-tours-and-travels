@@ -1,17 +1,20 @@
+import PageHero from "@/components/PageHero";
+import { PackagesCatalogSkeleton } from "@/components/skeletons/PackagesListSkeleton";
+import { PACKAGES_HERO } from "@/lib/page-copy";
+
 export default function Loading() {
   return (
-    <main className="flex flex-col gap-10">
-      <div className="h-48 animate-pulse bg-brand-blue-900/10" />
-      <div className="travel-shell flex flex-col gap-6">
-        <div className="h-10 w-48 animate-pulse rounded-xl bg-brand-blue-900/10" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-80 animate-pulse rounded-3xl border border-brand-blue-900/10 bg-white/60"
-            />
-          ))}
-        </div>
+    <main className="flex flex-col gap-10" aria-busy="true">
+      <span role="status" className="sr-only">
+        Loading travel packages…
+      </span>
+      {/* The heading is fixed text, so it can show straight away. */}
+      <PageHero
+        heading={PACKAGES_HERO.heading}
+        description={PACKAGES_HERO.description}
+      />
+      <div className="travel-shell flex w-full flex-col gap-10">
+        <PackagesCatalogSkeleton />
       </div>
     </main>
   );

@@ -4,10 +4,10 @@ import { Pencil } from "lucide-react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
 import { formatDurationLabel } from "@/lib/packages-constants";
 import { formatCurrency } from "@/lib/format";
-import type { PackageWithItinerary } from "@/types/package";
+import type { PackageSummary } from "@/types/package";
 
 interface PackageCardProps {
-  item: PackageWithItinerary;
+  item: PackageSummary;
   compact?: boolean;
 }
 

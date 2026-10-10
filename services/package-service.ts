@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { prismaClient } from "@/lib/prisma";
 import {
+  PackageSummary,
   PackageWithItinerary,
   PackageForEdit,
   PublicPackage,
@@ -104,6 +105,8 @@ export class PackageService {
     try {
       const packageData = await prismaClient.package.findUnique({
         where: { slug },
+        // One database query instead of one round trip per relation.
+        relationLoadStrategy: "join",
         include: {
           itinerary: {
             orderBy: {
@@ -181,6 +184,7 @@ export class PackageService {
     try {
       const packageData = await prismaClient.package.findUnique({
         where: { slug },
+        relationLoadStrategy: "join",
         include: {
           itinerary: { orderBy: { day: "asc" }, include: { image: true } },
           imageLinks: {
@@ -296,20 +300,12 @@ export class PackageService {
     }
   }
 
-  static async getActivePackages(): Promise<
-    ApiResponse<PackageWithItinerary[]>
-  > {
+  static async getActivePackages(): Promise<ApiResponse<PackageSummary[]>> {
     try {
+      // Cards and lists never show the itinerary, so it isn't loaded here.
       const packages = await prismaClient.package.findMany({
         where: {
           status: "active",
-        },
-        include: {
-          itinerary: {
-            orderBy: {
-              day: "asc",
-            },
-          },
         },
       });
 
@@ -340,7 +336,7 @@ export class PackageService {
     category: PackageCategory | null,
     excludeSlug: string,
     limit = 3,
-  ): Promise<ApiResponse<PackageWithItinerary[]>> {
+  ): Promise<ApiResponse<PackageSummary[]>> {
     try {
       const packages = await prismaClient.package.findMany({
         where: {
@@ -348,13 +344,6 @@ export class PackageService {
           ...(category && { category }),
           status: "active",
           slug: { not: excludeSlug },
-        },
-        include: {
-          itinerary: {
-            orderBy: {
-              day: "asc",
-            },
-          },
         },
         take: limit,
       });

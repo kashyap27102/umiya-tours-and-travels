@@ -16,6 +16,7 @@ export { AlertDialog } from "./AlertDialog";
 export type { AlertDialogProps } from "./AlertDialog";
 export { Label } from "./Label";
 export type { LabelProps } from "./Label";
+export { Skeleton } from "./Skeleton";
 export { Switch } from "./Switch";
 export type { SwitchProps } from "./Switch";
 export { MultiSelect } from "./MultiSelect";

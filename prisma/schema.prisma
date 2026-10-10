@@ -9,6 +9,8 @@ generator client {
   output     = "../app/generated/prisma"
   runtime    = "nodejs"
   engineType = "client"
+  // One SQL query instead of one round trip per relation (see relationLoadStrategy).
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {

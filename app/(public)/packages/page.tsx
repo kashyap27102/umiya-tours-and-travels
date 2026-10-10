@@ -1,15 +1,11 @@
 import { Suspense } from "react";
+import { PackagesCatalogSkeleton } from "@/components/skeletons/PackagesListSkeleton";
+import { PACKAGES_HERO } from "@/lib/page-copy";
 import PackagesCatalog from "@/components/packages/PackagesCatalog";
 import CtaBanner from "@/components/CtaBanner";
 import PageHero from "@/components/PageHero";
 import { createMetadata } from "@/lib/metadata";
 import { PackageService } from "@/services";
-
-function PackagesCatalogFallback() {
-  return (
-    <div className="h-64 animate-pulse rounded-3xl border border-brand-blue-900/10 bg-white/60" />
-  );
-}
 
 export const metadata = createMetadata({
   title: "Travel Packages | Umiya Tours & Travels",
@@ -32,12 +28,12 @@ export default async function PackagesPage() {
   return (
     <main className="flex flex-col gap-10 ">
       <PageHero
-        heading="Find Your Perfect Travel Package"
-        description="Explore handpicked holiday options and filter by destination style, duration, and budget to book with confidence."
+        heading={PACKAGES_HERO.heading}
+        description={PACKAGES_HERO.description}
       />
 
       <div className="travel-shell flex flex-col gap-10">
-        <Suspense fallback={<PackagesCatalogFallback />}>
+        <Suspense fallback={<PackagesCatalogSkeleton />}>
           <PackagesCatalog packages={packages} />
         </Suspense>
 
