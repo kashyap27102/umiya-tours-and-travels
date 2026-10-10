@@ -11,6 +11,7 @@ import {
   Tags,
   ListChecks,
   Images,
+  Inbox,
   MessageSquareQuote,
   SlidersHorizontal,
   ShieldCheck,
@@ -26,6 +27,11 @@ const ADMIN_NAV_ITEMS = [
     href: "/admin",
     label: "Dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    href: "/admin/enquiries",
+    label: "Enquiries",
+    icon: Inbox,
   },
   {
     href: "/admin/package-management",
@@ -71,9 +77,14 @@ const ADMIN_NAV_ITEMS = [
 
 interface AdminSidebarProps {
   onNavClick?: () => void;
+  /** Enquiries still marked New, shown as a badge. */
+  newEnquiries?: number;
 }
 
-export default function AdminSidebar({ onNavClick }: AdminSidebarProps) {
+export default function AdminSidebar({
+  onNavClick,
+  newEnquiries = 0,
+}: AdminSidebarProps) {
   const pathname = usePathname();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -126,6 +137,14 @@ export default function AdminSidebar({ onNavClick }: AdminSidebarProps) {
                 )}
               />
               <span>{item.label}</span>
+              {item.href === "/admin/enquiries" && newEnquiries > 0 && (
+                <span
+                  className="ml-auto rounded-full bg-brand-lime-400 px-2 py-0.5 text-[11px] font-bold leading-none text-brand-blue-900"
+                  aria-label={`${newEnquiries} new`}
+                >
+                  {newEnquiries > 99 ? "99+" : newEnquiries}
+                </span>
+              )}
             </Link>
           );
         })}

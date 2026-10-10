@@ -1,16 +1,28 @@
 "use server";
 
 import { vehicleInquiryEmail } from "@/lib/email-templates";
-import { sendMail } from "@/lib/mailer";
 import {
   vehicleBookingSchema,
   type VehicleBookingInput,
 } from "@/schemas/vehicle-booking";
+import {
+  RATE_LIMITED_MESSAGE,
+  receiveEnquiry,
+} from "@/services/enquiry-intake";
 import type { ApiResponse } from "@/types/api-response";
 
 export async function submitVehicleBookingForm(
   data: VehicleBookingInput,
+  honeypot?: string,
 ): Promise<ApiResponse<null>> {
+  if (honeypot) {
+    return {
+      success: true,
+      data: null,
+      message: "Your vehicle booking request was submitted successfully.",
+    };
+  }
+
   const parsed = vehicleBookingSchema.safeParse(data);
   if (!parsed.success) {
     return {
@@ -49,26 +61,46 @@ export async function submitVehicleBookingForm(
     specialRequests: specialRequests || undefined,
   });
 
-  try {
-    await sendMail({
+  const result = await receiveEnquiry(
+    {
+      type: "vehicle",
+      name: contactName || "",
+      phone: contactPhone || "",
+      email: contactEmail || null,
+      message: specialRequests || "",
+      details: {
+        tripType,
+        vehicleType,
+        pickupLocation,
+        dropLocation,
+        departureDate: departureDate.toISOString(),
+        returnDate: returnDate ? returnDate.toISOString() : null,
+        passengers,
+        purpose: purpose || null,
+      },
+    },
+    {
       to: process.env.CONTACT_TO_EMAIL,
       replyTo: contactEmail || undefined,
       subject,
       text,
       html,
-    });
+    },
+  );
 
-    return {
-      success: true,
-      data: null,
-      message: "Your vehicle booking request was submitted successfully.",
-    };
-  } catch (error) {
-    console.error("Failed to send vehicle booking email:", error);
+  if (result === "rate_limited") {
+    return { success: false, error: RATE_LIMITED_MESSAGE };
+  }
+  if (result === "failed") {
     return {
       success: false,
       error:
         "Unable to submit your request right now. Please try again or call us directly.",
     };
   }
+  return {
+    success: true,
+    data: null,
+    message: "Your vehicle booking request was submitted successfully.",
+  };
 }

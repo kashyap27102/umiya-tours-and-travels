@@ -5,10 +5,10 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider   = "prisma-client"
-  output     = "../app/generated/prisma"
-  runtime    = "nodejs"
-  engineType = "client"
+  provider        = "prisma-client"
+  output          = "../app/generated/prisma"
+  runtime         = "nodejs"
+  engineType      = "client"
   // One SQL query instead of one round trip per relation (see relationLoadStrategy).
   previewFeatures = ["relationJoins"]
 }
@@ -179,8 +179,8 @@ model PackageCategoryLink {
 // ── Package ───────────────────────────────────────────────────────────────────
 
 model Package {
-  id              String          @id @default(cuid())
-  slug            String          @unique
+  id              String                @id @default(cuid())
+  slug            String                @unique
   name            String
   // Legacy text/enum kept in sync from destinations/categories below so the
   // public pages keep working; retired in the cleanup step.
@@ -189,29 +189,30 @@ model Package {
   destinations    PackageDestination[]
   categories      PackageCategoryLink[]
   inclusionLinks  PackageInclusion[]
-  status          PackageStatus   @default(draft)
+  status          PackageStatus         @default(draft)
   durationDays    Int
   durationNights  Int
   pricePerPerson  Int
   // Lowest variant price per person, kept in sync when prices change.
   // Used for sorting/filtering; pricePerPerson is retired in the cleanup step.
-  startingPrice   Int             @default(0)
+  startingPrice   Int                   @default(0)
   variants        PackageVariant[]
   // Legacy URL list, kept in sync from imageLinks so the public pages keep
   // working; retired in the cleanup step.
-  images         String[]        @default([])
-  imageLinks     PackageImage[]
+  images          String[]              @default([])
+  imageLinks      PackageImage[]
   summary         String
   highlights      String[]
   // Legacy text lists, kept in sync from inclusionLinks so the public page
   // keeps working; retired in the cleanup step.
   inclusions      String[]
   exclusions      String[]
-  popularityScore Int             @default(0)
+  popularityScore Int                   @default(0)
   itinerary       ItineraryItem[]
   testimonials    Testimonial[]
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  enquiries       Enquiry[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
 
   @@index([category])
   @@index([status])
@@ -278,17 +279,17 @@ model PackageStay {
 // Stored as a relation so days can be queried, filtered, and updated independently.
 
 model ItineraryItem {
-  id          Int     @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   day         Int
   title       String
   // Ordered bullet points for the day. `description` is the legacy single
   // paragraph, kept filled (points joined by new lines) until cleanup.
-  points      String[] @default([])
+  points      String[]    @default([])
   imageUrl    String? // optional photo for the day (kept in sync from `image`)
   image       MediaImage? @relation(fields: [imageId], references: [id])
   imageId     String?
   description String
-  package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  package     Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId   String
 
   @@unique([packageId, day])
@@ -322,6 +323,48 @@ model Testimonial {
   @@index([imageId])
   @@index([destinationId])
   @@index([packageId])
+}
+
+// ── Enquiries ─────────────────────────────────────────────────────────────────
+// Everything customers send through the public forms. Saved first, then the
+// notification email goes out, so a mail failure never loses an enquiry.
+
+enum EnquiryType {
+  contact
+  package
+  vehicle
+}
+
+enum EnquiryStatus {
+  new
+  contacted
+  quoted
+  booked
+  lost
+}
+
+model Enquiry {
+  id              String        @id @default(cuid())
+  type            EnquiryType
+  status          EnquiryStatus @default(new)
+  name            String // "" when a vehicle request gave no contact details
+  phone           String
+  email           String?
+  message         String        @default("")
+  package         Package?      @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  packageId       String?
+  packageName     String? // kept so the enquiry still reads right if the package is deleted
+  // Type-specific fields: package -> travelDate, travelers; vehicle -> trip details.
+  details         Json          @default("{}")
+  notes           String        @default("") // admin's private notes
+  statusChangedAt DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([type, createdAt])
+  @@index([packageId])
+  @@index([phone, createdAt])
 }
 
 // ── SiteSettings ──────────────────────────────────────────────────────────────

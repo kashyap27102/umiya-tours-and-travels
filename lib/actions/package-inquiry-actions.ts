@@ -1,11 +1,14 @@
 "use server";
 
 import { packageInquiryEmail } from "@/lib/email-templates";
-import { sendMail } from "@/lib/mailer";
 import {
   packageInquirySchema,
   type PackageInquiryInput,
 } from "@/schemas/package-inquiry";
+import {
+  RATE_LIMITED_MESSAGE,
+  receiveEnquiry,
+} from "@/services/enquiry-intake";
 import type { ApiResponse } from "@/types/api-response";
 
 export async function submitPackageInquiry(
@@ -41,26 +44,35 @@ export async function submitPackageInquiry(
     message,
   });
 
-  try {
-    await sendMail({
-      to: process.env.CONTACT_TO_EMAIL,
-      replyTo: email,
-      subject,
-      text,
-      html,
-    });
+  const result = await receiveEnquiry(
+    {
+      type: "package",
+      name,
+      phone,
+      email,
+      message,
+      packageSlug,
+      details: {
+        travelDate: travelDate ? travelDate.toISOString() : null,
+        travelers: travelers ?? null,
+      },
+    },
+    { to: process.env.CONTACT_TO_EMAIL, replyTo: email, subject, text, html },
+  );
 
-    return {
-      success: true,
-      data: null,
-      message: "Your package inquiry was submitted successfully.",
-    };
-  } catch (error) {
-    console.error("Failed to send package inquiry email:", error);
+  if (result === "rate_limited") {
+    return { success: false, error: RATE_LIMITED_MESSAGE };
+  }
+  if (result === "failed") {
     return {
       success: false,
       error:
         "Unable to send your inquiry right now. Please try again or call us directly.",
     };
   }
+  return {
+    success: true,
+    data: null,
+    message: "Your package inquiry was submitted successfully.",
+  };
 }
