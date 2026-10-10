@@ -1,10 +1,10 @@
 import { ToasterProvider } from "@/components/providers/ToasterProvider";
 import {
   createMetadata,
-  localBusinessJsonLd,
   organizationJsonLd,
   toJsonLd,
 } from "@/lib/metadata";
+import { getCachedSettings } from "@/services/settings-service";
 import type { Metadata } from "next";
 import { Google_Sans, Poppins } from "next/font/google";
 import "./globals.css";
@@ -39,12 +39,20 @@ export const metadata: Metadata = {
   }),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const jsonLd = [organizationJsonLd(), localBusinessJsonLd()];
+  // A settings failure must never break every page; the links are optional.
+  const settings = await getCachedSettings().catch(() => null);
+  const sameAs = [
+    settings?.instagramUrl,
+    settings?.facebookUrl,
+    settings?.youtubeUrl,
+    settings?.googleBusinessUrl,
+  ].filter((url): url is string => !!url);
+  const jsonLd = organizationJsonLd(sameAs);
 
   return (
     <html

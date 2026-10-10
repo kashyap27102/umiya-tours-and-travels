@@ -121,15 +121,6 @@ export default async function PackageDetailPage({
   const imageAlts = travelPackage.images.map((url) => altByUrl.get(url) ?? "");
 
   const canonicalUrl = `${appConfig.siteUrl}/packages/${travelPackage.slug}`;
-  const derivedRatingValue = Math.max(
-    4,
-    Math.min(5, Number((4 + travelPackage.popularityScore / 100).toFixed(1))),
-  );
-  const derivedRatingCount = Math.max(
-    24,
-    Math.round(travelPackage.popularityScore * 2),
-  );
-
   const breadcrumbJsonLdData = breadcrumbJsonLd([
     { name: "Home", url: appConfig.siteUrl },
     { name: "Packages", url: `${appConfig.siteUrl}/packages` },
@@ -148,8 +139,6 @@ export default async function PackageDetailPage({
     highPrice: priceRange?.high,
     offerCount: travelPackage.variants.length,
     url: canonicalUrl,
-    ratingValue: derivedRatingValue,
-    ratingCount: derivedRatingCount,
     additionalProperties: [
       { name: "Destination", value: travelPackage.destination },
       { name: "Duration", value: durationLabel },

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/constants";
+import { BRAND_LOGO, CONTACT, DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/constants";
 import { appConfig } from "@/lib/config";
 
 const SITE_URL = appConfig.siteUrl;
@@ -82,29 +82,16 @@ export const createMetadata = ({
   };
 };
 
-export const organizationJsonLd = (): JsonLdNode => ({
+/** One TravelAgency entry for the whole business (it is also a local business). */
+export const organizationJsonLd = (sameAs: string[] = []): JsonLdNode => ({
   "@context": "https://schema.org",
   "@type": "TravelAgency",
   name: SITE_NAME,
   url: SITE_URL,
-  telephone: "+91 76006 17936",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "204, Keshav Aaradhyam, Kudasan",
-    addressLocality: "Gandhinagar",
-    addressRegion: "Gujarat",
-    postalCode: "382419",
-    addressCountry: "IN",
-  },
-});
-
-export const localBusinessJsonLd = (): JsonLdNode => ({
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  name: SITE_NAME,
+  logo: toAbsoluteUrl(BRAND_LOGO.color),
   image: toAbsoluteUrl(DEFAULT_OG_IMAGE),
-  url: SITE_URL,
-  telephone: "+91 76006 17936",
+  telephone: CONTACT.phone,
+  email: CONTACT.email,
   address: {
     "@type": "PostalAddress",
     streetAddress: "204, Keshav Aaradhyam, Kudasan",
@@ -113,6 +100,8 @@ export const localBusinessJsonLd = (): JsonLdNode => ({
     postalCode: "382419",
     addressCountry: "IN",
   },
+  areaServed: "IN",
+  ...(sameAs.length > 0 ? { sameAs } : {}),
 });
 
 export const breadcrumbJsonLd = (
@@ -141,8 +130,6 @@ type ProductJsonLdInput = {
   /** How many stay options there are (for a price range). */
   offerCount?: number;
   url: string;
-  ratingValue: number;
-  ratingCount: number;
   additionalProperties?: { name: string; value: string }[];
 };
 
@@ -156,8 +143,6 @@ export const productJsonLd = ({
   highPrice,
   offerCount,
   url,
-  ratingValue,
-  ratingCount,
   additionalProperties = [],
 }: ProductJsonLdInput): JsonLdNode => ({
   "@context": "https://schema.org",
@@ -198,13 +183,6 @@ export const productJsonLd = ({
             name: SITE_NAME,
           },
         },
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue,
-    ratingCount,
-    bestRating: 5,
-    worstRating: 1,
-  },
   additionalProperty: additionalProperties.map(({ name: propName, value }) => ({
     "@type": "PropertyValue",
     name: propName,
