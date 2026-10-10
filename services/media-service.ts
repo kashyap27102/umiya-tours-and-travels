@@ -30,10 +30,13 @@ export interface MediaPage {
 export interface MediaUsage {
   packages: { id: string; name: string; slug: string; status: string }[];
   itineraryDays: { packageName: string; packageSlug: string; day: number }[];
+  testimonials: { id: string; name: string }[];
 }
 
 const withUsage = {
-  _count: { select: { packageLinks: true, itineraryDays: true } },
+  _count: {
+    select: { packageLinks: true, itineraryDays: true, testimonials: true },
+  },
 } as const;
 
 export class MediaService {
@@ -119,7 +122,7 @@ export class MediaService {
 
   /** Where an image is used, with enough detail to link to the packages. */
   static async getUsage(id: string): Promise<MediaUsage> {
-    const [packageLinks, days] = await Promise.all([
+    const [packageLinks, days, testimonials] = await Promise.all([
       prismaClient.packageImage.findMany({
         where: { imageId: id },
         include: {
@@ -131,6 +134,11 @@ export class MediaService {
         include: { package: { select: { name: true, slug: true } } },
         orderBy: [{ packageId: "asc" }, { day: "asc" }],
       }),
+      prismaClient.testimonial.findMany({
+        where: { imageId: id },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
     ]);
     return {
       packages: packageLinks.map((l) => l.package),
@@ -139,6 +147,7 @@ export class MediaService {
         packageSlug: d.package.slug,
         day: d.day,
       })),
+      testimonials,
     };
   }
 
@@ -158,7 +167,11 @@ export class MediaService {
     if (!image) return { ok: false, reason: "not_found" };
 
     const usage = await MediaService.getUsage(id);
-    if (usage.packages.length > 0 || usage.itineraryDays.length > 0) {
+    if (
+      usage.packages.length > 0 ||
+      usage.itineraryDays.length > 0 ||
+      usage.testimonials.length > 0
+    ) {
       return { ok: false, reason: "in_use", usage };
     }
 
@@ -181,13 +194,14 @@ function toItem(
     tags: string[];
     source: MediaSource;
     createdAt: Date;
-    _count: { packageLinks: number; itineraryDays: number };
+    _count: { packageLinks: number; itineraryDays: number; testimonials: number };
   },
 ): MediaItem {
   const { _count, ...rest } = row;
   return {
     ...rest,
     createdAt: rest.createdAt.toISOString(),
-    usageCount: _count.packageLinks + _count.itineraryDays,
+    usageCount:
+      _count.packageLinks + _count.itineraryDays + _count.testimonials,
   };
 }

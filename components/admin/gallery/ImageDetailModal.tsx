@@ -59,7 +59,9 @@ function DetailContent({
 
   const inUse =
     usage !== null &&
-    (usage.packages.length > 0 || usage.itineraryDays.length > 0);
+    (usage.packages.length > 0 ||
+      usage.itineraryDays.length > 0 ||
+      usage.testimonials.length > 0);
 
   function handleSave() {
     startTransition(async () => {
@@ -232,6 +234,19 @@ function DetailContent({
                       </Link>{" "}
                       <span className="text-xs text-brand-muted-600">
                         (itinerary day {d.day})
+                      </span>
+                    </li>
+                  ))}
+                  {usage.testimonials.map((t) => (
+                    <li key={t.id}>
+                      <Link
+                        href="/admin/testimonials"
+                        className="font-medium text-brand-blue-700 underline"
+                      >
+                        {t.name}
+                      </Link>{" "}
+                      <span className="text-xs text-brand-muted-600">
+                        (testimonial photo)
                       </span>
                     </li>
                   ))}

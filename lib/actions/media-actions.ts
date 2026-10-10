@@ -144,12 +144,14 @@ export async function deleteMedia(id: string): Promise<ApiResponse<null>> {
     if (result.reason === "not_found") {
       return { success: false, error: "Image not found." };
     }
-    const { packages, itineraryDays } = result.usage;
+    const { packages, itineraryDays, testimonials } = result.usage;
     const parts = [
       packages.length > 0 &&
         `${packages.length} package${packages.length === 1 ? "" : "s"}`,
       itineraryDays.length > 0 &&
         `${itineraryDays.length} itinerary day${itineraryDays.length === 1 ? "" : "s"}`,
+      testimonials.length > 0 &&
+        `${testimonials.length} testimonial${testimonials.length === 1 ? "" : "s"}`,
     ].filter(Boolean);
     return {
       success: false,

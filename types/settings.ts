@@ -3,13 +3,6 @@ export interface StatItem {
   label: string;
 }
 
-export interface Testimonial {
-  name: string;
-  location: string;
-  rating: number;
-  review: string;
-}
-
 export interface SiteSettingsData {
   siteName: string;
   phone: string;
@@ -24,6 +17,5 @@ export interface SiteSettingsData {
   missionHeading: string;
   missionDescription: string;
   stats: StatItem[];
-  testimonials: Testimonial[];
   footerTagline: string;
 }

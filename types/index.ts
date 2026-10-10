@@ -12,4 +12,4 @@ export type {
   PublicStay,
   VariantWithDetails,
 } from "./package";
-export type { SiteSettingsData, StatItem, Testimonial } from "./settings";
+export type { SiteSettingsData, StatItem } from "./settings";

@@ -5,9 +5,9 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import TrendingPackages from "@/components/TrendingPackages";
 import DomesticDestinations from "@/components/DomesticDestinations";
 import { HorizontalScroller } from "@/components/ui";
-import { PackageService, SettingsService } from "@/services";
+import { PackageService } from "@/services";
+import { TestimonialService } from "@/services/testimonial-service";
 import { DOMESTIC_DESTINATIONS } from "@/lib/destinations";
-import type { Testimonial } from "@/types";
 
 export const metadata = createMetadata({
   title: "Umiya Tours & Travels | Your Journey, Our Passion",
@@ -88,8 +88,11 @@ const DESTINATION_MOMENTS = [
 ];
 
 export default async function Home() {
-  const [settings, activePackagesResult] = await Promise.all([
-    SettingsService.getCachedSettings(),
+  const [testimonials, activePackagesResult] = await Promise.all([
+    TestimonialService.getPublic().catch((error) => {
+      console.error("Failed to load testimonials:", error);
+      return [];
+    }),
     PackageService.getCachedActivePackages(),
   ]);
   const activePackages = activePackagesResult.success
@@ -125,29 +128,34 @@ export default async function Home() {
       <WhyChooseUs />
 
       {/* Testimonials */}
-      <section className="bg-white py-14 md:py-16">
-        <div className="travel-shell">
-          <HorizontalScroller
-            eyebrow="Traveller Stories"
-            title="Happy Faces, Real Journeys"
-            itemLabel="testimonials"
-          >
-            {(settings?.testimonials ?? []).map((t: Testimonial) => (
-              <div
-                key={t.name}
-                className="mx-1 w-72 flex-none snap-start sm:w-80"
-              >
-                <TestimonialCard
-                  name={t.name}
-                  location={t.location}
-                  rating={t.rating as 1 | 2 | 3 | 4 | 5}
-                  review={t.review}
-                />
-              </div>
-            ))}
-          </HorizontalScroller>
-        </div>
-      </section>
+      {testimonials.length > 0 && (
+        <section className="bg-white py-14 md:py-16">
+          <div className="travel-shell">
+            <HorizontalScroller
+              eyebrow="Traveller Stories"
+              title="Happy Faces, Real Journeys"
+              itemLabel="testimonials"
+            >
+              {testimonials.map((t) => (
+                <div
+                  key={t.id}
+                  className="mx-1 w-72 flex-none snap-start sm:w-80"
+                >
+                  <TestimonialCard
+                    name={t.name}
+                    location={t.location}
+                    rating={t.rating}
+                    review={t.review}
+                    image={t.image}
+                    destination={t.destinationName}
+                    packageLink={t.packageLink}
+                  />
+                </div>
+              ))}
+            </HorizontalScroller>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

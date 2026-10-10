@@ -54,9 +54,10 @@ model Destination {
   state   String?
   country String
 
-  stays    PackageStay[]
-  hotels   Hotel[]
-  packages PackageDestination[]
+  stays        PackageStay[]
+  hotels       Hotel[]
+  packages     PackageDestination[]
+  testimonials Testimonial[]
 
   @@index([country])
 }
@@ -132,6 +133,7 @@ model MediaImage {
 
   packageLinks  PackageImage[]
   itineraryDays ItineraryItem[]
+  testimonials  Testimonial[]
 
   @@index([createdAt])
 }
@@ -207,6 +209,7 @@ model Package {
   exclusions      String[]
   popularityScore Int             @default(0)
   itinerary       ItineraryItem[]
+  testimonials    Testimonial[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -293,6 +296,34 @@ model ItineraryItem {
   @@index([imageId])
 }
 
+// ── Testimonials ──────────────────────────────────────────────────────────────
+// Customer reviews shown on the home page. The photo comes from the shared
+// gallery (restrict: an image in use can't be deleted). Destination and package
+// are optional context; if either is deleted the review stays, without the link.
+
+model Testimonial {
+  id            String       @id @default(cuid())
+  name          String
+  location      String // where the customer is from
+  rating        Int          @default(5) // 1-5
+  review        String
+  image         MediaImage?  @relation(fields: [imageId], references: [id])
+  imageId       String?
+  destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  destinationId String? // where they travelled
+  package       Package?     @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  packageId     String?
+  isActive      Boolean      @default(true) // hidden reviews stay in admin only
+  sortOrder     Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@index([imageId])
+  @@index([destinationId])
+  @@index([packageId])
+}
+
 // ── SiteSettings ──────────────────────────────────────────────────────────────
 // Singleton row (id=1). Always upserted with where: { id: 1 }.
 
@@ -315,6 +346,8 @@ model SiteSettings {
   missionDescription String
 
   stats        Json
+  // Legacy: reviews now live in the Testimonial table. Kept (unused) until the
+  // cleanup step so nothing is lost; the backfill copies them across.
   testimonials Json
 
   footerTagline String

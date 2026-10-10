@@ -11,6 +11,7 @@ import {
   Tags,
   ListChecks,
   Images,
+  MessageSquareQuote,
   SlidersHorizontal,
   ShieldCheck,
   LogOut,
@@ -55,6 +56,11 @@ const ADMIN_NAV_ITEMS = [
     href: "/admin/gallery",
     label: "Gallery",
     icon: Images,
+  },
+  {
+    href: "/admin/testimonials",
+    label: "Testimonials",
+    icon: MessageSquareQuote,
   },
   {
     href: "/admin/settings",
