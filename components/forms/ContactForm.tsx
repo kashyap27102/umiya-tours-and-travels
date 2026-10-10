@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Badge,
@@ -20,6 +20,14 @@ import {
   type ContactData,
   type ContactInput,
 } from "@/schemas/contact";
+
+const FIELD_LABELS: Record<string, string> = {
+  name: "Name",
+  phone: "Phone",
+  email: "Email",
+  serviceInterested: "Service interested",
+  message: "Message",
+};
 
 interface ContactFormProps {
   initialServiceInterested?: ContactData["serviceInterested"];
@@ -53,6 +61,15 @@ export default function ContactForm({
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [honeypot, setHoneypot] = useState("");
+
+  // Shown when validation fails, so a problem is never silent.
+  const onInvalid = (invalid: FieldErrors<ContactInput>) => {
+    const names = Object.keys(invalid).map((key) => FIELD_LABELS[key] ?? key);
+    setStatus("error");
+    setErrorMessage(
+      `Please fix ${names.length === 1 ? "this field" : "these fields"} and submit again: ${names.join(", ")}.`,
+    );
+  };
 
   const onSubmit = (data: ContactData) => {
     startTransition(async () => {
@@ -93,12 +110,19 @@ export default function ContactForm({
       )}
 
       {status === "error" && errorMessage && (
-        <div className="rounded-xl border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div
+          role="alert"
+          className="rounded-xl border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
           {errorMessage}
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        noValidate
+        onSubmit={handleSubmit(onSubmit, onInvalid)}
+        className="space-y-6"
+      >
         <input
           type="text"
           name="website"

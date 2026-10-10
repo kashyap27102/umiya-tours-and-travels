@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TRAVEL_PURPOSES, TRIP_TYPES, VEHICLE_TYPES } from "@/lib/form-constants";
 import {
   dateSchema,
-  locationSchema,
+  namedLocationSchema,
   optionalDateSchema,
   optionalEmailSchema,
   optionalMessageSchema,
@@ -19,8 +19,8 @@ export const vehicleBookingSchema = z
     vehicleType: z.enum(VEHICLE_TYPES, {
       error: "Select a vehicle type",
     }),
-    pickupLocation: locationSchema,
-    dropLocation: locationSchema,
+    pickupLocation: namedLocationSchema("pickup location"),
+    dropLocation: namedLocationSchema("drop location"),
     departureDate: dateSchema,
     returnDate: optionalDateSchema,
     passengers: passengersSchema,
@@ -31,6 +31,15 @@ export const vehicleBookingSchema = z
     specialRequests: optionalMessageSchema,
   })
   .superRefine((value, ctx) => {
+    // A minute of grace: the picker only goes down to the minute.
+    if (value.departureDate.getTime() < Date.now() - 60_000) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["departureDate"],
+        message: "Departure must be a future date and time",
+      });
+    }
+
     if (value.tripType === "Round Trip" && !value.returnDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

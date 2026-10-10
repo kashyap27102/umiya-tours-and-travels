@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Badge,
@@ -31,6 +31,21 @@ const vehicleDescriptions: Partial<Record<(typeof VEHICLE_TYPES)[number], string
   "Tempo Traveller 9-14": "Ideal for family tours and smaller groups",
   "Mini Bus 20-27": "Comfortable option for medium-size group travel",
   "Full Bus 35-50+": "Best for school, corporate, and large pilgrimages",
+};
+
+const FIELD_LABELS: Record<string, string> = {
+  tripType: "Trip type",
+  vehicleType: "Vehicle type",
+  pickupLocation: "Pickup location",
+  dropLocation: "Drop location",
+  departureDate: "Departure date & time",
+  returnDate: "Return date & time",
+  passengers: "Passengers",
+  purpose: "Purpose",
+  contactName: "Contact name",
+  contactPhone: "Contact phone",
+  contactEmail: "Contact email",
+  specialRequests: "Special requests",
 };
 
 const purposeOptions = [
@@ -69,17 +84,29 @@ export default function VehicleBookingForm() {
   const [isPending, startTransition] = useTransition();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState("");
 
   const isRoundTrip = watch("tripType") === "Round Trip";
 
+  // Shown when validation fails, so a problem is never silent even if the
+  // field is off-screen.
+  const onInvalid = (invalid: FieldErrors<VehicleBookingInput>) => {
+    const names = Object.keys(invalid).map((key) => FIELD_LABELS[key] ?? key);
+    setStatus("error");
+    setErrorMessage(
+      `Please fix ${names.length === 1 ? "this field" : "these fields"} and submit again: ${names.join(", ")}.`,
+    );
+  };
+
   const onSubmit = (data: VehicleBookingData) => {
     startTransition(async () => {
-      const result = await submitVehicleBookingForm(data);
+      const result = await submitVehicleBookingForm(data, honeypot);
 
       if (result.success) {
         setStatus("success");
         setErrorMessage(null);
         reset(defaultValues);
+        setHoneypot("");
       } else {
         setStatus("error");
         setErrorMessage(result.error);
@@ -113,12 +140,29 @@ export default function VehicleBookingForm() {
       )}
 
       {status === "error" && errorMessage && (
-        <div className="rounded-xl border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div
+          role="alert"
+          className="rounded-xl border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
           {errorMessage}
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        noValidate
+        onSubmit={handleSubmit(onSubmit, onInvalid)}
+        className="space-y-6"
+      >
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden"
+        />
         <Controller
           name="tripType"
           control={control}
