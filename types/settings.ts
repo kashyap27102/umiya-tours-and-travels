@@ -18,4 +18,8 @@ export interface SiteSettingsData {
   missionDescription: string;
   stats: StatItem[];
   footerTagline: string;
+  instagramUrl: string;
+  facebookUrl: string;
+  youtubeUrl: string;
+  googleBusinessUrl: string;
 }

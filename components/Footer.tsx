@@ -2,6 +2,8 @@ import Link from "next/link";
 import BrandLogo from "@/components/BrandLogo";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { getCachedSettings } from "@/services/settings-service";
+import { CatalogService } from "@/services/catalog-service";
+import SocialLink, { type SocialKey } from "@/components/SocialIcons";
 
 const QUICK_LINKS = [
   { href: "/about", label: "About Us" },
@@ -11,18 +13,45 @@ const QUICK_LINKS = [
   { href: "/contact", label: "Contact Us" },
 ];
 
+// Each service points at the page where it can actually be requested.
 const SERVICES = [
-  "Custom Tour Packages",
-  "Cab Booking (One Way / Round Trip)",
-  "Airport & Railway Transfers",
-  "Tempo Traveller Hire",
-  "Mini Bus & Bus Booking",
-  "Corporate Travel",
+  { label: "Custom Tour Packages", href: "/contact?service=custom-packages" },
+  { label: "Cab Booking (One Way / Round Trip)", href: "/vehicle-booking" },
+  { label: "Airport & Railway Transfers", href: "/vehicle-booking" },
+  { label: "Tempo Traveller Hire", href: "/vehicle-booking" },
+  { label: "Mini Bus & Bus Booking", href: "/vehicle-booking" },
+  { label: "Corporate Travel", href: "/contact?service=custom-packages" },
 ];
 
+const POPULAR_DESTINATIONS = 8;
+
+const linkClass =
+  "text-sm text-brand-mist-200/80 hover:text-brand-lime-400 transition-colors";
+
 export default async function Footer() {
-  const settings = await getCachedSettings();
+  const [settings, catalog] = await Promise.all([
+    getCachedSettings(),
+    // The footer is on every page, so a failure here must never break them.
+    CatalogService.getCatalog().catch(() => null),
+  ]);
   const year = new Date().getFullYear();
+
+  // The places with the most live packages, then every trip type in use.
+  const popularDestinations = catalog
+    ? [...catalog.tiles.domestic, ...catalog.tiles.international]
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+        .slice(0, POPULAR_DESTINATIONS)
+    : [];
+  const tripTypes = catalog?.categories ?? [];
+
+  const socials = [
+    { kind: "instagram", label: "Instagram", url: settings?.instagramUrl },
+    { kind: "facebook", label: "Facebook", url: settings?.facebookUrl },
+    { kind: "youtube", label: "YouTube", url: settings?.youtubeUrl },
+    { kind: "google", label: "Google Business Profile", url: settings?.googleBusinessUrl },
+  ].filter(
+    (s): s is { kind: SocialKey; label: string; url: string } => Boolean(s.url),
+  );
   const waUrl = `https://wa.me/${settings?.whatsappNumber ?? ""}?text=Hi%2C%20I%27d%20like%20to%20inquire%20about%20your%20travel%20services.`;
 
   return (
@@ -55,6 +84,21 @@ export default async function Footer() {
               </svg>
               Chat on WhatsApp
             </a>
+
+            {socials.length > 0 && (
+              <div className="mt-6">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-brand-cream-100">
+                  Follow us
+                </p>
+                <ul className="flex flex-wrap gap-3">
+                  {socials.map((s) => (
+                    <li key={s.kind}>
+                      <SocialLink kind={s.kind} label={s.label} href={s.url} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Quick Links */}
@@ -65,10 +109,7 @@ export default async function Footer() {
             <ul className="flex flex-col gap-2">
               {QUICK_LINKS.map(({ href, label }) => (
                 <li key={href}>
-                  <Link
-                    href={href}
-                    className="text-sm text-brand-mist-200/80 hover:text-brand-lime-400 transition-colors"
-                  >
+                  <Link href={href} className={linkClass}>
                     {label}
                   </Link>
                 </li>
@@ -83,8 +124,10 @@ export default async function Footer() {
             </h3>
             <ul className="flex flex-col gap-2">
               {SERVICES.map((s) => (
-                <li key={s} className="text-sm text-brand-mist-200/80">
-                  {s}
+                <li key={s.label}>
+                  <Link href={s.href} className={linkClass}>
+                    {s.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -118,10 +161,61 @@ export default async function Footer() {
           </div>
         </div>
 
+        {(popularDestinations.length > 0 || tripTypes.length > 0) && (
+          <div className="mt-10 grid gap-10 border-t border-white/10 pt-10 md:grid-cols-2">
+            {popularDestinations.length > 0 && (
+              <nav aria-label="Popular destinations">
+                <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-brand-cream-100">
+                  Popular Destinations
+                </h3>
+                <ul className="grid grid-cols-2 gap-x-6 gap-y-2">
+                  {popularDestinations.map((d) => (
+                    <li key={d.slug}>
+                      <Link href={`/destinations/${d.slug}`} className={linkClass}>
+                        {d.name} Tour Packages
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+            {tripTypes.length > 0 && (
+              <nav aria-label="Trip types">
+                <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-brand-cream-100">
+                  Trip Types
+                </h3>
+                <ul className="grid grid-cols-2 gap-x-6 gap-y-2">
+                  {tripTypes.map((c) => (
+                    <li key={c.slug}>
+                      <Link href={`/categories/${c.slug}`} className={linkClass}>
+                        {c.name} Tour Packages
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+          </div>
+        )}
+
         <hr className="my-8 border-white/10" />
-        <p className="text-center text-xs text-brand-mist-200/50">
-          © {year} Umiya Tours & Travels (OPC) Pvt. Ltd. All rights reserved.
-        </p>
+        <div className="flex flex-col items-center justify-between gap-3 text-xs text-brand-mist-200/50 sm:flex-row">
+          <p>
+            © {year} Umiya Tours & Travels (OPC) Pvt. Ltd. All rights reserved.
+          </p>
+          <ul className="flex gap-5">
+            <li>
+              <Link href="/privacy-policy" className="hover:text-brand-lime-400 transition-colors">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link href="/terms" className="hover:text-brand-lime-400 transition-colors">
+                Terms &amp; Conditions
+              </Link>
+            </li>
+          </ul>
+        </div>
       </div>
     </footer>
   );

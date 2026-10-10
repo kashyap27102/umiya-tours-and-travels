@@ -13,7 +13,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${SITE_URL}${route}`,
     lastModified: now,
     changeFrequency: route === "/" ? "weekly" : "monthly",
-    priority: route === "/" ? 1 : 0.8,
+    priority:
+      route === "/"
+        ? 1
+        : route === "/privacy-policy" || route === "/terms"
+          ? 0.3
+          : 0.8,
   }));
 
   const [slugsResult, destinationSlugs, categorySlugs] = await Promise.all([

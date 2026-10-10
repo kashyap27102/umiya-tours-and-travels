@@ -22,6 +22,8 @@ export const CORE_ROUTES = [
   "/reviews",
   "/vehicle-booking",
   "/contact",
+  "/privacy-policy",
+  "/terms",
 ] as const;
 
 export const PACKAGE_SLUGS = [

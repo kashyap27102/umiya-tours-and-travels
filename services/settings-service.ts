@@ -19,6 +19,10 @@ function mapPrismaSettings(raw: SiteSettingsModel): SiteSettingsData {
     missionDescription: raw.missionDescription,
     stats: raw.stats as unknown as StatItem[],
     footerTagline: raw.footerTagline,
+    instagramUrl: raw.instagramUrl,
+    facebookUrl: raw.facebookUrl,
+    youtubeUrl: raw.youtubeUrl,
+    googleBusinessUrl: raw.googleBusinessUrl,
   };
 }
 

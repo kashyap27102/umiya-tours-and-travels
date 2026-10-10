@@ -87,7 +87,13 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Sit
         </TabsContent>
 
         <TabsContent value="footer" className="mt-4">
-          <FooterTab defaults={{ footerTagline: s?.footerTagline ?? "" }} />
+          <FooterTab defaults={{
+            footerTagline: s?.footerTagline ?? "",
+            instagramUrl: s?.instagramUrl ?? "",
+            facebookUrl: s?.facebookUrl ?? "",
+            youtubeUrl: s?.youtubeUrl ?? "",
+            googleBusinessUrl: s?.googleBusinessUrl ?? "",
+          }} />
         </TabsContent>
       </Tabs>
     </div>

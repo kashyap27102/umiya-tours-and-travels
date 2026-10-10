@@ -398,6 +398,12 @@ model SiteSettings {
 
   // Heading of the "trending" block on the home page; its packages are the
   // TrendingPackage rows.
+  // Social profiles shown in the footer; blank = not shown.
+  instagramUrl      String @default("")
+  facebookUrl       String @default("")
+  youtubeUrl        String @default("")
+  googleBusinessUrl String @default("")
+
   trendingTitle    String @default("Trending Now")
   trendingSubtitle String @default("Top picks for your next holiday")
 

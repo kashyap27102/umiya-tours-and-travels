@@ -30,8 +30,26 @@ export const statsSettingsSchema = z.object({
   stats: z.array(statItemSchema).min(1, "At least one stat is required"),
 });
 
+// A profile link: left blank to hide it, otherwise a full https:// address.
+const socialUrl = (name: string) =>
+  z
+    .string()
+    .trim()
+    .refine((value) => {
+      if (value === "") return true;
+      try {
+        return new URL(value).protocol === "https:";
+      } catch {
+        return false;
+      }
+    }, `${name} must be a full link starting with https://`);
+
 export const footerSettingsSchema = z.object({
   footerTagline: z.string().min(1, "Footer tagline is required"),
+  instagramUrl: socialUrl("Instagram link"),
+  facebookUrl: socialUrl("Facebook link"),
+  youtubeUrl: socialUrl("YouTube link"),
+  googleBusinessUrl: socialUrl("Google Business Profile link"),
 });
 
 export const siteSettingsSchema = businessSettingsSchema
