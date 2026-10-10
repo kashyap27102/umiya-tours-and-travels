@@ -179,40 +179,41 @@ model PackageCategoryLink {
 // ── Package ───────────────────────────────────────────────────────────────────
 
 model Package {
-  id              String                @id @default(cuid())
-  slug            String                @unique
-  name            String
+  id               String                @id @default(cuid())
+  slug             String                @unique
+  name             String
   // Legacy text/enum kept in sync from destinations/categories below so the
   // public pages keep working; retired in the cleanup step.
-  destination     String
-  category        PackageCategory?
-  destinations    PackageDestination[]
-  categories      PackageCategoryLink[]
-  inclusionLinks  PackageInclusion[]
-  status          PackageStatus         @default(draft)
-  durationDays    Int
-  durationNights  Int
-  pricePerPerson  Int
+  destination      String
+  category         PackageCategory?
+  destinations     PackageDestination[]
+  categories       PackageCategoryLink[]
+  inclusionLinks   PackageInclusion[]
+  status           PackageStatus         @default(draft)
+  durationDays     Int
+  durationNights   Int
+  pricePerPerson   Int
   // Lowest variant price per person, kept in sync when prices change.
   // Used for sorting/filtering; pricePerPerson is retired in the cleanup step.
-  startingPrice   Int                   @default(0)
-  variants        PackageVariant[]
+  startingPrice    Int                   @default(0)
+  variants         PackageVariant[]
   // Legacy URL list, kept in sync from imageLinks so the public pages keep
   // working; retired in the cleanup step.
-  images          String[]              @default([])
-  imageLinks      PackageImage[]
-  summary         String
-  highlights      String[]
+  images           String[]              @default([])
+  imageLinks       PackageImage[]
+  summary          String
+  highlights       String[]
   // Legacy text lists, kept in sync from inclusionLinks so the public page
   // keeps working; retired in the cleanup step.
-  inclusions      String[]
-  exclusions      String[]
-  popularityScore Int                   @default(0)
-  itinerary       ItineraryItem[]
-  testimonials    Testimonial[]
-  enquiries       Enquiry[]
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  inclusions       String[]
+  exclusions       String[]
+  popularityScore  Int                   @default(0)
+  itinerary        ItineraryItem[]
+  testimonials     Testimonial[]
+  enquiries        Enquiry[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  trendingPackages TrendingPackage[]
 
   @@index([category])
   @@index([status])
@@ -395,5 +396,19 @@ model SiteSettings {
 
   footerTagline String
 
+  // Heading of the "trending" block on the home page; its packages are the
+  // TrendingPackage rows.
+  trendingTitle    String @default("Trending Now")
+  trendingSubtitle String @default("Top picks for your next holiday")
+
   updatedAt DateTime @updatedAt
+}
+
+// The packages shown in the home page's trending block, in this order.
+model TrendingPackage {
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String  @id
+  sortOrder Int     @default(0)
+
+  @@index([sortOrder])
 }

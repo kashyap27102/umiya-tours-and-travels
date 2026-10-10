@@ -1,63 +1,29 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { formatCurrency } from "@/lib/format";
 import { formatDurationLabel } from "@/lib/packages-constants";
-import type { PackageSummary } from "@/types/package";
+import type { TrendingSection } from "@/services/trending-service";
 
-type Tab = "domestic" | "international";
-
-const TAB_LABELS: Record<Tab, string> = {
-  domestic: "🇮🇳 Domestic",
-  international: "✈️ International",
-};
-
-function formatPrice(price: number) {
-  return `₹${price.toLocaleString("en-IN")}`;
-}
-
+/** The home page's featured packages. Heading and packages are set in the admin. */
 export default function TrendingPackages({
-  domestic,
-  international,
-}: {
-  domestic: PackageSummary[];
-  international: PackageSummary[];
-}) {
-  const [activeTab, setActiveTab] = useState<Tab>("domestic");
-  const packages = activeTab === "domestic" ? domestic : international;
+  section,
+}: Readonly<{ section: TrendingSection }>) {
+  const { title, subtitle, packages } = section;
+  if (packages.length === 0) return null;
 
   return (
     <section className="brand-hero py-14 md:py-16">
       <div className="travel-shell">
         {/* Section header */}
-        <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-brand-lime-400">
-              Trending Now
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-3xl font-bold text-brand-cream-100 md:text-4xl">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="mt-3 text-base text-brand-mist-200 md:text-lg">
+              {subtitle}
             </p>
-            <h2 className="text-3xl font-bold text-brand-cream-100 md:text-4xl">
-              Top Picks for You
-            </h2>
-          </div>
-
-          {/* Tab switcher */}
-          <div className="flex gap-2 rounded-full border border-brand-blue-900/10 bg-white p-1 text-sm font-medium">
-            {(Object.keys(TAB_LABELS) as Tab[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={
-                  "cursor-pointer rounded-full px-5 py-2 transition-colors " +
-                  (activeTab === tab
-                    ? "bg-brand-blue-900 text-brand-cream-100 shadow"
-                    : "text-brand-ink-700 hover:bg-brand-blue-100")
-                }
-              >
-                {TAB_LABELS[tab]}
-              </button>
-            ))}
-          </div>
+          )}
         </div>
 
         {/* Package cards */}
@@ -77,11 +43,11 @@ export default function TrendingPackages({
                   className="object-cover transition duration-500 group-hover:scale-105"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
-                {/* Category badge */}
-                <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-brand-blue-900 shadow">
-                  {pkg.category}
-                </span>
-                {/* Duration badge */}
+                {pkg.badge && (
+                  <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-brand-blue-900 shadow">
+                    {pkg.badge}
+                  </span>
+                )}
                 <span className="absolute bottom-3 right-3 rounded-full bg-brand-blue-900/80 px-3 py-1 text-xs font-medium text-brand-cream-100">
                   {formatDurationLabel(pkg.durationNights, pkg.durationDays)}
                 </span>
@@ -92,7 +58,7 @@ export default function TrendingPackages({
                 <p className="mb-1 text-xs font-medium text-brand-blue-700">
                   {pkg.destination}
                 </p>
-                <h3 className="mb-2 text-lg font-bold text-brand-ink-900 leading-tight">
+                <h3 className="mb-2 text-lg font-bold leading-tight text-brand-ink-900">
                   {pkg.name}
                 </h3>
                 <p className="mb-4 line-clamp-2 text-sm text-brand-ink-600">
@@ -116,7 +82,11 @@ export default function TrendingPackages({
                   <div>
                     <p className="text-xs text-brand-ink-500">Starting from</p>
                     <p className="text-xl font-bold text-brand-blue-900">
-                      {formatPrice(pkg.pricePerPerson)}
+                      {formatCurrency(
+                        pkg.startingPrice > 0
+                          ? pkg.startingPrice
+                          : pkg.pricePerPerson,
+                      )}
                       <span className="text-xs font-normal text-brand-ink-500">
                         {" "}
                         / person
@@ -135,10 +105,10 @@ export default function TrendingPackages({
         {/* See all link */}
         <div className="mt-8 text-center">
           <Link
-            href={activeTab === "domestic" ? "/packages" : "/categories/international"}
+            href="/packages"
             className="inline-flex items-center gap-2 text-sm font-semibold text-brand-lime-400 hover:text-brand-cream-100 hover:underline"
           >
-            See all {activeTab} packages →
+            See all packages →
           </Link>
         </div>
       </div>

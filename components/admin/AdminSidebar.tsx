@@ -13,6 +13,7 @@ import {
   Images,
   Inbox,
   MessageSquareQuote,
+  TrendingUp,
   SlidersHorizontal,
   ShieldCheck,
   LogOut,
@@ -62,6 +63,11 @@ const ADMIN_NAV_ITEMS = [
     href: "/admin/gallery",
     label: "Gallery",
     icon: Images,
+  },
+  {
+    href: "/admin/trending",
+    label: "Trending Section",
+    icon: TrendingUp,
   },
   {
     href: "/admin/testimonials",

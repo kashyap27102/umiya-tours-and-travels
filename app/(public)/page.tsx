@@ -5,8 +5,8 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import TrendingPackages from "@/components/TrendingPackages";
 import DomesticDestinations from "@/components/DomesticDestinations";
 import { HorizontalScroller } from "@/components/ui";
-import { PackageService } from "@/services";
 import { TestimonialService } from "@/services/testimonial-service";
+import { TrendingService } from "@/services/trending-service";
 import { DOMESTIC_DESTINATIONS } from "@/lib/destinations";
 
 export const metadata = createMetadata({
@@ -48,18 +48,6 @@ const HERO_IMAGES = [
   },
 ];
 
-const DOMESTIC_SLUGS = [
-  "kashmir-paradise-5n-6d",
-  "shimla-kufri-leisure-3n-4d",
-  "gujarat-heritage-exploration-4n-5d",
-];
-
-const INTERNATIONAL_SLUGS = [
-  "dubai-city-luxury-4n-5d",
-  "maldives-overwater-retreat-5n-6d",
-  "bali-romantic-hideaway-5n-6d",
-];
-
 const DESTINATION_MOMENTS = [
   {
     src: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1200&q=80",
@@ -88,23 +76,16 @@ const DESTINATION_MOMENTS = [
 ];
 
 export default async function Home() {
-  const [testimonials, activePackagesResult] = await Promise.all([
+  const [testimonials, trending] = await Promise.all([
     TestimonialService.getPublic().catch((error) => {
       console.error("Failed to load testimonials:", error);
       return [];
     }),
-    PackageService.getCachedActivePackages(),
+    TrendingService.getSection().catch((error) => {
+      console.error("Failed to load trending section:", error);
+      return null;
+    }),
   ]);
-  const activePackages = activePackagesResult.success
-    ? activePackagesResult.data
-    : [];
-
-  const domesticPackages = DOMESTIC_SLUGS.map((slug) =>
-    activePackages.find((p) => p.slug === slug),
-  ).filter((p) => p !== undefined);
-  const internationalPackages = INTERNATIONAL_SLUGS.map((slug) =>
-    activePackages.find((p) => p.slug === slug),
-  ).filter((p) => p !== undefined);
 
   return (
     <main className="flex flex-col">
@@ -116,10 +97,7 @@ export default async function Home() {
       />
 
       {/* Trending packages */}
-      <TrendingPackages
-        domestic={domesticPackages}
-        international={internationalPackages}
-      />
+      {trending && <TrendingPackages section={trending} />}
 
       {/* Domestic destinations */}
       <DomesticDestinations destinations={DOMESTIC_DESTINATIONS} />
